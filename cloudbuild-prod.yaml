@@ -1,0 +1,20 @@
+steps:
+  ### Build
+  - id: 'install'
+    name: 'gcr.io/cloud-builders/npm'
+    args: ['install']
+  - id: 'source build'
+    name: 'gcr.io/cloud-builders/npm'
+    args: ['node', '--max-old-space-size=<size>', 'npm', 'run', 'build']
+  - id: 'git url setting'
+    name: 'gcr.io/cloud-builders/git'
+    args: ['remote','set-url','origin', 'https://github.com/TheOpenCloudEngine/event-storming-tool.git']
+  - id: 'git username setting'
+    name: 'gcr.io/cloud-builders/git'
+    args: ['config','--global','user.name', 'kimsanghoon1']
+  - id: 'git useremail setting'
+    name: 'gcr.io/cloud-builders/git'
+    args: ['config','--global','user.email', 'sanghoon01@uengine.org']
+  - id: 'git deploy'
+    name: 'gcr.io/cloud-builders/npm'
+    args: ['run','deploy']
