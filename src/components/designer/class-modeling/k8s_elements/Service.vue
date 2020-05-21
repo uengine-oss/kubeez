@@ -53,20 +53,24 @@
         </geometry-element>
 
 
-        <modeling-property-panel
-                v-if="openPanel"
-                v-model="value"
-                :titleName="'Service'"
-                :img="'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/policy.png'">
-        </modeling-property-panel>
+        <servicePropertyPanel
+            v-if="openPanel"
+            v-model="value"
+            :img="'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/policy.png'">
+        </servicePropertyPanel>
     </div>
 </template>
 
 <script>
     import Element from '../../modeling/Element'
+    import ServicePropertyPanel from './ServicePropertyPanel'
+
     export default {
         mixins: [Element],
         name: 'service',
+        components: {
+            "servicePropertyPanel": ServicePropertyPanel
+        },
         props: {},
         computed: {
             defaultStyle() {
@@ -75,6 +79,17 @@
             className() {
                 return 'Service'
             },
+
+            relativeKinds: {
+                deployment: {
+
+                    updated: function(me, deployment){
+                        me.object.selector.app = deployment.name;
+                    }
+
+                },
+            },
+            
             createNew(elementId, x, y, width, height) {
                 return {
                     _type: this.className(),
@@ -90,9 +105,7 @@
                         'style': JSON.stringify({}),
                         'angle': 0,
                     },
-                    editing: false,
-                    status: 'add',
-                    template: {
+                    object: {
                         "apiVersion": "apps/v1",
                         "kind": "Service",
                         "metadata": {
@@ -112,45 +125,8 @@
                                 "app": ""
                             }
                         }
-                    },
-                    properties: [
-                        {
-                            key_lists: [
-                                "metadata,name",
-                                "metadata,labels,app"
-                            ],
-                            name: "Service name",
-                            type: "string",
-                            val: "",
-                        },
-                        {
-                            key_lists: [
-                                "spec,selector,app"
-                            ],
-                            name: "Deployment name",
-                            type: "string",
-                            val: "",
-                        },
-                        {
-                            key_lists: [
-                                "spec,ports,0,port"
-                            ],
-                            name: "port",
-                            type: "number",
-                            val: 80,
-                        },
-                        {
-                            key_lists: [
-                                "spec,ports,0,targetPort"
-                            ],
-                            name: "target port",
-                            type: "number",
-                            val: 80,
-                        }
-                    ],
-                    relations: {
-                        deployment: [],
-                    },
+                    }
+                    
                 }
             }
         },
@@ -165,152 +141,12 @@
             };
         },
         created: function () {
-            var me = this
-            var designer = me.getComponent('modeling-designer')
-
-            this.$nextTick(function () {
-                if(this.namePanel !=null ) {
-                    this.namePanel =me.value.name
-                }
-
-                me.isRead = designer.isRead
-            })
-
+        
         },
         watch: {
-            "openPanel":function (newVal) {
-                var me = this
-                if(newVal == false) {
-
-                    me.$nextTick(function () {
-                        var obj = {
-                            state: "updateService",
-                            element: JSON.parse(JSON.stringify(me.value))
-                        }
-
-                        me.value.checkValue = false
-                    })
-                }
-
-            },
-            "value.name":function(newVal,oldVal){
-                this.namePanel = newVal
-            },
-            "value.relations.deployment": {
-                handler: function () {
-                    let me = this
-                    for (let idx in me.value.relations.deployment) {
-                        let deploymentItem = me.value.relations.deployment[idx].deploymentValue
-                        me.setDeploymentInfo(deploymentItem)
-                    }
-                }
-            }
         },
-        mounted: function () {
-            var me = this
-            var designer = me.getComponent('modeling-designer')
 
-            me.$nextTick(function () {
-                me.isRead = designer.isRead
-            })
-
-            this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-
-                if (obj.state == 'deleteRelation') {
-
-                    if (obj.element.targetElement._type == 'Deployment') {
-                        var targetId = obj.element.targetElement.elementView.id
-                        me.value.relations.deployment.some(function (deploymentItem, poIdx) {
-                            if (deploymentItem.deploymentValue.elementView.id == targetId) {
-                                me.value.relations.deployment[poIdx] = null
-                                return
-                            }
-                        })
-                        me.value.relations.deployment = me.value.relations.deployment.filter(n => n)
-                        me.deleteDeploymentInfo()
-                    }
-
-                } else if (obj.state == 'deleteDeployment') {
-                    
-                    var targetId = obj.element.elementView.id
-                    me.value.relations.deployment.some(function (policyItem, poIdx) {
-                        if (deploymentItem.deploymentValue.elementView.id == targetId) {
-                            me.value.relations.deployment[poIdx] = null
-                            return
-                        }
-                    })
-                    me.deleteDeploymentInfo()
-                    me.value.relations.deployment = me.value.relations.deployment.filter(n => n)
-                    
-                }
-
-                me.$nextTick(function () {
-                    var designer = me.getComponent('modeling-designer')
-                    designer.editing = true;
-                })
-            })
-
-        },
         methods: {
-            deleteService() {
-                var me = this
-                var designer = me.getComponent('modeling-designer')
-
-                return new Promise(function (resolve) {
-                    me.$EventBus.$off(`${me.value.elementView.id}`);
-                    var obj = {
-                        state: "deleteService",
-                        element: JSON.parse(JSON.stringify(me.value))
-                    }
-
-                    me.$emit('update:value', null);
-                    resolve()
-                })
-            },
-            setDeploymentInfo(deploymentItem) {
-                let me = this
-                let json = JSON.parse(JSON.stringify(me.value.template))
-                for(let i in me.value.properties) {
-                    let item = me.value.properties[i]
-                    if (item.name.includes('Deployment')) {
-                        item.val = deploymentItem.name
-                    }
-                    let key_lists = item.key_lists
-                    for (let i in key_lists) {
-                        let key_list = key_lists[i].split(',')
-                        json = me.modifyJson(json, key_list, item.val)
-                    }
-                }
-                me.value.template = json
-            },
-            deleteDeploymentInfo() {
-                let me = this
-                let json = JSON.parse(JSON.stringify(me.value.template))
-                for(let i in me.value.properties) {
-                    let item = me.value.properties[i]
-                    if (item.name.includes('Deployment')) {
-                        item.val = ""
-                    }
-                    let key_lists = item.key_lists
-                    for (let i in key_lists) {
-                        let key_list = key_lists[i].split(',')
-                        json = me.modifyJson(json, key_list, item.val)
-                    }
-                }
-                me.value.template = json
-            },
-            modifyJson(json_data, key_list, modify_data) {
-                let me = this
-                if (key_list.length <= 0) {
-                    json_data = modify_data
-                } else {
-                    let find = key_list.splice(0, 1)
-                    if (json_data[find] == null)
-                        json_data[find] = {}
-                    json_data[find] = me.modifyJson(json_data[find], key_list, modify_data)
-                }
-                return json_data
-            },
         }
     }
 </script>

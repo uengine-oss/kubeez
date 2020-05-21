@@ -19,7 +19,7 @@ import VueYouTubeEmbed from 'vue-youtube-embed'
 import vuetify from './plugins/vuetify';
 import * as VueWindow from '@hscmap/vue-window'
 //view
-import ModelingPropertyPanel from "./components/designer/modeling/ModelingPropertyPanel";
+//import ModelingPropertyPanel from "./components/designer/modeling/ModelingPropertyPanel";
 
 import dashEditYaml from "./components/dashEdityamlpage.vue";
 import dashYaml from "./components/dashYaml.vue";
@@ -41,7 +41,7 @@ Vue.component('dashYaml', dashYaml)
 
 Vue.component('EditYaml', EditYaml)
 Vue.component('text-reader', textReader)
-Vue.component('ModelingPropertyPanel',ModelingPropertyPanel)
+//Vue.component('ModelingPropertyPanel',ModelingPropertyPanel)
 
 // Vue.use(Metaworks4);
 

@@ -15,10 +15,8 @@
         },
         created: function () {
             var me = this;
-            // console.log(me.value._type)
-            if (me.value._type == 'org.uengine.modeling.model.BoundedContext') {
-                me.namePanel = me.value.name
-            }
+
+            
         },
         data: function () {
             return {
