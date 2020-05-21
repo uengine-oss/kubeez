@@ -134,21 +134,37 @@
                     },
                     properties: [
                         {
+                            key_lists: [
+                                'metadata,name',
+                                "metadata,labels,app",
+                                "spec,selector,matchLabels,app",
+                                "spec,template,metadata,labels,app",
+                                "spec,template,spec,containers,0,name"
+                            ],
                             name: "deployment name",
                             type: "string",
                             val: "",
                         },
                         {
+                            key_lists: [
+                                "spec,template,spec,containers,0,image"
+                            ],
                             name: "image",
                             type: "string",
                             val: "",
                         },
                         {
+                            key_lists: [
+                                "spec,replicas"
+                            ],
                             name: "replicas",
                             type: "number",
                             val: 1,
                         },
                         {
+                            key_lists: [
+                                "spec,template,spec,containers,0,ports,0,containerPort"
+                            ],
                             name: "port",
                             type: "number",
                             val: 80,

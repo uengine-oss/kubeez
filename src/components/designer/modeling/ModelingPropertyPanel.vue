@@ -47,7 +47,7 @@
                     <v-flex shrink style="width: 300px;">
                         <v-card flat>
                             <v-card-text>
-                                <template v-for="item in properties">
+                                <template v-for="item in copyElement.properties">
                                     <v-text-field
                                         v-if="item.type =='string' && value.status =='add'"
                                         :label="item.name"
@@ -111,39 +111,15 @@
         computed: {
             getDescriptionText() {
                 var me = this
-                if (me.value._type == 'org.uengine.modeling.model.Event') {
-                    return '도메인 전문가가 정의함. 이벤트 퍼블리싱'
-                } else if (me.value._type == 'org.uengine.modeling.model.Aggregate') {
-                    return '비즈니스 로직 처리의 도메인 객체 덩어리 (서로 연결된 하나 이상의 엔터티 및 value objects의 집합체)'
-                } else if (me.value._type == 'org.uengine.modeling.model.Command') {
-                    return '행동, 결정 등의 값들에 대한 정의 (UI 혹은 API)'
-                } else if (me.value._type == 'org.uengine.modeling.model.External') {
-                    return '외부 시스템'
-                } else if (me.value._type == 'org.uengine.modeling.model.Policy') {
-                    return '업무정책 이벤트에 대한 반응 (subscribe)'
-                } else if (me.value._type == 'org.uengine.modeling.model.View') {
-                    return '행위와 결정을 하기 위하여 유저가 참고하는 데이터 (데이터 프로젝션이 필요 :  CQRS 등으로 수집)'
-                } else if (me.value._type == 'org.uengine.modeling.model.BoundedContext') {
-                    return '이벤트의 내용을 정의하고 시스템의 경계를 구분.'
-                } else if(me.value._type == 'org.uengine.modeling.model.Actor'){
-                    return ''
+                if (me.value._type == 'Service') {
+                    return 'Service'
+                } else if (me.value._type == 'Deployment') {
+                    return 'Deployment'
                 }
-
+                
                 return ''
             },
 
-            dragOptions() {
-                return {
-                    animation: 200,
-                    group: "description",
-                    disabled: false,
-                    ghostClass: "ghost"
-                };
-            },
-            fieldDescriptors: function () {
-                var me = this
-                return me.value.fieldDescriptors
-            },
             widthScale: function () {
                 var me = this;
                 if (me.value._type == 'org.uengine.modeling.model.View') {
@@ -151,47 +127,6 @@
                 } else {
                     return 800
                 }
-            },
-            eventList: function () {
-                var designer = this.$parent.getComponent('modeling-designer')
-
-                var tmp = []
-
-                designer.value.definition.forEach(function (tmpData) {
-                    if (tmpData != null) {
-                        if (tmpData._type == 'org.uengine.modeling.model.Event') {
-                            tmp.push(tmpData)
-                        }
-                    }
-                })
-
-                tmp = tmp.filter(n => n)
-                return tmp
-            },
-            aggregateList: function () {
-                var designer = this.$parent.getComponent('modeling-designer')
-
-                var tmp = []
-
-                designer.value.definition.forEach(function (tmpData) {
-                    if (tmpData != null) {
-                        if (tmpData._type == 'org.uengine.modeling.model.Aggregate') {
-                            var ob = {
-                                'id': tmpData.elementView.id,
-                                'name': tmpData.name,
-                                'namePlural': tmpData.namePlural,
-                                'namePascalCase': tmpData.namePascalCase,
-                                'nameCamelCase': tmpData.nameCamelCase,
-                                'boundedContext': tmpData.boundedContext,
-                                'fieldDescriptors': tmpData.aggregateRoot['fieldDescriptors']
-                            }
-                        }
-                        tmp.push(ob)
-                    }
-                })
-
-                tmp = tmp.filter(n => n)
-                return tmp
             },
 
             codemirror: function () {
@@ -209,46 +144,9 @@
                 width: null,
                 height: null,
                 style: [],
-                angle: null,
-                connectedList: [],
-                connectedListName: {},
-                viewList: null,
-                // viewRowAddDialog: false,
-                restfulList: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT'],
-                entityTypeList: ['Integer', 'String', 'Float', 'Double', 'Long', 'Date'],
-                entityKey: false,
-                entityType: '',
-                entityName: '',
                 drag: false,
-                headers: [
-                    {
-                        text: 'key',
-                        value: 'isKey',
-                        align: 'center'
-                    },
-                    {
-                        text: 'type',
-                        value: 'className',
-                        align: 'center'
-                    },
-                    {
-                        text: 'name',
-                        value: 'name',
-                        align: 'center'
-                    },
-                    {
-                        text: 'Actions',
-                        value: 'action',
-                        sortable: false,
-                        align: 'center'
-                    },],
                 translateText: '',
                 usedTranslate: false,
-                UMLInput: '',
-                // editedIndex: '',
-                setIsKeyList: [],
-                attributeEdit: false,
-                attributeEditIndex: 0,
                 isRead: false,
                 //new
                 namePanel: '',
@@ -257,12 +155,10 @@
                 parmUid: '',
                 parmType: '',
 
-                yaml_text: '',
-                ui_list: [],
-                cursor_pos: "",
-                channel: "",
+                temp_text: '',
+                cursor_pos: '',
+                channel: '',
                 auto_edit: true,
-
             }
         },
         beforeDestroy() {
@@ -273,41 +169,6 @@
 
             // me.checkValue =true
             me.setNameCase(me.namePanel)
-
-            if (me.value._type == 'org.uengine.modeling.model.Aggregate') {
-
-                me.value.aggregateRoot.fieldDescriptors = me.copyElement.aggregateRoot.fieldDescriptors
-
-            } else if (me.value._type == 'org.uengine.modeling.model.Command') {
-
-                me.value.aggregate = me.copyElement.aggregate
-                me.value.isRestRepository = me.copyElement.isRestRepository
-                me.value.controllerInfo = me.copyElement.controllerInfo
-                me.value.restRepositoryInfo = me.copyElement.restRepositoryInfo
-
-
-            } else if (me.value._type == 'org.uengine.modeling.model.Event') {
-
-                me.value.trigger = me.copyElement.trigger
-                me.value.fieldDescriptors = me.copyElement.fieldDescriptors
-                me.value.aggregate = me.copyElement.aggregate
-
-            } else if (me.value._type == 'org.uengine.modeling.model.View') {
-
-                me.value.fieldDescriptors = me.copyElement.fieldDescriptors
-                me.value.dataProjection = me.copyElement.dataProjection
-                me.value.createRules = me.copyElement.createRules
-                me.value.updateRules = me.copyElement.updateRules
-                me.value.deleteRules = me.copyElement.deleteRules
-
-            } else if (me.value._type == 'org.uengine.modeling.model.Policy') {
-            } else if (me.value._type == 'org.uengine.modeling.model.BoundedContext') {
-
-                me.value.preferredPlatform = me.copyElement.preferredPlatform
-            } else {
-                
-
-            }
 
             this.$emit('changed', me.copyElement);
 
@@ -335,13 +196,8 @@
             if (me.copyElement.name != null) {
                 me.namePanel = me.copyElement.name
             }
-            
-            if (me.copyElement.properties != null) {
-                me.ui_list = me.copyElement.properties
-            }
 
             if (me.copyElement.yaml_text != null) {
-                me.yaml_text = me.copyElement.yaml_text
             } else {
                 me.createYaml()
             }
@@ -353,30 +209,12 @@
 
         },
         mounted: function () {
-            this.fieldDescriptors;
             var me = this
             var designer = this.$parent.getComponent('modeling-designer')
 
             me.$nextTick(function () {
                 me.isRead = designer.isRead
             })
-
-            // if (me.parmUid != localStorage.getItem('uid')) {
-            //     me.isRead = false
-            // }else{
-            //     me.isRead = false
-            // }
-            // me.$EventBus.$on('isClose',function (newVal) {
-            //     me.isClose = newVal
-            //     console.log(me.isClose)
-            //     if(me.isClose){
-            //         me.value =  JSON.parse(JSON.stringify(me.copyElement))
-            //     }
-            // })
-            //
-            // var designer = this.$parent.getComponent('modeling-designer')
-            // // console.log(designer.$refs[`${me.value.elementView.id}`][0].openPanel)
-            // me.isClose = designer.$refs[`${me.value.elementView.id}`][0].openPanel
 
         },
         watch: {
@@ -434,13 +272,18 @@
                     }
                 }
             },
-            yaml_text: {
+            "copyElement.yaml_text": {
                 handler(newVal) {
                     if (newVal != '') {
                         var me = this
                         //console.log(newVal)
                         if (me.auto_edit) {
                             try {
+                                if (!(me.copyElement.yaml_text == me.temp_text)) {
+                                    me.temp_text = me.copyElement.yaml_text
+                                    me.cursor_pos = me.codemirror.getCursor("start")
+                                    me.copyElement.template = yaml.load(me.copyElement.yaml_text)
+                                }
                                 me.jsonToUi()
                                 this.$nextTick(function () {
                                     me.codemirror.setCursor(me.cursor_pos)
@@ -453,22 +296,23 @@
                     }
                 }
             },
-            ui_list: {
-                handler: function () {
+            "copyElement.properties": {
+                handler: function (newVal) {
                     let me = this
                     if (me.channel == 'ui') {
                         me.uiToJson()
                     }
-                    for (let idx in me.ui_list) {
-                        let znum = (me.ui_list[idx].val)//.toString().match(/0[0-9]+/)
-                        if (typeof  znum == 'string') {
+                    for (let idx in me.copyElement.properties) {
+                        let znum = (me.copyElement.properties[idx].val)
+                        if (typeof znum == 'string') {
                             let check_str = znum.match(/^0[0-9]+/)
-                            if (check_str)
-                                me.ui_list[idx].val = parseInt(check_str)
+                            if (check_str) {
+                                me.copyElement.properties[idx].val = parseInt(check_str)
+                            }
                         }
                     }
-                    let yaml_text = json2yaml.stringify(JSON.parse(JSON.stringify(me.json_data)))
-                    me.yaml_text = me.yamlFilter(yaml_text)
+                    let yaml_text = json2yaml.stringify(JSON.parse(JSON.stringify(me.copyElement.template)))
+                    me.copyElement.yaml_text = me.yamlFilter(yaml_text)
                 },
                 deep: true
             },
@@ -484,7 +328,7 @@
             setNameCase:
                 function (newVal) {
                     var me = this
-                    if (me.value._type == 'org.uengine.modeling.model.View' || me.value._type == 'org.uengine.modeling.model.Event' || me.value._type == 'org.uengine.modeling.model.Command' || me.value._type == 'org.uengine.modeling.model.Policy' || me.value._type == 'org.uengine.modeling.model.Aggregate') {
+                    if (me.value._type == 'org.uengine.modeling.model.View' || me.value._type == 'org.uengine.modeling.model.Event' || me.value._type == 'org.uengine.modeling.model.Command' || me.value._type == 'orguengine.modeling.model.Policy' || me.value._type == 'org.uengine.modeling.model.Aggregate') {
                         me.value.name = newVal
                         me.value.namePascalCase = changeCase.pascalCase(newVal)
                         me.value.nameCamelCase = changeCase.camelCase(newVal)
@@ -494,184 +338,7 @@
                         me.value.namePascalCase = changeCase.pascalCase(newVal)
                     }
                 },
-            selectKey(item) {
-                var me = this
-
-                if (me.value._type == 'org.uengine.modeling.model.Aggregate') {
-                    me.copyElement.aggregateRoot.fieldDescriptors.forEach(function (ele, idx) {
-                        ele.isKey = false
-                        if (idx == me.copyElement.aggregateRoot.fieldDescriptors.indexOf(item)) {
-                            ele.isKey = true
-                        }
-                    })
-
-                } else {
-                    me.copyElement.fieldDescriptors.forEach(function (ele, idx) {
-                        ele.isKey = false
-                        // console.log(idx, me.value.fieldDescriptors.indexOf(item))
-                        if (idx == me.copyElement.fieldDescriptors.indexOf(item)) {
-                            ele.isKey = true
-                        }
-                    })
-
-                }
-
-            },
-            // arrayDiff(a1, a2) {
-            //
-            //     var a = [], diff = [];
-            //
-            //     for (var i = 0; i < a1.length; i++) {
-            //         a[a1[i]] = true;
-            //     }
-            //
-            //     for (var i = 0; i < a2.length; i++) {
-            //         if (a[a2[i]]) {
-            //             delete a[a2[i]];
-            //         } else {
-            //             a[a2[i]] = true;
-            //         }
-            //     }
-            //
-            //     for (var k in a) {
-            //         diff.push(k);
-            //     }
-            //
-            //     return diff;
-            // },
-            syncFromAggregate() {
-                var me = this
-
-
-                if (me.copyElement.aggregate.id != null) {
-                    var arr2 = me.value.aggregate.fieldDescriptors
-                    var arr1 = JSON.parse(JSON.stringify(me.copyElement.fieldDescriptors))
-
-                    console.log('>>>>>>>>>>>>>>>>>', arr2, me.value.aggregate.fieldDescriptors, me.copyElement.aggregate.fieldDescriptors)
-
-
-                    arr2.forEach(function (agg) {
-                        var check = false
-                        arr1.forEach(function (ev) {
-                            if (JSON.stringify(Object.entries(agg).sort()) === JSON.stringify(Object.entries(ev).sort())) {
-                                check = true
-                            } else if (agg.name == ev.name && agg.className == ev.className) {
-                                check = true
-                            }
-                        })
-
-                        if (!check) {
-                            agg.isKey = false
-                            me.copyElement.fieldDescriptors.push(agg)
-                        }
-                    })
-                } else {
-                    alert("select 'Associated aggreate'")
-                }
-
-
-            },
-            viewMainRowAdd(type) {
-                var me = this
-
-                if (me.copyElement.dataProjection == 'cqrs') {
-
-
-                    if (type == 'create') {
-
-                        var obj = {
-                            _type: 'viewStoreRule',
-                            operation: 'CREATE',
-                            when: '',
-                            fieldMapping: [{"viewField": {}, "eventField": {}}],
-                            where: [{"viewField": {}, "eventField": {}}],
-                        }
-
-                        me.copyElement.createRules.push(obj)
-                    } else if (type == 'update') {
-                        var obj = {
-                            _type: 'viewStoreRule',
-                            operation: 'UPDATE',
-                            when: '',
-                            fieldMapping: [{"viewField": {}, "eventField": {}}],
-                            where: [{"viewField": {}, "eventField": {}}],
-                        }
-                        // var obj = {
-                        //     sourceEvent: {},
-                        //     fieldMapping: [{"viewField": {}, "eventField": {}}],
-                        //     condition: [{"conditionViewField": {}, "conditionEventField": {}}]
-                        // }
-                        // me.value.viewFieldDescriptors.updateFieldDescriptors.push(obj);
-                        // me.value.viewStoreRule.push(obj)
-                        me.copyElement.updateRules.push(obj)
-                    } else if (type == 'delete') {
-                        var obj = {
-                            _type: 'viewStoreRule',
-                            operation: 'DELETE',
-                            when: '',
-                            fieldMapping: [{"viewField": {}, "eventField": {}}],
-                            where: [{"viewField": {}, "eventField": {}}],
-                        }
-                        // var obj = {
-                        //     sourceEvent: {},
-                        //     condition: [{"conditionViewField": {}, "conditionEventField": {}}]
-                        // }
-                        // me.value.viewFieldDescriptors.deleteFieldDescriptors.push(obj);
-                        // me.value.viewStoreRule.push(obj)
-                        me.copyElement.deleteRules.push(obj)
-                    }
-
-                } else if (me.copyElement.dataProjection == 'uimashup') {
-                    // var ob = {
-                    //     isKey: false,
-                    //     name: '',
-                    //     className: '',
-                    //     sourceRepository: '',
-                    //     repositoryDirectValue: '',
-                    //     hateoas: '',
-                    //     link: ''
-                    // }
-                    // me.value.viewFieldDescriptors.push(ob);
-                }
-            },
-            // save() {
-            //     var me = this
-            //
-            //     if (this.editedIndex > -1) {
-            //         Object.assign(me.value.fieldDescriptors[this.editedIndex], this.editedItem)
-            //     } else {
-            //         me.value.fieldDescriptors.push(this.editedItem)
-            //     }
-            //     me.value.editingView = false
-            // },
-            // editItem(item) {
-            //     var me = this
-            //     me.editedIndex = me.value.fieldDescriptors.indexOf(item)
-            //
-            //     this.editedItem = Object.assign({}, item)
-            //     // me.value.editingView  = true
-            // },
-            //
-            // : _.debounce(
-            //     function (newVal) {
-            //         var me = this
-            //         if (me.value._type == 'org.uengine.modeling.model.View' || me.value._type == 'org.uengine.modeling.model.Event' || me.value._type == 'org.uengine.modeling.model.Command' || me.value._type == 'org.uengine.modeling.model.Policy' || me.value._type == 'org.uengine.modeling.model.Aggregate') {
-            //             me.value.namePascalCase = changeCase.pascalCase(newVal)
-            //             me.value.nameCamelCase = changeCase.camelCase(newVal)
-            //             me.value.namePlural = changeCase.camelCase(pluralize(newVal));
-            //         }
-            //     }, 200
-            // ),
-            initNameCase:
-                function (newVal) {
-                    var me = this
-
-                    if (me.value._type == 'org.uengine.modeling.model.View' || me.value._type == 'org.uengine.modeling.model.Event' || me.value._type == 'org.uengine.modeling.model.Command' || me.value._type == 'org.uengine.modeling.model.Policy' || me.value._type == 'org.uengine.modeling.model.Aggregate') {
-                        me.copyElement.namePascalCase = changeCase.pascalCase(newVal)
-                        me.copyElement.nameCamelCase = changeCase.camelCase(newVal)
-                        me.copyElement.namePlural = changeCase.camelCase(pluralize(newVal));
-                    }
-                },
+            
             getTranslate:
                 _.debounce(
                     function (newVal) {
@@ -746,152 +413,9 @@
                         }
                     }, 500
                 ),
-            umlDiagramOpen() {
-                var me = this
-                // console.log("umlDiagram-Open")
-                me.$ModelingBus.$emit('umlDiagram');
-            },
-            modifyAttributeItem(item) {
-                var me = this
-                var tmpObject = {
-                    "_type": "org.uengine.model.FieldDescriptor",
-                    "name": item.name,
-                    "namePascalCase": changeCase.pascalCase(item.name),
-                    "nameCamelCase": changeCase.camelCase(item.name),
-                    "className": item.className,
-                    "isKey": item.isKey
-                }
-
-                if (me.copyElement._type == 'org.uengine.modeling.model.Aggregate') {
-
-                    me.copyElement.aggregateRoot.fieldDescriptors[me.attributeEditIndex] = tmpObject
-                } else {
-                    me.copyElement.fieldDescriptors[me.attributeEditIndex] = tmpObject
-                }
-
-                me.attributeEdit = false
-            },
-            editAttributeItem(item) {
-                var me = this
-
-                if (me.copyElement._type == 'org.uengine.modeling.model.Aggregate') {
-                    me.attributeEditIndex = me.copyElement.aggregateRoot.fieldDescriptors.indexOf(item)
-                } else {
-                    me.attributeEditIndex = me.copyElement.fieldDescriptors.indexOf(item)
-                }
-
-
-                me.attributeEdit = true
-            },
-            deleteAttribute(val) {
-                var me = this
-
-                if (val.isKey) {
-                    alert("Is Primary Key")
-                } else {
-                    if (me.copyElement._type == 'org.uengine.modeling.model.Aggregate') {
-                        me.copyElement.aggregateRoot.fieldDescriptors.forEach(function (element, idx) {
-                            if (!element.isKey && element.name == val.name && element.className == val.className) {
-
-                                if (idx > -1)
-                                    me.copyElement.aggregateRoot.fieldDescriptors.splice(idx, 1)
-
-                                // me.$emit('update:aggregateRoot.fieldDescriptors', me.aggregateRoot.fieldDescriptors);
-                            }
-                        })
-                    } else {
-
-                        me.copyElement.fieldDescriptors.forEach(function (element, idx) {
-
-                            if (element.name == val.name && element.className == val.className) {
-                                if (idx > -1)
-                                    me.copyElement.fieldDescriptors.splice(idx, 1)
-
-                                // me.$emit('update:fieldDescriptors', me.fieldDescriptors);
-                            }
-                        })
-
-                    }
-                }
-
-            },
             changeTranslate() {
                 this.namePanel = this.translateText
                 this.usedTranslate = false
-            },
-            addAttribute: function (type, name) {
-                var me = this
-                if (type.length < 1) {
-                    type = 'String'
-                }
-                if (type.length != 0 && name.length != 0) {
-                    let tmpObject = null
-
-                    tmpObject = {
-                        "_type": "org.uengine.model.FieldDescriptor",
-                        "name": name,
-                        "namePascalCase": changeCase.pascalCase(name),
-                        "nameCamelCase": changeCase.camelCase(name),
-                        "className": type,
-                        "isKey": false
-                    }
-
-                    // if (name == 'id' && type == 'Long') {
-                    //     tmpObject = {
-                    //         "_type": "org.uengine.model.FieldDescriptor",
-                    //         "name": name,
-                    //         "namePascalCase": changeCase.pascalCase(name),
-                    //         "nameCamelCase": changeCase.camelCase(name),
-                    //         "className": type,
-                    //         "isKey": true
-                    //     }
-                    // }
-
-                    if (me.copyElement._type == "org.uengine.modeling.model.Aggregate") {
-                        // me.value.aggregateRoot.fieldDescriptors.push(tmpObject);
-
-                        var check = false
-
-                        if (((tmpObject.name).toLowerCase() == 'id' && (tmpObject.className).toLowerCase() == 'long')) {
-                            check = true
-                        } else {
-                            me.copyElement.aggregateRoot.fieldDescriptors.forEach(function (agg) {
-                                if ((JSON.stringify(Object.entries(agg).sort())).toLowerCase() === (JSON.stringify(Object.entries(tmpObject).sort())).toLowerCase()) {
-                                    check = true
-                                }
-                            })
-                            if (!check) {
-                                me.copyElement.aggregateRoot.fieldDescriptors.push(tmpObject)
-                            }
-                        }
-
-                    } else {
-                        // me.value.fieldDescriptors.push(tmpObject);
-
-                        var check = false
-
-
-                        me.copyElement.fieldDescriptors.forEach(function (agg) {
-                            if (JSON.stringify(Object.entries(agg).sort()).toLowerCase() === JSON.stringify(Object.entries(tmpObject).sort()).toLowerCase()) {
-                                check = true
-                            }
-                        })
-
-                        if (!check) {
-                            me.copyElement.fieldDescriptors.push(tmpObject)
-                        }
-
-
-                    }
-
-                    this.entityType = ""
-                    this.entityName = ""
-
-                } else {
-                    var designer = this.$parent.getComponent('modeling-designer')
-                    designer.text = "TYPE & NAME INPUT REQUEST"
-                    designer.snackbar = true
-                }
             },
 
             // 
@@ -929,18 +453,17 @@
             uiToJson() {
                 let me = this
                 let json = JSON.parse(JSON.stringify(me.value.template))
-                console.log(json)
-                // let ui_list = me.ui_list
-                // for (let idx in ui_list) {
-                //     let item = ui_list[idx]
-                //     let val = item.val
-                //     let key_lists = item.key_lists
-                //     for (let i in key_lists) {
-                //         let key_list = key_lists[i].split(',')
-                //         json = me.modifyJson(json, key_list, val)
-                //     }
-                // }
-                me.value.template = json
+                let property_list = me.copyElement.properties
+                for (let idx in property_list) {
+                    let item = property_list[idx]
+                    let val = item.val
+                    let key_lists = item.key_lists
+                    for (let i in key_lists) {
+                        let key_list = key_lists[i].split(',')
+                        json = me.modifyJson(json, key_list, val)
+                    }
+                }
+                me.copyElement.template = json
             },
             getArrVal(arr, val) {
                 for (let i in arr) {
@@ -961,7 +484,7 @@
             },
             jsonToUi() {
                 let me = this
-                let json = JSON.parse(JSON.stringify(me.json_data))
+                let json = JSON.parse(JSON.stringify(me.copyElement.template))
                 let ui_list = me.ui_list
                 for (let idx in ui_list) {
                     let item = ui_list[idx]
@@ -979,7 +502,7 @@
                             let key_list = key_lists[i].split(',')
                             json = me.modifyJson(json, key_list, newVal)
                         }
-                        me.json_data = json
+                        me.copyElement.template = json
                     }
                 }
             },
@@ -1001,7 +524,6 @@
                 let me = this
                 let yamlText = json2yaml.stringify(me.value.template)
                 me.copyElement.yaml_text = me.yamlFilter(yamlText)
-                //console.log(me.yaml_text)
             },
 
         }
