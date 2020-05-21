@@ -36,8 +36,8 @@
                                             lineNumbers: true,
                                             lineWrapping: true,
                                         }"
-                                        :value="copyElement.yaml_text"
-                                        v-model="copyElement.yaml_text"
+                                        :value="yaml_text"
+                                        v-model="yaml_text"
                                         @focus="onYamlFocus()"
                                 >
                                 </codemirror>
@@ -155,6 +155,8 @@
                 parmUid: '',
                 parmType: '',
 
+                // yaml
+                yaml_text: '',
                 temp_text: '',
                 cursor_pos: '',
                 channel: '',
@@ -168,10 +170,12 @@
             // var designer = this.$parent.getComponent('modeling-designer')
 
             // me.checkValue =true
-            me.setNameCase(me.namePanel)
+            me.setNameCase(me.copyElement.name)
+
+            me.value.template = me.copyElement.template
+            me.value.properties = me.copyElement.properties
 
             this.$emit('changed', me.copyElement);
-
 
             // firebase.database()
             //     .ref("/saver/multi/" + projectId + "/" + projectVer + '/participants/')
@@ -197,11 +201,8 @@
                 me.namePanel = me.copyElement.name
             }
 
-            if (me.copyElement.yaml_text != null) {
-            } else {
-                me.createYaml()
-            }
-
+            me.createYaml()
+            
             me.$nextTick(function () {
                 me.isRead = designer.isRead
             })
@@ -272,17 +273,17 @@
                     }
                 }
             },
-            "copyElement.yaml_text": {
+            yaml_text: {
                 handler(newVal) {
                     if (newVal != '') {
                         var me = this
-                        //console.log(newVal)
+                        // console.log(newVal)
                         if (me.auto_edit) {
                             try {
-                                if (!(me.copyElement.yaml_text == me.temp_text)) {
-                                    me.temp_text = me.copyElement.yaml_text
+                                if (!(me.yaml_text == me.temp_text)) {
+                                    me.temp_text = me.yaml_text
                                     me.cursor_pos = me.codemirror.getCursor("start")
-                                    me.copyElement.template = yaml.load(me.copyElement.yaml_text)
+                                    me.copyElement.template = yaml.load(me.yaml_text)
                                 }
                                 me.jsonToUi()
                                 this.$nextTick(function () {
@@ -297,7 +298,7 @@
                 }
             },
             "copyElement.properties": {
-                handler: function (newVal) {
+                handler: function () {
                     let me = this
                     if (me.channel == 'ui') {
                         me.uiToJson()
@@ -312,7 +313,7 @@
                         }
                     }
                     let yaml_text = json2yaml.stringify(JSON.parse(JSON.stringify(me.copyElement.template)))
-                    me.copyElement.yaml_text = me.yamlFilter(yaml_text)
+                    me.yaml_text = me.yamlFilter(yaml_text)
                 },
                 deep: true
             },
@@ -328,17 +329,16 @@
             setNameCase:
                 function (newVal) {
                     var me = this
-                    if (me.value._type == 'org.uengine.modeling.model.View' || me.value._type == 'org.uengine.modeling.model.Event' || me.value._type == 'org.uengine.modeling.model.Command' || me.value._type == 'orguengine.modeling.model.Policy' || me.value._type == 'org.uengine.modeling.model.Aggregate') {
-                        me.value.name = newVal
-                        me.value.namePascalCase = changeCase.pascalCase(newVal)
-                        me.value.nameCamelCase = changeCase.camelCase(newVal)
-                        me.value.namePlural = changeCase.camelCase(pluralize(newVal));
-                    } else {
-                        me.value.name = newVal
-                        me.value.namePascalCase = changeCase.pascalCase(newVal)
-                    }
+                    me.value.name = newVal
+                    me.value.namePascalCase = changeCase.pascalCase(newVal)
                 },
-            
+            setName(newVal) {
+                var me = this
+                var designer = me.$parent.getComponent('modeling-designer')
+                me.copyElement.name = newVal.replace(/\n/g, "").replace(/ /gi, "")
+                designer.$refs[`${me.value.elementView.id}`][0].namePanel = me.copyElement.name
+            },
+
             getTranslate:
                 _.debounce(
                     function (newVal) {
@@ -452,11 +452,16 @@
             },
             uiToJson() {
                 let me = this
+                var designer = this.$parent.getComponent('modeling-designer')
                 let json = JSON.parse(JSON.stringify(me.value.template))
                 let property_list = me.copyElement.properties
                 for (let idx in property_list) {
                     let item = property_list[idx]
                     let val = item.val
+                    let name = item.name
+                    if (name.includes('name') && name.includes(me.value._type)) {
+                        me.setName(val)
+                    }
                     let key_lists = item.key_lists
                     for (let i in key_lists) {
                         let key_list = key_lists[i].split(',')
@@ -485,10 +490,14 @@
             jsonToUi() {
                 let me = this
                 let json = JSON.parse(JSON.stringify(me.copyElement.template))
-                let ui_list = me.ui_list
-                for (let idx in ui_list) {
-                    let item = ui_list[idx]
+                let property_list = me.copyElement.properties
+                for (let idx in property_list) {
+                    let item = property_list[idx]
                     let val = item.val
+                    let name = item.name
+                    if (name.includes('name') && name.includes(me.value._type)) {
+                        me.setName(val)
+                    }
                     let key_lists = item.key_lists
                     let val_list = []
                     for (let i in key_lists) {
@@ -496,7 +505,7 @@
                         val_list.push(me.findJson(json, key_list))
                     }
                     let newVal = me.getArrVal(val_list, val)
-                    me.ui_list[idx].val = newVal
+                    me.copyElement.properties[idx].val = newVal
                     if (!me.compareArrVals(val_list)) {
                         for (let i in key_lists) {
                             let key_list = key_lists[i].split(',')
@@ -522,8 +531,8 @@
             },
             createYaml() {
                 let me = this
-                let yamlText = json2yaml.stringify(me.value.template)
-                me.copyElement.yaml_text = me.yamlFilter(yamlText)
+                let yaml = json2yaml.stringify(me.value.template)
+                me.yaml_text = me.yamlFilter(yaml)
             },
 
         }

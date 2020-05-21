@@ -1,7 +1,7 @@
 <template>
     <div>
         <edge-element
-                v-if="value.sourceElement._type == 'Service' && value.targetElement._type != 'Service'"
+                v-if="isView"
                 selectable
                 connectable
                 deletable
@@ -163,6 +163,14 @@
                     this.value.relationView.value = JSON.stringify(val);
                 }
             },
+            isView () {
+                var me = this
+                if (me.value.sourceElement._type == 'Service' && me.value.targetElement._type != 'Service') {
+                    return true
+                } else {
+                    return false
+                }
+            }
         },
         data: function () {
             return {}

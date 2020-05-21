@@ -141,7 +141,7 @@
                                 "spec,template,metadata,labels,app",
                                 "spec,template,spec,containers,0,name"
                             ],
-                            name: "deployment name",
+                            name: "Deployment name",
                             type: "string",
                             val: "",
                         },
@@ -208,6 +208,7 @@
 
                         me.value.checkValue = false
                     })
+                    
                 }
 
             },

@@ -119,7 +119,7 @@
                                 "metadata,name",
                                 "metadata,labels,app"
                             ],
-                            name: "service name",
+                            name: "Service name",
                             type: "string",
                             val: "",
                         },
@@ -127,7 +127,7 @@
                             key_lists: [
                                 "spec,selector,app"
                             ],
-                            name: "deployment name",
+                            name: "Deployment name",
                             type: "string",
                             val: "",
                         },
@@ -137,7 +137,7 @@
                             ],
                             name: "port",
                             type: "number",
-                            val: "80",
+                            val: 80,
                         },
                         {
                             key_lists: [
@@ -145,12 +145,12 @@
                             ],
                             name: "target port",
                             type: "number",
-                            val: "80",
+                            val: 80,
                         }
                     ],
                     relations: {
                         deployment: [],
-                    }
+                    },
                 }
             }
         },
@@ -196,6 +196,15 @@
             "value.name":function(newVal,oldVal){
                 this.namePanel = newVal
             },
+            "value.relations.deployment": {
+                handler: function () {
+                    let me = this
+                    for (let idx in me.value.relations.deployment) {
+                        let deploymentItem = me.value.relations.deployment[idx].deploymentValue
+                        me.setDeploymentInfo(deploymentItem)
+                    }
+                }
+            }
         },
         mounted: function () {
             var me = this
@@ -206,6 +215,35 @@
             })
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
+
+                if (obj.state == 'deleteRelation') {
+
+                    if (obj.element.targetElement._type == 'Deployment') {
+                        var targetId = obj.element.targetElement.elementView.id
+                        me.value.relations.deployment.some(function (deploymentItem, poIdx) {
+                            if (deploymentItem.deploymentValue.elementView.id == targetId) {
+                                me.value.relations.deployment[poIdx] = null
+                                return
+                            }
+                        })
+                        me.value.relations.deployment = me.value.relations.deployment.filter(n => n)
+                        me.deleteDeploymentInfo()
+                    }
+
+                } else if (obj.state == 'deleteDeployment') {
+                    
+                    var targetId = obj.element.elementView.id
+                    me.value.relations.deployment.some(function (policyItem, poIdx) {
+                        if (deploymentItem.deploymentValue.elementView.id == targetId) {
+                            me.value.relations.deployment[poIdx] = null
+                            return
+                        }
+                    })
+                    me.deleteDeploymentInfo()
+                    me.value.relations.deployment = me.value.relations.deployment.filter(n => n)
+                    
+                }
+
                 me.$nextTick(function () {
                     var designer = me.getComponent('modeling-designer')
                     designer.editing = true;
@@ -228,6 +266,50 @@
                     me.$emit('update:value', null);
                     resolve()
                 })
+            },
+            setDeploymentInfo(deploymentItem) {
+                let me = this
+                let json = JSON.parse(JSON.stringify(me.value.template))
+                for(let i in me.value.properties) {
+                    let item = me.value.properties[i]
+                    if (item.name.includes('Deployment')) {
+                        item.val = deploymentItem.name
+                    }
+                    let key_lists = item.key_lists
+                    for (let i in key_lists) {
+                        let key_list = key_lists[i].split(',')
+                        json = me.modifyJson(json, key_list, item.val)
+                    }
+                }
+                me.value.template = json
+            },
+            deleteDeploymentInfo() {
+                let me = this
+                let json = JSON.parse(JSON.stringify(me.value.template))
+                for(let i in me.value.properties) {
+                    let item = me.value.properties[i]
+                    if (item.name.includes('Deployment')) {
+                        item.val = ""
+                    }
+                    let key_lists = item.key_lists
+                    for (let i in key_lists) {
+                        let key_list = key_lists[i].split(',')
+                        json = me.modifyJson(json, key_list, item.val)
+                    }
+                }
+                me.value.template = json
+            },
+            modifyJson(json_data, key_list, modify_data) {
+                let me = this
+                if (key_list.length <= 0) {
+                    json_data = modify_data
+                } else {
+                    let find = key_list.splice(0, 1)
+                    if (json_data[find] == null)
+                        json_data[find] = {}
+                    json_data[find] = me.modifyJson(json_data[find], key_list, modify_data)
+                }
+                return json_data
             },
         }
     }

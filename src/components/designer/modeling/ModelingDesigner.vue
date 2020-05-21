@@ -864,12 +864,26 @@
                     } else if (componentInfo.targetElement.value._type == 'Deployment') {
                         
                         if (element.sourceElement._type == 'Service') {
-                            
-                            var evObj = {
-                                relationId: element.relationView.id,
-                                commandValue: JSON.parse(JSON.stringify(element.targetElement))
+
+                            var checked = false
+                            element.sourceElement.relations.deployment.some(function (deploymentItem, evtIdx) {
+                                var evObj = {
+                                    relationId: element.relationView.id,
+                                    deploymentValue: JSON.parse(JSON.stringify(element.targetElement))
+                                }
+                                if (deploymentItem.deploymentValue.elementView.id == element.targetElement.elementView.id) {
+                                    element.sourceElement.relations.deployment[evtIdx] = evObj;
+                                    checked = true;
+                                }
+                            })
+
+                            if (!checked) {
+                                var evObj = {
+                                    relationId: element.relationView.id,
+                                    deploymentValue: JSON.parse(JSON.stringify(element.targetElement))
+                                }
+                                element.sourceElement.relations.deployment.push(evObj)
                             }
-                            element.sourceElement.relations.deployment.push(evObj)
 
                         }
 
