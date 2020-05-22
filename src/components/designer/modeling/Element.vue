@@ -44,6 +44,9 @@
             code() {
                 return ''
             },
+            editMode(){
+                return true;
+            },
             style: {
                 get: function () {
                     var style;
@@ -282,6 +285,26 @@
                     this.openPanel = true
                 } else {
                     designer.snackbar = true
+                }
+
+            },
+            closeProperty(){
+
+                if (this.openPanel) {
+                    this.openPanel = false
+                }
+
+            },
+
+            defaultData(){
+
+                return {
+                    isRead:true,
+                    itemH: 20,
+                    titleH: (this.value.classReference ? 60 : 30),
+                    reference: this.value.classReference != null,
+                    referenceClassName: this.value.classReference,
+                    failed_image: location.pathname + ((location.pathname == '/' || location.pathname.lastIndexOf('/') > 0) ? '' : '/') + 'static/image/symbol/alert-icon.png',
                 }
 
             },

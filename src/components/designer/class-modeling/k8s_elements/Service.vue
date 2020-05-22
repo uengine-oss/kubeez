@@ -5,7 +5,7 @@
                 :movable="!value.editing"
                 :resizable="!value.editing"
                 connectable
-                :deletable=!isRead
+                :deletable=!editMode
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
@@ -53,23 +53,24 @@
         </geometry-element>
 
 
-        <servicePropertyPanel
+        <property-panel
+            @close="closeProperty"
             v-if="openPanel"
             v-model="value"
             :img="'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/policy.png'">
-        </servicePropertyPanel>
+        </property-panel>
     </div>
 </template>
 
 <script>
     import Element from '../../modeling/Element'
-    import ServicePropertyPanel from './ServicePropertyPanel'
+    import PropertyPanel from './ServicePropertyPanel'
 
     export default {
         mixins: [Element],
         name: 'service',
         components: {
-            "servicePropertyPanel": ServicePropertyPanel
+            "property-panel": PropertyPanel
         },
         props: {},
         computed: {
@@ -132,12 +133,7 @@
         },
         data: function () {
             return {
-                isRead:true,
-                itemH: 20,
-                titleH: (this.value.classReference ? 60 : 30),
-                reference: this.value.classReference != null,
-                referenceClassName: this.value.classReference,
-                failed_image: location.pathname + ((location.pathname == '/' || location.pathname.lastIndexOf('/') > 0) ? '' : '/') + 'static/image/symbol/alert-icon.png',
+                
             };
         },
         created: function () {
@@ -147,6 +143,9 @@
         },
 
         methods: {
+
+
+
         }
     }
 </script>

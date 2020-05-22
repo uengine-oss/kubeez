@@ -12,7 +12,7 @@
                     </v-list-item-title>
                     <v-tooltip v-model="show" top>
                         <template v-slot:activator="{ on }">
-                            <v-btn icon @click="fireClosed">
+                            <v-btn icon @click.native="alert('closed')">
                                 <v-icon color="grey lighten-1">mdi-close</v-icon>
                             </v-btn>
                             <v-btn icon v-on="on">
@@ -45,13 +45,8 @@
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
                                 <v-text-field
-                                    label="Port"
-                                    v-model="value.object.spec.ports[0].port"
-                                ></v-text-field>
-                                <v-text-field
-                                    label="Target Port"
-                                    v-model="value.object.spec.ports[0].targetPort"
-                                    type="number"
+                                    label="Image"
+                                    v-model="value.object.spec.template.spec.containers[0].image"
                                 ></v-text-field>
                             </v-card-text>
                         </v-card>
@@ -89,9 +84,7 @@
             
         },
         methods: {
-            fireClosed(){
-                this.$emit('close', this.value);
-            },
+            
 
         }
     }
