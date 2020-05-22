@@ -1,25 +1,25 @@
 <template>
     <!-- width 390 -->
     <v-layout wrap>
-        <v-navigation-drawer absolute permanent right v-bind:style="{width: widthScale}">
+        <v-navigation-drawer absolute permanent right v-bind:style="{width: 800}">
             <!--  상단 이미지 및 선택 타이틀 이름-->
             <v-list class="pa-1">
                 <v-list-item>
                     <v-list-item-avatar>
                         <img :src="img">
                     </v-list-item-avatar>
-                    <v-list-item-title class="headline">{{ titleName }}
+                    <v-list-item-title class="headline">{{ value._type }}
                     </v-list-item-title>
-                    <v-tooltip v-model="show" top>
+                    <v-tooltip top>
                         <template v-slot:activator="{ on }">
-                            <v-btn icon @click.native="alert('closed')">
+                            <v-btn icon @click="fireClosed">
                                 <v-icon color="grey lighten-1">mdi-close</v-icon>
                             </v-btn>
                             <v-btn icon v-on="on">
                                 <v-icon color="grey lighten-1">mdi-information</v-icon>
                             </v-btn>
                         </template>
-                        <span>{{ getDescriptionText }}</span>
+                        <span>{{ descriptionText }}</span>
                     </v-tooltip>
                 </v-list-item>
             </v-list>
@@ -30,8 +30,8 @@
                         <v-card flat>
                             <v-card-text>
                                 <yaml-editor
-                                        
-                                        v-model="value"
+                                    v-model="value.object"
+                                    v-on:yamlToJson="yamlToJson"
                                 >
                                 </yaml-editor>
                             </v-card-text>
@@ -48,6 +48,16 @@
                                     label="Image"
                                     v-model="value.object.spec.template.spec.containers[0].image"
                                 ></v-text-field>
+                                <v-text-field
+                                    label="Replicas"
+                                    v-model="value.object.spec.replicas"
+                                    type="number"
+                                ></v-text-field>
+                                <v-text-field
+                                    label="Target Port"
+                                    v-model="value.object.spec.template.spec.containers[0].ports[0].containerPort"
+                                    type="number"
+                                ></v-text-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -61,17 +71,23 @@
 
 
 <script>
+    import yaml from "js-yaml";
+
     import YamlEditor from "./YamlEditor";
 
     export default {
         name: 'service-property-panel',
         props: {
-            value: Object
+            value: Object,
+            img: String,
         },
         components: {
             "yaml-editor": YamlEditor
         },
         computed: {
+            descriptionText() {
+                return 'Deployment'
+            },
             
         },
         data: function () {
@@ -84,7 +100,14 @@
             
         },
         methods: {
-            
+            fireClosed(){
+                this.$emit('close', this.value);
+            },
+            yamlToJson(yamlText) {
+                let me = this
+                let jsonData = yaml.load(yamlText)
+                me.$emit("update", jsonData)
+            }
 
         }
     }

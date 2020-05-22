@@ -7,7 +7,6 @@
                 lineWrapping: true,
             }"
             v-model="yamlText"
-            @focus="onYamlFocus()"
     >
     </codemirror>
 
@@ -17,6 +16,7 @@
 
 <script>
     import yaml from "js-yaml";
+    import json2yaml from 'json2yaml'
 
     import {codemirror} from "vue-codemirror";
 
@@ -28,15 +28,14 @@
         },
 
         components: {
-           
-            codemirror
+           codemirror
         },
         computed: {
             
         },
         data: function () {
             return {
-               yamlText:JSON.stringify(this.value) 
+               yamlText: json2yaml.stringify(this.value)
             }
         },
 
@@ -44,22 +43,23 @@
             value: {
                 deep: true, 
                 handler: function(){
-                    this.yamlText = JSON.stringify(this.value) 
+                    this.yamlText = json2yaml.stringify(this.value) 
                 }
             },
 
             yamlText: {
                 deep: true,
                 handler: function(){
-                    var some = JSON.parse(this.yamlText);
-                    this.value = null;
-                    this.value = some;
+                    // var some = yaml.load(this.yamlText);
+                    // this.value = null;
+                    // this.value = some;
+                    var me = this
+                    me.$emit("yamlToJson", me.yamlText)
                 }
             }
             
         },
         methods: {
-            
 
         }
     }

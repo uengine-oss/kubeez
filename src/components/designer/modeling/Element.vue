@@ -186,9 +186,9 @@
                 var designer = this.getComponent('modeling-designer')
                 var opengraph = this.getComponent('opengraph')
                 // console.log(this.value._type)
-                var type = this.value._type.split(".");
-                type = type[type.length - 1]
-                eval("this.delete" + type + "()");
+                // var type = this.value._type.split(".");
+                // type = type[type.length - 1]
+                // eval("this.delete" + type + "()");
 
 
                 if (!obj.element.isUndoRedo) {

@@ -2,10 +2,10 @@
     <div>
         <geometry-element
                 selectable
-                :movable="!value.editing"
-                :resizable="!value.editing"
+                :movable="editMode"
+                :resizable="editMode"
                 connectable
-                :deletable=!isRead
+                :deletable=editMode
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
@@ -45,7 +45,7 @@
                 <!--title-->
                 <text-element
                         :sub-width="'100%'"
-                        :sub-height="titleH"
+                        :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
                         :text="'Deployment'">
@@ -57,7 +57,9 @@
          <property-panel
             v-if="openPanel"
             v-model="value"
-            :img="'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/policy.png'">
+            @close="closeProperty"
+            @update="updateObject"
+            :img="'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/command.png'">
         </property-panel>
     </div>
 </template>
@@ -83,15 +85,13 @@
                 return 'Deployment'
             },
 
-            relativeKinds: {
-                deployment: {
-
-                    updated: function(me, deployment){
-                        me.object.selector.app = deployment.name;
-                    }
-
-                },
-            },
+            // relativeKinds: {
+            //     deployment: {
+            //         updated: function(me, deployment){
+            //             me.object.selector.app = deployment.name;
+            //         }
+            //     },
+            // },
             
             createNew(elementId, x, y, width, height) {
                 return {
@@ -123,7 +123,7 @@
                                     "app": ""
                                 }
                             },
-                            "replicas": 1,
+                            "replicas": "1",
                             "template": {
                                 "metadata": {
                                     "labels": {
@@ -137,7 +137,7 @@
                                             "image": "",
                                             "ports": [
                                                 {
-                                                    "containerPort": 80
+                                                    "containerPort": "80"
                                                 }
                                             ]
                                         }
@@ -148,25 +148,29 @@
                     }
                     
                 }
-            }
+            },
+
         },
         data: function () {
             return {
-                isRead:true,
-                itemH: 20,
-                titleH: (this.value.classReference ? 60 : 30),
-                reference: this.value.classReference != null,
-                referenceClassName: this.value.classReference,
-                failed_image: location.pathname + ((location.pathname == '/' || location.pathname.lastIndexOf('/') > 0) ? '' : '/') + 'static/image/symbol/alert-icon.png',
+                
             };
         },
         created: function () {
         
         },
         watch: {
+            
+
         },
 
         methods: {
+            updateObject(jsonData) {
+                var me = this
+                me.value.object = jsonData
+                me.namePanel = me.value.object.metadata.name
+            },
+
         }
     }
 </script>

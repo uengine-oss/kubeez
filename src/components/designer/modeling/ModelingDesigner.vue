@@ -127,7 +127,7 @@
         },
         data() {
             return {
-                types: 'service',
+                types: 'deployment',
                 plainText: "",
                 dashOpen: false,
                 //db permmsion
@@ -770,125 +770,6 @@
                         componentInfo.vertices,
                     );
 
-                    if (componentInfo.targetElement.value._type == 'org.uengine.modeling.model.Policy') {
-                        element.name = 'Pub/Sub'
-
-                        var checked = false
-                        element.sourceElement.relationPolicyInfo.some(function (policyItem, evtIdx) {
-                            var evObj = {
-                                relationId: element.relationView.id,
-                                policyValue: JSON.parse(JSON.stringify(element.targetElement))
-                            }
-                            if (policyItem.policyValue.elementView.id == element.targetElement.elementView.id) {
-                                element.sourceElement.relationPolicyInfo[evtIdx] = evObj;
-                                checked = true;
-                            }
-                        })
-
-                        if (!checked) {
-                            var evObj = {
-                                relationId: element.relationView.id,
-                                policyValue: JSON.parse(JSON.stringify(element.targetElement))
-                            }
-                            element.sourceElement.relationPolicyInfo.push(evObj)
-                        }
-
-
-                        //target setting
-                        var checkedTwo = false
-                        element.targetElement.relationEventInfo.forEach(function (eventItem, evtIdx) {
-                            var evObj = {
-                                relationId: element.relationView.id,
-                                eventValue: JSON.parse(JSON.stringify(element.sourceElement))
-                            }
-                            if (eventItem.eventValue.elementView.id == element.sourceElement.elementView.id) {
-                                element.targetElement.relationEventInfo[evtIdx] = evObj;
-                                checkedTwo = true;
-                            }
-                        })
-
-                        if (!checkedTwo) {
-                            var evObj = {
-                                relationId: element.relationView.id,
-                                eventValue: JSON.parse(JSON.stringify(element.sourceElement))
-                            }
-                            element.targetElement.relationEventInfo.push(evObj)
-                        }
-
-
-                    } else if (componentInfo.targetElement.value._type == 'org.uengine.modeling.model.Command') {
-                        element.name = 'Req/Res'
-
-                        var checked = false
-                        element.sourceElement.relationCommandInfo.some(function (policyItem, evtIdx) {
-                            var evObj = {
-                                relationId: element.relationView.id,
-                                commandValue: JSON.parse(JSON.stringify(element.targetElement))
-                            }
-                            if (policyItem.commandValue.elementView.id == element.targetElement.elementView.id) {
-                                element.sourceElement.relationCommandInfo[evtIdx] = evObj;
-                                checked = true;
-                            }
-                        })
-
-                        if (!checked) {
-                            var evObj = {
-                                relationId: element.relationView.id,
-                                commandValue: JSON.parse(JSON.stringify(element.targetElement))
-                            }
-                            element.sourceElement.relationCommandInfo.push(evObj)
-                        }
-
-                        //target setting
-                        var checkedTwo = false
-                        element.targetElement.relationEventInfo.some(function (eventItem, evtIdx) {
-                            var evObj = {
-                                relationId: element.relationView.id,
-                                eventValue: JSON.parse(JSON.stringify(element.sourceElement))
-                            }
-                            if (eventItem.commandValue.elementView.id == element.sourceElement.elementView.id) {
-                                element.targetElement.relationEventInfo[evtIdx] = evObj;
-                                checkedTwo = true;
-                            }
-                        })
-
-                        if (!checkedTwo) {
-                            var evObj = {
-                                relationId: element.relationView.id,
-                                eventValue: JSON.parse(JSON.stringify(element.sourceElement))
-                            }
-                            element.targetElement.relationEventInfo.push(evObj)
-
-                        }
-
-                    } else if (componentInfo.targetElement.value._type == 'Deployment') {
-                        
-                        if (element.sourceElement._type == 'Service') {
-
-                            var checked = false
-                            element.sourceElement.relations.deployment.some(function (deploymentItem, evtIdx) {
-                                var evObj = {
-                                    relationId: element.relationView.id,
-                                    deploymentValue: JSON.parse(JSON.stringify(element.targetElement))
-                                }
-                                if (deploymentItem.deploymentValue.elementView.id == element.targetElement.elementView.id) {
-                                    element.sourceElement.relations.deployment[evtIdx] = evObj;
-                                    checked = true;
-                                }
-                            })
-
-                            if (!checked) {
-                                var evObj = {
-                                    relationId: element.relationView.id,
-                                    deploymentValue: JSON.parse(JSON.stringify(element.targetElement))
-                                }
-                                element.sourceElement.relations.deployment.push(evObj)
-                            }
-
-                        }
-
-                    }
-
                 } else {
 
                     element = vueComponent.computed.createNew(
@@ -921,20 +802,14 @@
                         this.$EventBus.$emit('storage')
                     }
                 } else {
+
                     if (bounded != undefined) {
                         if (bounded) {
                             console.log("bounded")
                             return element
                         }
                     } else {
-
                         me.value['definition'].push(element);
-
-                        // if (me.parmType == 'local') {
-                        //     me.value['definition'].push(element);
-                        // } else {
-                        //     me.previewValue['definition'].push(element);
-                        // }
                         console.log("============== Storage Location Search Test 5-2 (Add Definition) ============= ")
                         this.$EventBus.$emit('storage')
                     }

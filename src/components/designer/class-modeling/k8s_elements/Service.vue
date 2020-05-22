@@ -2,10 +2,10 @@
     <div>
         <geometry-element
                 selectable
-                :movable="!value.editing"
-                :resizable="!value.editing"
+                :movable="editMode"
+                :resizable="editMode"
                 connectable
-                :deletable=!editMode
+                :deletable=editMode
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
@@ -44,7 +44,7 @@
                 <!--title-->
                 <text-element
                         :sub-width="'100%'"
-                        :sub-height="titleH"
+                        :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
                         :text="'Service'">
@@ -54,9 +54,10 @@
 
 
         <property-panel
-            @close="closeProperty"
             v-if="openPanel"
             v-model="value"
+            @close="closeProperty"
+            @update="updateObject"
             :img="'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/policy.png'">
         </property-panel>
     </div>
@@ -83,11 +84,9 @@
 
             relativeKinds: {
                 deployment: {
-
                     updated: function(me, deployment){
                         me.object.selector.app = deployment.name;
                     }
-
                 },
             },
             
@@ -118,8 +117,8 @@
                         "spec": {
                             "ports": [
                                 {
-                                    "port": 80,
-                                    "targetPort": 80
+                                    "port": "80",
+                                    "targetPort": "80"
                                 }
                             ],
                             "selector": {
@@ -129,7 +128,8 @@
                     }
                     
                 }
-            }
+            },
+
         },
         data: function () {
             return {
@@ -137,14 +137,21 @@
             };
         },
         created: function () {
-        
+            
+        },
+        mounted: function () {
+            
         },
         watch: {
+
         },
 
         methods: {
-
-
+            updateObject(jsonData) {
+                let me = this
+                me.value.object = jsonData
+                me.namePanel = me.value.object.metadata.name
+            },
 
         }
     }
