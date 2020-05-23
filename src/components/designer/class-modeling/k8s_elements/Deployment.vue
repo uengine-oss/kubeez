@@ -19,7 +19,7 @@
                 v-on:labelChanged="onLabelChanged"
                 v-on:addedToGroup="onAddedToGroup"
                 v-on:removeShape="onRemoveShape(value)"
-                :label.sync="namePanel"
+                :label.sync="name"
                 :_style="{
                 'label-angle':value.elementView.angle,
                 'font-weight': 'bold','font-size': '16'
@@ -140,7 +140,7 @@
                 }
             },
 
-            appName(){
+            name(){
                 try{
                     return this.value.object.metadata.name; 
                 }catch(e){
@@ -159,7 +159,7 @@
         
         },
         watch: {
-            appName(appName){
+            name(appName){
                 this.value.object.metadata.labels.app = appName;
                 this.value.object.spec.selector.matchLabels.app = appName;
                 this.value.object.spec.template.metadata.labels.app = appName;
