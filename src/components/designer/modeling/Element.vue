@@ -296,19 +296,10 @@
 
             },
 
-            defaultData(){
-
-                return {
-                    isRead:true,
-                    itemH: 20,
-                    titleH: (this.value.classReference ? 60 : 30),
-                    reference: this.value.classReference != null,
-                    referenceClassName: this.value.classReference,
-                    failed_image: location.pathname + ((location.pathname == '/' || location.pathname.lastIndexOf('/') > 0) ? '' : '/') + 'static/image/symbol/alert-icon.png',
-                }
-
+            fireClosed(){
+                this.$emit('close');
             },
-
+            
             /**
              * 자신에게 도형들이 그룹으로 들어왔을때의 이벤트
              * @param groupElement

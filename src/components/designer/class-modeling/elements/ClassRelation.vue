@@ -198,7 +198,7 @@
 
             var obj = {
                 state: "addRelation",
-                element: JSON.parse(JSON.stringify(me.value))
+                element: me.value
             }
 
 

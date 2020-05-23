@@ -47,7 +47,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'Service'">
+                        text="Service">
                 </text-element>
             </sub-elements>
         </geometry-element>
@@ -56,9 +56,7 @@
         <property-panel
             v-if="openPanel"
             v-model="value"
-            @close="closeProperty"
-            @update="updateObject"
-            :img="'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/policy.png'">
+            img="https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/policy.png">
         </property-panel>
     </div>
 </template>
@@ -82,14 +80,6 @@
                 return 'Service'
             },
 
-            relativeKinds: {
-                deployment: {
-                    updated: function(me, deployment){
-                        me.object.selector.app = deployment.name;
-                    }
-                },
-            },
-            
             createNew(elementId, x, y, width, height) {
                 return {
                     _type: this.className(),
@@ -125,34 +115,48 @@
                                 "app": ""
                             }
                         }
-                    }
+                    },
+                    outboundDeployment: null
                     
                 }
             },
 
+            outboundDeploymentName(){
+                try{
+                    return this.value.outboundDeployment.object.metadata.name;
+                }catch(e){
+                    return "";
+                }
+            }
+
         },
         data: function () {
             return {
-                
+                                
             };
         },
         created: function () {
             
         },
         mounted: function () {
+
+            var me = this;
+
+            this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
+                    me.value.outboundDeployment = obj.element.targetElement;
+                }
+                console.log(obj)
+            })
             
         },
         watch: {
-
+            "outboundDeploymentName": function(val){
+                this.value.object.spec.selector.app = val;
+            }
         },
 
         methods: {
-            updateObject(jsonData) {
-                let me = this
-                me.value.object = jsonData
-                me.namePanel = me.value.object.metadata.name
-            },
-
         }
     }
 </script>

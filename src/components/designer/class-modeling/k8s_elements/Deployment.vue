@@ -57,9 +57,7 @@
          <property-panel
             v-if="openPanel"
             v-model="value"
-            @close="closeProperty"
-            @update="updateObject"
-            :img="'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/command.png'">
+            img="https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/command.png">
         </property-panel>
     </div>
 </template>
@@ -85,14 +83,6 @@
                 return 'Deployment'
             },
 
-            // relativeKinds: {
-            //     deployment: {
-            //         updated: function(me, deployment){
-            //             me.object.selector.app = deployment.name;
-            //         }
-            //     },
-            // },
-            
             createNew(elementId, x, y, width, height) {
                 return {
                     _type: this.className(),
@@ -133,7 +123,7 @@
                                 "spec": {
                                     "containers": [
                                         {
-                                            "name": "",
+                                            "name": "main",
                                             "image": "",
                                             "ports": [
                                                 {
@@ -150,6 +140,15 @@
                 }
             },
 
+            appName(){
+                try{
+                    return this.value.object.metadata.name; 
+                }catch(e){
+                    return "";
+                }
+                
+            }
+
         },
         data: function () {
             return {
@@ -160,16 +159,14 @@
         
         },
         watch: {
-            
-
+            appName(appName){
+                this.value.object.metadata.labels.app = appName;
+                this.value.object.spec.selector.matchLabels.app = appName;
+                this.value.object.spec.template.metadata.labels.app = appName;
+            }
         },
 
         methods: {
-            updateObject(jsonData) {
-                var me = this
-                me.value.object = jsonData
-                me.namePanel = me.value.object.metadata.name
-            },
 
         }
     }

@@ -50,11 +50,9 @@
             yamlText: {
                 deep: true,
                 handler: function(){
-                    // var some = yaml.load(this.yamlText);
-                    // this.value = null;
-                    // this.value = some;
-                    var me = this
-                    me.$emit("yamlToJson", me.yamlText)
+                    var some = yaml.load(this.yamlText);
+//                    this.value = some;
+                    this.$emit("input", some);
                 }
             }
             

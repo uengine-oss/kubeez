@@ -12,9 +12,6 @@
                     </v-list-item-title>
                     <v-tooltip top>
                         <template v-slot:activator="{ on }">
-                            <v-btn icon @click="fireClosed">
-                                <v-icon color="grey lighten-1">mdi-close</v-icon>
-                            </v-btn>
                             <v-btn icon v-on="on">
                                 <v-icon color="grey lighten-1">mdi-information</v-icon>
                             </v-btn>
@@ -31,7 +28,7 @@
                             <v-card-text>
                                 <yaml-editor
                                     v-model="value.object"
-                                    v-on:yamlToJson="yamlToJson"
+                                    
                                 >
                                 </yaml-editor>
                             </v-card-text>
@@ -100,15 +97,7 @@
             
         },
         methods: {
-            fireClosed(){
-                this.$emit('close', this.value);
-            },
-            yamlToJson(yamlText) {
-                let me = this
-                let jsonData = yaml.load(yamlText)
-                me.$emit("update", jsonData)
-            }
-
+           
         }
     }
 </script>
