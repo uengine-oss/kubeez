@@ -102,10 +102,6 @@
                             "name": "",
                         },
                         "spec": {
-                            "backend": {
-                                "serviceName": "credit",
-                                "servicePort": 8080
-                            },
                             "rules": [
                                 {
                                     "host": "insurance.infogra.io",
@@ -113,8 +109,8 @@
                                         "paths": [
                                             {
                                                 "backend": {
-                                                    "serviceName": "credit",
-                                                    "servicePort": 8080
+                                                    "serviceName": "",
+                                                    "servicePort": 80
                                                 }
                                             }
                                         ]

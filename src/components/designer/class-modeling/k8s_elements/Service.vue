@@ -116,7 +116,8 @@
                             }
                         }
                     },
-                    outboundDeployment: null
+                    outboundDeployment: null,
+                    outboundPod: null,
                     
                 }
             },
@@ -132,6 +133,14 @@
             outboundDeploymentName(){
                 try{
                     return this.value.outboundDeployment.object.metadata.name;
+                }catch(e){
+                    return "";
+                }
+            },
+
+            outboundPodName(){
+                try{
+                    return this.value.outboundPod.object.metadata.name;
                 }catch(e){
                     return "";
                 }
@@ -154,6 +163,16 @@
                 if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
                     me.value.outboundDeployment = obj.element.targetElement;
                 }
+                else if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
+                    me.value.outboundPod = obj.element.targetElement;
+                }
+
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
+                    me.value.outboundDeployment = null;
+                }
+                else if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
+                    me.value.outboundDeployment = null;
+                }
                 console.log(obj)
             })
             
@@ -161,7 +180,12 @@
         watch: {
             "outboundDeploymentName": function(val){
                 this.value.object.spec.selector.app = val;
-            }
+            },
+
+            "outboundPodName": function(val){
+                this.value.object.spec.selector.app = val;
+            },
+
         },
 
         methods: {

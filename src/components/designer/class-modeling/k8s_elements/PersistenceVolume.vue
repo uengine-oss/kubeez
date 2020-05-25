@@ -99,14 +99,14 @@
                         "apiVersion": "v1",
                         "kind": "PersistentVolume",
                         "metadata": {
-                            "name": null,
+                            "name": "",
                         },
                         "spec": {
                             "accessModes": [
-                                "ReadWriteMany"
+                                ""
                             ],
                             "capacity": {
-                                "storage": "500Gi"
+                                "storage": "1"
                             },
                             "persistentVolumeReclaimPolicy": "Retain",
                             "volumeMode": "Filesystem"

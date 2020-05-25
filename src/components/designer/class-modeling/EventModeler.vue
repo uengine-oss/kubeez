@@ -55,6 +55,20 @@
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/event/aggregate.png`
                     },
+                    {
+                        'component': 'pod',
+                        'label': 'Pod',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/event/external.png`
+                    },
+                    {
+                        'component': 'replicaSet',
+                        'label': 'ReplicaSet',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/event/view.png`
+                    },
                 ],
             }
         },

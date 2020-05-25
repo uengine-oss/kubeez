@@ -187,6 +187,13 @@
 
                     me.value.outboundVolumes.push(obj.element.targetElement);
                 }
+
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement._type == "PersistenceVolumeClaim"){
+
+                    me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
+                    console.log(me.value.outboundVolumes)
+                }
             })
 
         },
@@ -200,6 +207,7 @@
 
             outboundVolumeNames(names){
 
+                console.log(names)
                 this.value.object.spec.volumes = [];
                 var me = this;
                 var i=0; 

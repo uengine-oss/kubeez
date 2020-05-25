@@ -33,13 +33,13 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#cccccc',
-                        fill: '#cccccc',
+                        'stroke': '#5FC08B',
+                        fill: '#5FC08B',
                         'fill-opacity': 1,
                         r: '1'
                     }"
-            ></geometry-rect>
-
+            >
+            </geometry-rect>
             <sub-elements>
                 <!--title-->
                 <text-element
@@ -47,27 +47,27 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        text="Persistence Volume Claim">
+                        :text="'ReplicaSet'">
                 </text-element>
             </sub-elements>
         </geometry-element>
 
-
         <property-panel
             v-if="openPanel"
             v-model="value"
-            img="https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/policy.png">
+            img="https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/view.png">
         </property-panel>
+
     </div>
 </template>
 
 <script>
     import Element from '../../modeling/Element'
-    import PropertyPanel from './PersistenceVolumeClaimPropertyPanel'
+    import PropertyPanel from './ReplicaSetPropertyPanel'
 
     export default {
         mixins: [Element],
-        name: 'persistence-volume-claim',
+        name: 'replicaSet',
         components: {
             "property-panel": PropertyPanel
         },
@@ -77,7 +77,7 @@
                 return {}
             },
             className() {
-                return 'PersistenceVolumeClaim'
+                return 'ReplicaSet'
             },
 
             createNew(elementId, x, y, width, height) {
@@ -96,27 +96,39 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "extensions/v1beta1",
-                        "kind": "PersistentVolumeClaim",
+                        "apiVersion": "apps/v1",
+                        "kind": "ReplicaSet",
                         "metadata": {
                             "name": "",
+                            "labels": {
+                                "app": ""
+                            }
                         },
                         "spec": {
-                             "accessModes": [
-                                ""
-                            ],
-                            "resources": {
-                                "requests": {
-                                    "storage": "1"
+                            "replicas": 1,
+                            "selector": {
+                                "matchLabels": {
+                                    "app": ""
                                 }
                             },
-                            "storageClassName": "",
-                            "volumeMode": "Filesystem",
-                            "volumeName": ""
+                            "template": {
+                                "metadata": {
+                                    "labels": {
+                                        "app": ""
+                                    }
+                                },
+                                "spec": {
+                                    "containers": [
+                                        {
+                                            "name": "",
+                                            "image": ""
+                                        }
+                                    ]
+                                }
+                            }
                         }
                     },
-
-                    outboundVolume: null
+                    
                     
                 }
             },
@@ -129,18 +141,9 @@
                 }
             },
 
-            outboundVolumeName(){
-                try{
-                    return this.value.outboundVolume.object.metadata.name;
-                }catch(e){
-                    return "";
-                }
-            }
-
         },
         data: function () {
-            return {
-                                
+            return {            
             };
         },
         created: function () {
@@ -151,18 +154,17 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistenceVolume"){
-
-                    me.value.outboundVolume = obj.element.targetElement;
-                }
+                
             })
             
         },
         watch: {
-            "outboundVolumeName": function(volumeName){
-                this.value.object.spec.volumeName = volumeName;
-            }
+            name(appName){
+                this.value.object.metadata.labels.app = appName;
+                this.value.object.spec.selector.matchLabels.app = appName;
+                this.value.object.spec.template.metadata.labels.app = appName;
+                this.value.object.spec.template.spec.containers[0].name = appName;
+            },
         },
 
         methods: {

@@ -37,9 +37,23 @@
                     <v-flex shrink style="width: 300px;">
                         <v-card flat>
                             <v-card-text>
-                                <v-text-field                                
+                                <v-text-field
                                     label="Name"
                                     v-model="value.object.metadata.name"
+                                ></v-text-field>
+                                <v-select
+                                    label="AccessModes"
+                                    v-model="value.object.spec.accessModes"
+                                    :items="accessModeList"
+                                ></v-select>
+                                <v-text-field
+                                    label="Storage"
+                                    v-model="value.object.spec.resources.requests.storage"
+                                    type="number"
+                                ></v-text-field>
+                                <v-text-field
+                                    label="VolumeMode"
+                                    v-model="value.object.spec.volumeMode"
                                 ></v-text-field>
                             </v-card-text>
                         </v-card>
@@ -75,6 +89,7 @@
         },
         data: function () {
             return {
+                accessModeList: [ ['ReadWriteOnce'], ['ReadOnlyMany'], ['ReadWriteMany'] ],
             }
         },
 

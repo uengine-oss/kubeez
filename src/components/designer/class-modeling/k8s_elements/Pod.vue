@@ -33,13 +33,13 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#cccccc',
-                        fill: '#cccccc',
+                        'stroke': '#ED73B6',
+                        fill: '#ED73B6',
                         'fill-opacity': 1,
                         r: '1'
                     }"
-            ></geometry-rect>
-
+            >
+            </geometry-rect>
             <sub-elements>
                 <!--title-->
                 <text-element
@@ -47,27 +47,27 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        text="Persistence Volume Claim">
+                        :text="'Pod'">
                 </text-element>
             </sub-elements>
         </geometry-element>
 
-
         <property-panel
             v-if="openPanel"
             v-model="value"
-            img="https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/policy.png">
+            img="https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/external.png">
         </property-panel>
+
     </div>
 </template>
 
 <script>
     import Element from '../../modeling/Element'
-    import PropertyPanel from './PersistenceVolumeClaimPropertyPanel'
+    import PropertyPanel from './PodPropertyPanel'
 
     export default {
         mixins: [Element],
-        name: 'persistence-volume-claim',
+        name: 'pod',
         components: {
             "property-panel": PropertyPanel
         },
@@ -77,7 +77,7 @@
                 return {}
             },
             className() {
-                return 'PersistenceVolumeClaim'
+                return 'Pod'
             },
 
             createNew(elementId, x, y, width, height) {
@@ -96,27 +96,29 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "extensions/v1beta1",
-                        "kind": "PersistentVolumeClaim",
+                        "apiVersion": "v1",
+                        "kind": "Pod",
                         "metadata": {
                             "name": "",
+                            "labels": {
+                                "name": ""
+                            }
                         },
                         "spec": {
-                             "accessModes": [
-                                ""
-                            ],
-                            "resources": {
-                                "requests": {
-                                    "storage": "1"
+                            "containers": [
+                                {
+                                    "name": "",
+                                    "image": "",
+                                    "ports": [
+                                        {
+                                            "containerPort": 80
+                                        }
+                                    ]
                                 }
-                            },
-                            "storageClassName": "",
-                            "volumeMode": "Filesystem",
-                            "volumeName": ""
+                            ]
                         }
                     },
-
-                    outboundVolume: null
+                    outboundVolumes: []
                     
                 }
             },
@@ -129,18 +131,22 @@
                 }
             },
 
-            outboundVolumeName(){
-                try{
-                    return this.value.outboundVolume.object.metadata.name;
-                }catch(e){
+            outboundVolumeNames(){
+                try {
+                    var names;
+                    this.value.outboundVolumes.forEach(element => {
+                        names = element.object.metadata.name +  ","
+                    });
+                    return names;
+
+                } catch(e) {
                     return "";
                 }
             }
 
         },
         data: function () {
-            return {
-                                
+            return {            
             };
         },
         created: function () {
@@ -152,16 +158,36 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistenceVolume"){
+                    && obj.element.targetElement._type == "PersistenceVolumeClaim"){
 
-                    me.value.outboundVolume = obj.element.targetElement;
+                    me.value.outboundVolumes.push(obj.element.targetElement);
                 }
             })
             
         },
         watch: {
-            "outboundVolumeName": function(volumeName){
-                this.value.object.spec.volumeName = volumeName;
+            name(appName){
+                this.value.object.metadata.labels.name = appName;
+                this.value.object.spec.containers[0].name = appName;
+            },
+
+            outboundVolumeNames(names){
+
+                this.value.object.spec.volumes = [];
+                var me = this;
+                var i=0; 
+                this.value.outboundVolumes.forEach(element => {
+                        me.value.object.spec.volumes.push(
+                            {
+                                "name": "volume" + (++i),
+                                "persistenceVolumeClaim": {
+                                    "claimName": element.object.metadata.name
+                                }
+                            }
+                        );
+                    }
+                );
+                
             }
         },
 

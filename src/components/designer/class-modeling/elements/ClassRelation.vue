@@ -193,7 +193,7 @@
                 if (obj.state == 'deleteCommand') {
                     me.deleteRelation()
                 }
-                if (obj.state == 'deleteRelation') {
+                if (obj.state == 'delete' && obj.element._type == 'org.uengine.modeling.model.Relation') {
                     me.deleteRelation()
                 }
 

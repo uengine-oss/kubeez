@@ -41,23 +41,14 @@
                                     label="Name"
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
-                                <v-select
-                                    label="AccessModes"
-                                    v-model="value.object.spec.accessModes"
-                                    :items="accessModeList"
-                                ></v-select>
                                 <v-text-field                                
-                                    label="Storage"
-                                    v-model="value.object.spec.capacity.storage"
+                                    label="Image"
+                                    v-model="value.object.spec.containers[0].image"
+                                ></v-text-field>
+                                <v-text-field                                
+                                    label="Port"
+                                    v-model="value.object.spec.containers[0].ports[0].containerPort"
                                     type="number"
-                                ></v-text-field>
-                                <v-text-field                                
-                                    label="PersistentVolumeReclaimPolicy"
-                                    v-model="value.object.spec.persistentVolumeReclaimPolicy"
-                                ></v-text-field>
-                                <v-text-field                                
-                                    label="VolumeMode"
-                                    v-model="value.object.spec.volumeMode"
                                 ></v-text-field>
                             </v-card-text>
                         </v-card>
@@ -77,7 +68,7 @@
     import YamlEditor from "./YamlEditor";
 
     export default {
-        name: 'ingress-property-panel',
+        name: 'property-panel',
         props: {
             value: Object,
             img: String,
@@ -87,18 +78,18 @@
         },
         computed: {
             descriptionText() {
-                return 'PersistentVolume'
+                return 'Pod'
             },
 
         },
         data: function () {
             return {
-                accessModeList: [ ['ReadWriteOnce'], ['ReadOnlyMany'], ['ReadWriteMany'] ],
             }
         },
 
         watch: {
-
+            
+            
         },
         methods: {
            
