@@ -33,11 +33,10 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#5099F7',
-                        fill: '#5099F7',
+                        'stroke': '#BBBB22',
+                        fill: '#BBBB22',
                         'fill-opacity': 1,
-                        r: '1', 
-                        'z-index': '998'
+                        r: '1'
                     }"
             ></geometry-rect>
 
@@ -48,29 +47,27 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'Deployment'">
+                        text="Ingress">
                 </text-element>
             </sub-elements>
         </geometry-element>
 
 
-         <property-panel
+        <property-panel
             v-if="openPanel"
             v-model="value"
-            img="https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/command.png">
+            img="https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/policy.png">
         </property-panel>
     </div>
 </template>
 
 <script>
     import Element from '../../modeling/Element'
-    import PropertyPanel from './DeploymentPropertyPanel'
+    import PropertyPanel from './IngressPropertyPanel'
 
     export default {
         mixins: [Element],
-        name: 'deployment',
-        props: {},
-
+        name: 'ingress',
         components: {
             "property-panel": PropertyPanel
         },
@@ -80,7 +77,7 @@
                 return {}
             },
             className() {
-                return 'Deployment'
+                return 'Ingress'
             },
 
             createNew(elementId, x, y, width, height) {
@@ -98,117 +95,98 @@
                         'style': JSON.stringify({}),
                         'angle': 0,
                     },
-                    outboundVolumes: [],
                     object: {
-                       "apiVersion": "apps/v1",
-                        "kind": "Deployment",
+                        "apiVersion": "extensions/v1beta1",
+                        "kind": "Ingress",
                         "metadata": {
                             "name": "",
-                            "labels": {
-                                "app": ""
-                            }
                         },
                         "spec": {
-                            "selector": {
-                                "matchLabels": {
-                                    "app": ""
-                                }
+                            "backend": {
+                                "serviceName": "credit",
+                                "servicePort": 8080
                             },
-                            "replicas": "1",
-                            "template": {
-                                "metadata": {
-                                    "labels": {
-                                        "app": ""
-                                    }
-                                },
-                                "spec": {
-                                    "containers": [
-                                        {
-                                            "name": "main",
-                                            "image": "",
-                                            "ports": [
-                                                {
-                                                    "containerPort": "80"
+                            "rules": [
+                                {
+                                    "host": "insurance.infogra.io",
+                                    "http": {
+                                        "paths": [
+                                            {
+                                                "backend": {
+                                                    "serviceName": "credit",
+                                                    "servicePort": 8080
                                                 }
-                                            ]
-                                        }
-                                    ]
+                                            }
+                                        ]
+                                    }
                                 }
-                            }
+                            ]
                         }
-                    }
+                    },
+
+                    outboundServices: []
                     
                 }
             },
 
             name(){
                 try{
-                    return this.value.object.metadata.name; 
+                    return this.value.object.metadata.name;
                 }catch(e){
-                    return "";
+                    return "Untitled";
                 }
-                
             },
 
-            outboundVolumeNames(){
+            outboundServiceNames(){
                 try{
 
-                    var names;
+                    var serviceNames;
 
-                    this.value.outboundVolumes.forEach(element => {
-                        names = element.object.metadata.name +  ","
+                    this.value.outboundServices.forEach(element => {
+                        serviceNames = element.object.metadata.name + ":" + element.object.spec.ports[0].port +  ","
                     });
 
-                    return names;
+                    return serviceNames;
 
                 }catch(e){
                     return "";
                 }
             }
 
-
         },
         data: function () {
             return {
-                
+                                
             };
         },
         created: function () {
-        
+            
         },
-
-        mounted(){
+        mounted: function () {
 
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistenceVolumeClaim"){
+                    && obj.element.targetElement._type == "Service"){
 
-                    me.value.outboundVolumes.push(obj.element.targetElement);
+                    me.value.outboundServices.push(obj.element.targetElement);
+                    console.log(me.value.outboundServices.length)
                 }
             })
-
+            
         },
-
         watch: {
-            name(appName){
-                this.value.object.metadata.labels.app = appName;
-                this.value.object.spec.selector.matchLabels.app = appName;
-                this.value.object.spec.template.metadata.labels.app = appName;
-            },
+            "outboundServiceNames": function(names){
 
-            outboundVolumeNames(names){
-
-                this.value.object.spec.volumes = [];
+                this.value.object.spec.rules[0].http.paths = [];
                 var me = this;
-                var i=0; 
-                this.value.outboundVolumes.forEach(element => {
-                        me.value.object.spec.volumes.push(
+                this.value.outboundServices.forEach(element => {
+                        me.value.object.spec.rules[0].http.paths.push(
                             {
-                                "name": "volume" + (++i),
-                                "persistenceVolumeClaim": {
-                                    "claimName": element.object.metadata.name
+                                "backend": {
+                                    "serviceName": element.object.metadata.name,
+                                    "servicePort": element.object.spec.ports[0].port
                                 }
                             }
                         );
@@ -219,11 +197,10 @@
         },
 
         methods: {
-
         }
     }
 </script>
-  
+
 <style>
 
 </style>

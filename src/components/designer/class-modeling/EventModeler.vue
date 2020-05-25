@@ -34,6 +34,27 @@
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/event/policy.png`
                     },
+                    {
+                        'component': 'ingress',
+                        'label': 'Ingress',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/event/aggregate.png`
+                    },
+                    {
+                        'component': 'persistence-volume',
+                        'label': 'Persistence Volume',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/event/aggregate.png`
+                    },
+                    {
+                        'component': 'persistence-volume-claim',
+                        'label': 'Persistence Volume Claim',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/event/aggregate.png`
+                    },
                 ],
             }
         },

@@ -164,6 +164,9 @@
                 }
             },
             isView () {
+
+                return true;
+                
                 var me = this
                 if (me.value.sourceElement._type == 'Service' && me.value.targetElement._type != 'Service') {
                     return true
