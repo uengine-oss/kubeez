@@ -1,8 +1,8 @@
 <template>
     <div>
-        <geometry-element
+        <image-element
                 selectable
-                :movable="editMode"
+                movable
                 :resizable="editMode"
                 connectable
                 :deletable=editMode
@@ -16,7 +16,6 @@
                 v-on:deSelectShape="deSelectedActivity"
                 v-on:dblclick="showProperty"
                 v-on:rotateShape="onRotateShape"
-                v-on:labelChanged="onLabelChanged"
                 v-on:addedToGroup="onAddedToGroup"
                 v-on:removeShape="onRemoveShape(value)"
                 :label.sync="name"
@@ -24,40 +23,15 @@
                 'label-angle':value.elementView.angle,
                 'font-weight': 'bold','font-size': '16'
                 }"
+                :image='imgSrc'
         >
-
-            <!--v-on:dblclick="$refs['dialog'].open()"-->
-            <geometry-rect
-                    :_style="{
-                        'fill-r': 1,
-                        'fill-cx': .1,
-                        'fill-cy': .1,
-                        'stroke-width': 1.4,
-                        'stroke': '#5099F7',
-                        fill: '#5099F7',
-                        'fill-opacity': 1,
-                        r: '1', 
-                        'z-index': '998'
-                    }"
-            ></geometry-rect>
-
-            <sub-elements>
-                <!--title-->
-                <text-element
-                        :sub-width="'100%'"
-                        :sub-height="30"
-                        :sub-top="0"
-                        :sub-left="0"
-                        :text="'Deployment'">
-                </text-element>
-            </sub-elements>
-        </geometry-element>
+        </image-element>
 
 
          <property-panel
             v-if="openPanel"
             v-model="value"
-            img="https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/command.png">
+            :img="imgSrc">
         </property-panel>
     </div>
 </template>
@@ -82,12 +56,13 @@
             className() {
                 return 'Deployment'
             },
-
+            imgSrc() {
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/deploy-128.png`
+            },
             createNew(elementId, x, y, width, height) {
                 return {
                     _type: this.className(),
                     name: '',
-                    
                     elementView: {
                         '_type': this.className(),
                         'id': elementId,
@@ -140,7 +115,6 @@
                     
                 }
             },
-
             name(){
                 try{
                     return this.value.object.metadata.name; 

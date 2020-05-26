@@ -15,8 +15,6 @@
         },
         created: function () {
             var me = this;
-
-            
         },
         data: function () {
             return {
@@ -26,15 +24,12 @@
                 tmpHeight: 0,
                 messageRef: {},
                 isException: 'NO',
-
-
                 isUndoRedo: false,
                 checkValue: false,
                 selected: false,
                 openPanel: false,
                 namePanel: '',
                 editUserImg:[]
-
             }
         },
         computed: {
@@ -243,7 +238,7 @@
                 }, 100
             ),
             onLabelChanged: function (be, af) {
-                // console.log("onLabelChanged", be, af);
+                console.log("onLabelChanged", be, af);
             },
             onRotateShape: function (me, angle) {
                 this.value.elementView.angle = angle

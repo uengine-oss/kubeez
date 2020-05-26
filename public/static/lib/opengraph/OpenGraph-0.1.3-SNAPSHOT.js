@@ -22029,8 +22029,8 @@ OG.renderer.RaphaelRenderer.prototype.drawShape = function (position, shape, siz
         shape.geom = groupNode.geom;
     } else if (shape instanceof OG.shape.ImageShape) {
         image = shape.createShape();
-
         groupNode = this.drawImage(position, image, size, style, id);
+
         shape.image = groupNode.image;
         shape.angle = groupNode.angle;
         shape.geom = groupNode.geom;
@@ -23160,7 +23160,8 @@ OG.renderer.RaphaelRenderer.prototype.redrawShape = function (element, excludeEd
                 center = envelope.getCentroid();
                 width = envelope.getWidth();
                 height = envelope.getHeight();
-                element = this.drawImage([center.x, center.y], element.shape.image,
+                console.log(element.shape)
+                element = this.drawImage([center.x, center.y], element.children[0].href.animVal,
                     [width, height, element.shape.angle], element.shape.geom.style, element.id);
                 this.redrawConnectedEdge(element, excludeEdgeId);
                 this.drawLabel(element);
@@ -25423,7 +25424,7 @@ OG.renderer.RaphaelRenderer.prototype.move = function (element, offset, excludeE
         if (type !== OG.Constants.NODE_TYPE.ROOT && rElement.node.shape) {
             geometry = rElement.node.shape.geom;
             geometry.move(offset[0], offset[1]);
-
+            console.log(rElement)
             this.redrawShape(rElement.node, excludeEdgeId);
 
             // moveShape event fire

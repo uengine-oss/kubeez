@@ -1087,6 +1087,7 @@
                  * @param {Function} callbackFunc 콜백함수(event, shapeElement, offset)
                  */
                 me.canvas.onMoveShape(function (event, shapeElement, offset) {
+                    console.log("moveShape")
                     me.$emit('moveShape', me.getElementById(shapeElement.id) || shapeElement, offset);
                 });
 

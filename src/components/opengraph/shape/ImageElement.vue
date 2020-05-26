@@ -22,6 +22,7 @@
     methods: {
       generateShape: function () {
         var me = this;
+        console.log(me.image)
         return new OG.shape.ImageShape(me.image, me.label);
       }
     }
