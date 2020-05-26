@@ -1,6 +1,7 @@
 <template>
-    
+
     <codemirror
+            ref="myCm"
             :options="{
                 theme: 'darcula',
                 lineNumbers: true,
@@ -28,38 +29,51 @@
         },
 
         components: {
-           codemirror
+            codemirror
         },
         computed: {
-            
+            codemirror: function () {
+                return this.$refs.myCm.codemirror;
+            },
         },
         data: function () {
             return {
-               yamlText: json2yaml.stringify(this.value)
+                yamlText: json2yaml.stringify(this.value),
+                cursor_pos: '',
+                temp_text: ''
             }
         },
 
         watch: {
             value: {
-                deep: true, 
-                handler: function(){
-                    this.yamlText = json2yaml.stringify(this.value) 
+                deep: true,
+                handler: function () {
+                    // console.log(this.value)
+                    // console.log(json2yaml.stringify(this.value))
+                    this.yamlText = json2yaml.stringify(this.value)
                 }
             },
-
             yamlText: {
                 deep: true,
-                handler: function(){
+                handler: function () {
+                    var me = this
+                    try {
+                        me.temp_text = me.yamlText
+                        me.cursor_pos = me.codemirror.getCursor("start")
+                        // me.jsonToUi()
+                        this.$nextTick(function () {
+                            me.codemirror.setCursor(me.cursor_pos)
+                            me.codemirror.refresh()
+                        });
+                    } catch (e) {
+                    }
                     var some = yaml.load(this.yamlText);
-//                    this.value = some;
                     this.$emit("input", some);
                 }
             }
-            
-        },
-        methods: {
 
-        }
+        },
+        methods: {}
     }
 </script>
 
