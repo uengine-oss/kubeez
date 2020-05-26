@@ -123,20 +123,22 @@
                 }
             },
 
-            name(){
-                try{
+            name() {
+                try {
                     return this.value.object.metadata.name;
-                }catch(e){
+                } catch(e) {
                     return "Untitled";
                 }
             },
 
-            outboundVolumeNames(){
+            outboundVolumeNames() {
                 try {
                     var names;
+                    
                     this.value.outboundVolumes.forEach(element => {
-                        names = element.object.metadata.name +  ","
+                        names += element.object.metadata.name +  ","
                     });
+                    
                     return names;
 
                 } catch(e) {
@@ -161,6 +163,12 @@
                     && obj.element.targetElement._type == "PersistenceVolumeClaim"){
 
                     me.value.outboundVolumes.push(obj.element.targetElement);
+                }
+
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement._type == "PersistenceVolumeClaim"){
+
+                    me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
                 }
             })
             

@@ -156,6 +156,12 @@
 
                     me.value.outboundVolume = obj.element.targetElement;
                 }
+
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement._type == "PersistenceVolume"){
+
+                    me.value.outboundVolume = null;
+                }
             })
             
         },

@@ -69,7 +69,7 @@
         },
         computed: {
             descriptionText() {
-                return 'Service'
+                return 'Ingress'
             },
 
         },
