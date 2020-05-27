@@ -33,8 +33,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#BBBB22',
-                        fill: '#BBBB22',
+                        'stroke': '#4caf50',
+                        fill: '#4caf50',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -96,7 +96,6 @@
                 return {
                     _type: this.className(),
                     name: '',
-                    
                     elementView: {
                         '_type': this.className(),
                         'id': elementId,
@@ -135,8 +134,8 @@
                             ]
                         }
                     },
-                    outboundServices: []
-                    
+                    outboundServices: [],
+                    connectableType: ["Service"]
                 }
             },
 

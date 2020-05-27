@@ -127,7 +127,7 @@
                             "volumeName": ""
                         }
                     },
-
+                    connectableType: ["PersistentVolume"],
                     outboundVolume: null
                     
                 }

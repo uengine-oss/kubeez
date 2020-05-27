@@ -25424,7 +25424,6 @@ OG.renderer.RaphaelRenderer.prototype.move = function (element, offset, excludeE
         if (type !== OG.Constants.NODE_TYPE.ROOT && rElement.node.shape) {
             geometry = rElement.node.shape.geom;
             geometry.move(offset[0], offset[1]);
-            console.log(rElement)
             this.redrawShape(rElement.node, excludeEdgeId);
 
             // moveShape event fire

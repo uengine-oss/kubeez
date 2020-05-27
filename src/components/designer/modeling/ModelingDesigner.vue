@@ -370,7 +370,6 @@
 
             })
 
-
             //중간저장
             me.$EventBus.$on('storage', function (newVal) {
                 var saveDate = JSON.parse(JSON.stringify(me.value))
@@ -753,14 +752,25 @@
                 }
             }
             ,
-
+            modifyRelation(element) {
+                console.log(element)
+                if(element.sourceElement.connectableType != undefined) {
+                    if(element.sourceElement.connectableType.indexOf(element.targetElement._type) != -1) {
+                        return element
+                    } else {
+                        return false
+                    }
+                } else {
+                    return false
+                }
+            },
             addElement: function (componentInfo, bounded) {
                 this.enableHistoryAdd = true;
                 var me = this;
                 var additionalData = {};
                 var vueComponent = me.getComponentByName(componentInfo.component);
                 var element;
-                // console.log(bounded)
+
                 if (componentInfo.component == 'class-relation') {
                     //relation info setting before make
                     element = vueComponent.computed.createNew(
@@ -769,9 +779,13 @@
                         componentInfo.targetElement.value,
                         componentInfo.vertices,
                     );
+                    var result = me.modifyRelation(element);
+
+                    if(result == false) {
+                        return;
+                    }
 
                 } else {
-
                     element = vueComponent.computed.createNew(
                         this.uuid(),
                         componentInfo.x,
@@ -790,7 +804,6 @@
                 }
 
                 if (element._type == 'org.uengine.modeling.model.Relation') {
-
                     if (bounded != undefined) {
                         if (bounded) {
                             console.log("bounded")
@@ -802,7 +815,6 @@
                         this.$EventBus.$emit('storage')
                     }
                 } else {
-
                     if (bounded != undefined) {
                         if (bounded) {
                             console.log("bounded")

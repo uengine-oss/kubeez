@@ -33,8 +33,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#5099F7',
-                        fill: '#5099F7',
+                        'stroke': '#ffeb3b',
+                        fill: '#ffeb3b',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -146,8 +146,9 @@
                                 }
                             }
                         }
-                    }
-                    
+                    },
+                    connectableType: ["ReplicaSet"]
+
                 }
             },
 

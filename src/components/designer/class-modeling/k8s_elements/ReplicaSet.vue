@@ -33,8 +33,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#5FC08B',
-                        fill: '#5FC08B',
+                        'stroke': '#fdd835',
+                        fill: '#fdd835',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -141,8 +141,7 @@
                             }
                         }
                     },
-                    
-                    
+                    connectableType: ["Pod"]
                 }
             },
 

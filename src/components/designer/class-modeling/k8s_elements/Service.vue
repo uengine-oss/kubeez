@@ -33,8 +33,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#BB94BF',
-                        fill: '#BB94BF',
+                        'stroke': '#2196f3',
+                        fill: '#2196f3',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -131,7 +131,7 @@
                     outboundDeployment: null,
                     outboundPod: null,
                     outboundReplicaSet: null,
-                    
+                    connectableType: ["Deployment", "Pod"]
                 }
             },
 

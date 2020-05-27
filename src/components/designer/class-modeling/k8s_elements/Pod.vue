@@ -33,8 +33,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#ED73B6',
-                        fill: '#ED73B6',
+                        'stroke': '#fbc02d',
+                        fill: '#fbc02d',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'

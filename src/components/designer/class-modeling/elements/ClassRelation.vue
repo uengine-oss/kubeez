@@ -71,55 +71,6 @@
                         'font-size': 20,
                     }
                 }
-                //     } else if (this.value._type == "org.uengine.modeling.model.Relation" &&
-                //         this.value.relationValue == 'GET' &&
-                //         this.value.relationValue == 'POST' &&
-                //         this.value.relationValue == 'PATCH' &&
-                //         this.value.relationValue == 'DELETE') {
-                //         style = {
-                //             "arrow-end": "block",
-                //             'font-size': 20,
-                //         }
-                //     } else if (this.value.relationValue == '1') {
-                //         style = {
-                //             'stroke-width': '1.3',
-                //             'font-size': 30,
-                //             'marker': {
-                //                 'start': {
-                //                     'id': 'OG.marker.RectangleMarker',
-                //                     'size': [20, 20]
-                //                 },
-                //                 'mid': {
-                //                     'id': 'OG.marker.RectangleMarker',
-                //                     'size': [20, 20]
-                //                 },
-                //                 'end': {
-                //                     'id': 'OG.marker.RectangleMarker',
-                //                     'size': [20, 20]
-                //                 }
-                //             }
-                //         }
-                //         this.value.name = "1:1"
-                //     } else if (this.value.relationValue == '2') {
-                //         style = {
-                //             'arrow-start': 'block',
-                //             "arrow-end": "diamond",
-                //             'stroke-width': '1.3',
-                //             'font-size': 30,
-                //
-                //         }
-                //         this.value.name = "1:1"
-                //
-                //     } else if (this.value.relationValue == '3') {
-                //         style = {
-                //             'arrow-start': 'diamond',
-                //             "arrow-end": "block",
-                //             'stroke-width': '1.3',
-                //             'font-size': 30,
-                //         }
-                //         this.value.name = "0:N"
-                //
-                //     }
                 return style
             },
             createNew(elementId, from, to, vertices) {
@@ -145,8 +96,8 @@
                         to: to.elementView.id,
                         needReconnect: true,
                     },
-                    sourceMultiplicity: 1,
-                    targetMultiplicity: 1,
+                    sourceMultiplicity: 3,
+                    targetMultiplicity: 3,
                     // drawer: false
                 }
             },
@@ -181,39 +132,34 @@
         mounted: function () {
             var me = this
             this.$EventBus.$on(`${me.value.relationView.id}`, function (obj) {
-                if (obj.state == 'deleteEvent') {
-                    me.deleteRelation()
-                }
-                if (obj.state == 'deletePolicy') {
-                    me.deleteRelation()
-                }
-                if (obj.state == 'deleteCommand') {
-                    me.deleteRelation()
-                }
-                if (obj.state == 'delete' && obj.element._type == 'org.uengine.modeling.model.Relation') {
-                    me.deleteRelation()
-                }
-
+                /* Todo: Element가 삭제 되었을 때, 선도 삭제되는 로직 넣는 부분  */
+                // if (obj.state == 'deleteEvent') {
+                //     me.deleteRelation()
+                // }
+                // if (obj.state == 'deletePolicy') {
+                //     me.deleteRelation()
+                // }
+                // if (obj.state == 'deleteCommand') {
+                //     me.deleteRelation()
+                // }
+                // if (obj.state == 'delete' && obj.element._type == 'org.uengine.modeling.model.Relation') {
+                //     me.deleteRelation()
+                // }
             })
+            console.log(me.value.sourceElement)
+            console.log(me.value.targetElement)
+            if(me.value.sourceElement._type == 'Ingress') {
+                /* Todo: Element Type 별 연결 체크 부분 */
+            }
+
 
             var obj = {
                 state: "addRelation",
                 element: me.value
             }
 
-
             me.$EventBus.$emit(me.value.sourceElement.elementView.id, obj)
             me.$EventBus.$emit(me.value.targetElement.elementView.id, obj)
-
-
-            // console.log(me.value)
-            // var obj = {
-            //     state: "addRelation",
-            //     element: JSON.parse(JSON.stringify(me.value))
-            // }
-            // console.log('>>>>>>>>>>>>>>>',obj)
-            // me.$EventBus.$emit(me.value.sourceElement.elementView.id, obj)
-            // me.$EventBus.$emit(me.value.targetElement.elementView.id, obj)
 
         },
         methods: {
