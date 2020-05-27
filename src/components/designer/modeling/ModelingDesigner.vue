@@ -35,15 +35,43 @@
             <v-flex style="justify:end; align:start;">
                 <v-row justify="end" align="start" style="margin-right: 10px;">
 
-                    <v-menu
+                    <!-- <v-menu
                             class="pa-2"
                             style="margin-right: 3px"
                             open-on-hover
                             offset-y>
                         <template v-slot:activator="{ on }">
                             <v-btn color="info" @click="codeModalShow()" status ="add">YAML</v-btn>
-                            <!-- <v-btn color="success" @click="showElementYaml">Show</v-btn> -->
                         </template>
+                    </v-menu> -->
+
+                    <v-menu
+                            class="pa-2"
+                            style="margin-right: 3px"
+                            open-on-hover
+                            offset-y
+                    >
+                        <template v-slot:activator="{ on }">
+                            <v-btn
+                                    style="margin-right: 5px;margin-top: 15px;"
+                                    color="orange"
+                                    dark
+                                    @click="codeModalShow()"
+                                    v-on="on"
+                            >
+                                <v-icon> {{ files.code }}</v-icon>
+                                CODE
+                            </v-btn>
+                        </template>
+                        <v-list>
+                            <v-list-item
+                                    v-for="(item, index) in codeItems"
+                                    :key="index"
+                                    @click="functionSelect(item.title)"
+                            >
+                                <v-list-item-title>{{ item.title }}</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
                     </v-menu>
                 </v-row>
             </v-flex>
@@ -72,8 +100,68 @@
 
         </v-layout>
 
-        <modal ref="modal" name="codeModal" :height='"70%"' :width="'80%'">
+        <!-- <modal ref="modal" name="codeModal" :height='"70%"' :width="'80%'">
             <dashEditYaml :status="'add'" :plainText.sync="plainText" :types="types"></dashEditYaml>
+        </modal> -->
+
+        <modal name="codeModal" :height='"auto"' :width="'80%'" scrollable>
+            <v-card flat>
+                <v-card-title>
+                    <v-col :col="8">
+                        <span class="headline">Code Preview</span>
+                    </v-col>
+                    <v-col :col="4">
+                        <v-select
+                                :items="templateList"
+                                v-model="template"
+                                label="Select Template"
+                                hide-details
+                                class="pa-0"
+                        ></v-select>
+                    </v-col>
+                </v-card-title>
+                <v-divider></v-divider>                
+                <v-card-text style="width: auto; height: auto;">
+                    <v-row class="mb-6" no-gutters>
+                        <v-col
+                                style="margin-right: 15px; border-right: 1px solid black; max-height: 700px; max-width: 400px;"
+                                id="scroll-target"
+                                class="overflow-auto"
+                        >
+                            <v-treeview
+                                    :items.sync='treeList'
+                                    activatable
+                                    item-key="key"
+                                    return-object
+                                    open-all
+                                    :transition="treeOpen"
+                                    open-on-click
+                                    transition
+                                    dense
+                            >
+                                <template v-slot:prepend="{ item, open }">
+                                    <v-icon v-if="!item.file">
+                                        {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
+                                    </v-icon>
+                                    <v-icon v-else>
+                                        {{ files[item.file] }}
+                                    </v-icon>
+                                </template>
+                            </v-treeview>
+                        </v-col>
+                        <v-col>
+                            <codemirror
+                                    :options="{
+                                            theme: 'darcula',
+                                            lineNumbers: true,
+                                            lineWrapping: true,
+                                            readOnly: 'nocursor',
+                                    }"
+                            ></codemirror>
+                        </v-col>
+                    </v-row>
+                </v-card-text>
+            </v-card>
         </modal>
 
         <v-snackbar v-model="snackbar" :color="color" :multi-line="mode === 'multi-line'" :timeout="timeout"
@@ -83,6 +171,26 @@
                 Close
             </v-btn>
         </v-snackbar>
+
+        <v-dialog v-model="generateZipDialog" max-width="290">
+            <v-card>
+                <v-card-title class="headline">Generate Zip Archive</v-card-title>
+                <v-card-text>
+                    <v-select
+                            :items="templateList"
+                            v-model="template"
+                            label="Select Template"
+                            hide-details
+                            class="pa-0"
+                    ></v-select>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="green darken-1" text>Download</v-btn>
+                    <v-btn color="red darken-1" text @click="generateZipDialog = false">Cancel</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
 
 
     </div>
@@ -225,6 +333,7 @@
                 getCodeList: [],
                 openCode: [],
                 template: '',
+                templateList: ['Separate File', 'Single File', 'Separate File for kind', 'Helm'],
                 treeOpen: true,
                 gitUrl: '',
                 gitPath: [],
@@ -504,38 +613,26 @@
                 },
             async template() {
                 var me = this
-                if (me.template == 'GIT') {
-                    await me.gitTemplate().then(function () {
-                        me.getListSetting()
-
-                        me.$nextTick(function () {
-                            me.treeOpen = true
-                        })
-                    })
-                } else {
-                    me.getListSetting()
+                if (me.template == 'Separate File') {
+                    me.getSeparateFileListSetting();
 
                     me.$nextTick(function () {
                         me.treeOpen = true
                     })
+                } else if (me.template == 'Single File') {
+                } else if (me.template == 'Separate File for kind') {
+                } else {
                 }
-
             }
         },
         methods: {
-           showElementYaml() {
-                let me = this
-                let elements = me.value.definition
-                for (let idx in elements) {
-                    let el = elements[idx]
-                    console.log(el)
+            functionSelect(title) {
+                var me = this
+                if (title == 'Code Preview') {
+                    me.codeModalShow()
+                } else if (title == 'Download Archive') {
+                    me.generateZipDialog = true
                 }
-                // axios.delete('http://localhost:8080/apis/apps/v1/namespaces/default/deployments/nginx-deployment', jsonData
-                // ).then(function (res) {
-                //     console.log(res)
-                // }).catch(function (e) {
-                //     console.log(e)
-                // })
             },
             codeModalShow() {
                 console.log(this.value);
@@ -884,6 +981,46 @@
                     }
                 }
                 return newO;
+            },
+
+            fileType(file) {
+                var type;
+
+                if (file.includes('.java')) {
+                    type = 'java'
+                } else if (file.includes('Dockerfile')) {
+                    type = 'docker'
+                } else if (file.includes('.xml')) {
+                    type = 'xml'
+                } else if (file.includes('.yaml') || file.includes('.yml') || file.includes('.properties') || file.includes('mvnw') || file.includes('.groovy')) {
+                    type = 'txt'
+                } else if (file.includes('md')) {
+                    type = 'md'
+                } else if (file.includes('.jpg') || file.includes('.png') || file.includes('.jpeg')) {
+                    type = 'png'
+                } else if (file.includes('.json')) {
+                    type = 'json'
+                } else if (file.includes('.py')) {
+                    type = 'python'
+                }
+
+                return type
+            },
+            getSeparateFileListSetting() {
+                let me = this
+                let treeValue = {}
+
+                me.value.definition.forEach(function (item) {
+                    treeValue = {
+                        'key': item.elementView.id,
+                        'name': item.object.metadata.name + '.yaml',
+                        'code': json2yaml.stringify(item.object),
+                        'file': me.fileType('.yaml')
+                    }
+
+                    me.treeList.push(treeValue)
+                })
+                console.log(me.treeList)
             },
         }
     }
