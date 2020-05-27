@@ -130,31 +130,40 @@
                     },
                     outboundDeployment: null,
                     outboundPod: null,
+                    outboundReplicaSet: null,
                     
                 }
             },
 
-            name(){
-                try{
-                    return this.value.object.metadata.name;
-                }catch(e){
+            name() {
+                try {
+                    return this.value.object.metadata.name    
+                } catch(e) {
                     return "Untitled";
                 }
             },
 
-            outboundDeploymentName(){
-                try{
+            outboundDeploymentName() {
+                try {
                     return this.value.outboundDeployment.object.metadata.name;
-                }catch(e){
+                } catch(e) {
                     return "";
                 }
             },
 
-            outboundPodName(){
-                try{
+            outboundPodName() {
+                try {
                     return this.value.outboundPod.object.metadata.name;
-                }catch(e){
+                } catch(e) {
                     return "";
+                }
+            },
+
+            outboundReplicaSetName() {
+                try {
+                    return this.value.outboundReplicaSet.object.metadata.name
+                } catch(e) {
+                    return ""
                 }
             }
 
@@ -165,7 +174,7 @@
             };
         },
         created: function () {
-            
+
         },
         mounted: function () {
 
@@ -178,25 +187,38 @@
                 else if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
                     me.value.outboundPod = obj.element.targetElement;
                 }
+                else if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
+                    me.value.outboundReplicaSet = obj.element.targetElement;
+                }
 
                 if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
                     me.value.outboundDeployment = null;
                 }
                 else if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
-                    me.value.outboundDeployment = null;
+                    me.value.outboundPod = null;
                 }
-                console.log(obj)
+                else if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
+                    me.value.outboundReplicaSet = null;
+                }
             })
             
         },
         watch: {
-            "outboundDeploymentName": function(val){
+            name(appName){
+                this.value.object.metadata.labels.app = appName;
+            },
+
+            "outboundDeploymentName": function(val) {
                 this.value.object.spec.selector.app = val;
             },
 
-            "outboundPodName": function(val){
+            "outboundPodName": function(val) {
                 this.value.object.spec.selector.app = val;
             },
+
+            "outboundReplicaSetName": function(val) {
+                this.value.object.spec.selector.app = val
+            }
 
         },
 

@@ -79,8 +79,6 @@
     export default {
         mixins: [Element],
         name: 'deployment',
-        props: {},
-
         components: {
             ImageElement,
             "property-panel": PropertyPanel
@@ -136,7 +134,7 @@
                                 "spec": {
                                     "containers": [
                                         {
-                                            "name": "main",
+                                            "name": "",
                                             "image": "",
                                             "ports": [
                                                 {
@@ -165,10 +163,10 @@
             outboundVolumeNames(){
                 try{
 
-                    var names;
-
+                    var names = "";
+                    
                     this.value.outboundVolumes.forEach(element => {
-                        names = element.object.metadata.name +  ","
+                        names += element.object.metadata.name +  ","
                     });
 
                     return names;
@@ -215,6 +213,7 @@
                 this.value.object.metadata.labels.app = appName;
                 this.value.object.spec.selector.matchLabels.app = appName;
                 this.value.object.spec.template.metadata.labels.app = appName;
+                this.value.object.spec.template.spec.containers[0].name = appName;
             },
 
             outboundVolumeNames(names){

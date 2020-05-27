@@ -114,6 +114,10 @@
                             "name": "",
                         },
                         "spec": {
+                            "backend": {
+                                "serviceName": "",
+                                "servicePort": 80
+                            },
                             "rules": [
                                 {
                                     "host": "insurance.infogra.io",
@@ -131,33 +135,31 @@
                             ]
                         }
                     },
-
                     outboundServices: []
                     
                 }
             },
 
-            name(){
-                try{
+            name() {
+                try {
                     return this.value.object.metadata.name;
-                }catch(e){
+                } catch(e) {
                     return "Untitled";
                 }
             },
 
-            outboundServiceNames(){
-                try{
-
-                    var serviceNames;
-
+            outboundServiceNames() {
+                try {
+                    var serviceNames = "";
+                    
                     this.value.outboundServices.forEach(element => {
-                        serviceNames = element.object.metadata.name + ":" + element.object.spec.ports[0].port +  ","
-                    });
+                        serviceNames += element.object.metadata.name + ":" + element.object.spec.ports[0].port +  ","
+                    })
 
                     return serviceNames;
 
-                }catch(e){
-                    return "";
+                } catch(e) {
+                    return ""
                 }
             }
 
@@ -179,7 +181,13 @@
                     && obj.element.targetElement._type == "Service"){
 
                     me.value.outboundServices.push(obj.element.targetElement);
-                    console.log(me.value.outboundServices.length)
+                    // console.log(me.value.outboundServices.length)
+                }
+                
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement._type == "Service"){
+
+                    me.value.outboundServices.splice(me.value.outboundServices.indexOf(obj.element.targetElement), 1);
                 }
             })
             
