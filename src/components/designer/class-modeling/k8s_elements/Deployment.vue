@@ -1,8 +1,8 @@
 <template>
     <div>
-        <image-element
+        <geometry-element
                 selectable
-                movable
+                :movable="editMode"
                 :resizable="editMode"
                 connectable
                 :deletable=editMode
@@ -16,6 +16,7 @@
                 v-on:deSelectShape="deSelectedActivity"
                 v-on:dblclick="showProperty"
                 v-on:rotateShape="onRotateShape"
+                v-on:labelChanged="onLabelChanged"
                 v-on:addedToGroup="onAddedToGroup"
                 v-on:removeShape="onRemoveShape(value)"
                 :label.sync="name"
@@ -23,9 +24,43 @@
                 'label-angle':value.elementView.angle,
                 'font-weight': 'bold','font-size': '16'
                 }"
-                :image='imgSrc'
         >
-        </image-element>
+
+            <!--v-on:dblclick="$refs['dialog'].open()"-->
+            <geometry-rect
+                    :_style="{
+                        'fill-r': 1,
+                        'fill-cx': .1,
+                        'fill-cy': .1,
+                        'stroke-width': 1.4,
+                        'stroke': '#5099F7',
+                        fill: '#5099F7',
+                        'fill-opacity': 1,
+                        r: '1',
+                        'z-index': '998'
+                    }"
+            ></geometry-rect>
+
+            <sub-elements>
+                <!--title-->
+                <text-element
+                        :sub-width="'100%'"
+                        :sub-height="30"
+                        :sub-top="0"
+                        :sub-left="0"
+                        :text="'Deployment'">
+                </text-element>
+                <image-element
+                        :image="imgSrc"
+                        :sub-top="5"
+                        :sub-left="5"
+                        :sub-width="30"
+                        :sub-height="30"
+                >
+
+                </image-element>
+            </sub-elements>
+        </geometry-element>
 
 
          <property-panel
@@ -39,6 +74,7 @@
 <script>
     import Element from '../../modeling/Element'
     import PropertyPanel from './DeploymentPropertyPanel'
+    import ImageElement from "../../../opengraph/shape/ImageElement";
 
     export default {
         mixins: [Element],
@@ -46,6 +82,7 @@
         props: {},
 
         components: {
+            ImageElement,
             "property-panel": PropertyPanel
         },
         props: {},
@@ -57,7 +94,7 @@
                 return 'Deployment'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/deploy-128.png`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/deploy.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -68,8 +105,8 @@
                         'id': elementId,
                         'x': x,
                         'y': y,
-                        'width': 100,
-                        'height': 100,
+                        'width': 150,
+                        'height': 150,
                         'style': JSON.stringify({}),
                         'angle': 0,
                     },
@@ -115,6 +152,7 @@
                     
                 }
             },
+
             name(){
                 try{
                     return this.value.object.metadata.name; 

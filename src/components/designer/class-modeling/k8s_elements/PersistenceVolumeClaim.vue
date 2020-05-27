@@ -36,7 +36,8 @@
                         'stroke': '#cccccc',
                         fill: '#cccccc',
                         'fill-opacity': 1,
-                        r: '1'
+                        r: '1',
+                        'z-index': '998'
                     }"
             ></geometry-rect>
 
@@ -47,16 +48,25 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        text="Persistence Volume Claim">
+                        :text="'PVC'">
                 </text-element>
+                <image-element
+                        :image="imgSrc"
+                        :sub-top="5"
+                        :sub-left="5"
+                        :sub-width="30"
+                        :sub-height="30"
+                >
+
+                </image-element>
             </sub-elements>
         </geometry-element>
 
 
         <property-panel
-            v-if="openPanel"
-            v-model="value"
-            img="https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/policy.png">
+                v-if="openPanel"
+                v-model="value"
+                :img="imgSrc">
         </property-panel>
     </div>
 </template>
@@ -79,7 +89,9 @@
             className() {
                 return 'PersistenceVolumeClaim'
             },
-
+            imgSrc() {
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pvc.svg`
+            },
             createNew(elementId, x, y, width, height) {
                 return {
                     _type: this.className(),
@@ -90,8 +102,8 @@
                         'id': elementId,
                         'x': x,
                         'y': y,
-                        'width': 100,
-                        'height': 100,
+                        'width': 150,
+                        'height': 150,
                         'style': JSON.stringify({}),
                         'angle': 0,
                     },
