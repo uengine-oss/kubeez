@@ -194,10 +194,14 @@
                         // console.log("user-delete-element");
                         // me.$EventBus.$emit('storage')
                         // me.$EventBus.$emit('undoRedo', obj)
+                        
+                        designer.value.definition.splice(designer.value.definition.indexOf(obj.element), 1)
 
                     } else {
                         //선삭
                         // console.log("user-delete- relation")
+
+                        designer.value.relation.splice(designer.value.relation.indexOf(obj.element), 1)
 
                     }
                 } else {
