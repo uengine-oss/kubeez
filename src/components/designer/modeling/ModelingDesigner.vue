@@ -130,6 +130,7 @@
                         >
                             <v-treeview
                                     :items.sync='treeList'
+                                    :active.sync="openCode"
                                     activatable
                                     item-key="key"
                                     return-object
@@ -150,14 +151,10 @@
                             </v-treeview>
                         </v-col>
                         <v-col>
-                            <codemirror
-                                    :options="{
-                                            theme: 'darcula',
-                                            lineNumbers: true,
-                                            lineWrapping: true,
-                                            readOnly: 'nocursor',
-                                    }"
-                            ></codemirror>
+                            <code-viewer
+                                    v-if="codeViewing"
+                                    v-model="openCode"
+                            ></code-viewer>
                         </v-col>
                     </v-row>
                 </v-card-text>
@@ -186,7 +183,7 @@
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="green darken-1" text>Download</v-btn>
+                    <v-btn color="green darken-1" text @click="generateZip()">Download</v-btn>
                     <v-btn color="red darken-1" text @click="generateZipDialog = false">Cancel</v-btn>
                 </v-card-actions>
             </v-card>
@@ -613,16 +610,11 @@
                 },
             async template() {
                 var me = this
-                if (me.template == 'Separate File') {
-                    me.getSeparateFileListSetting();
+                me.getListSetting();
 
-                    me.$nextTick(function () {
-                        me.treeOpen = true
-                    })
-                } else if (me.template == 'Single File') {
-                } else if (me.template == 'Separate File for kind') {
-                } else {
-                }
+                me.$nextTick(function () {
+                    me.treeOpen = true
+                })
             }
         },
         methods: {
@@ -634,13 +626,17 @@
                     me.generateZipDialog = true
                 }
             },
-            codeModalShow() {
-                console.log(this.value);
-                this.plainText = '';
-                this.$modal.show('codeModal');
+            async codeModalShow() {
+                var me = this
+                
+                await me.getListSetting()
+
+                me.$modal.show('codeModal');
+                me.codeViewing = true;
             },
             codeModalhide() {
-                this.$modal.hide('codeModal');
+                this.codeViewing = false;
+                this.$modal.hide('code-modal');
             },
             copy: function () {
                 var me = this
@@ -1006,22 +1002,110 @@
 
                 return type
             },
-            getSeparateFileListSetting() {
-                let me = this
-                let treeValue = {}
+            getListSetting() {
+                var me = this
+                me.treeList = []
+                me.openCode = []
 
-                me.value.definition.forEach(function (item) {
-                    treeValue = {
-                        'key': item.elementView.id,
-                        'name': item.object.metadata.name + '.yaml',
-                        'code': json2yaml.stringify(item.object),
+                if (me.template.length > 0) {
+                    var template = me.template;
+                } else {
+                    var template = 'Separate File';
+                }
+
+                if (template == 'Separate File') {
+                    var codeValue = {}
+                    
+                    me.value.definition.forEach(function (item) {
+                        codeValue = {
+                            'key': item.elementView.id,
+                            'name': item.object.metadata.name + '.yaml',
+                            'code': me.yamlFilter(json2yaml.stringify(item.object)),
+                            'file': me.fileType('.yaml')
+                        }
+                        me.treeList.push(codeValue)
+                    })
+
+                } else if (template == 'Single File') {                    
+                    if(!me.projectName) {
+                        var name = 'local'
+                    } else {
+                        var name = me.projectName
+                    }
+                    
+                    let yaml = ''
+                    me.value.definition.forEach(function (item) {
+                        yaml += json2yaml.stringify(item.object)
+                    })
+
+                    var codeValue = {
+                        'key': name,
+                        'name': name + '.yaml',
+                        'code': yaml,
                         'file': me.fileType('.yaml')
                     }
 
-                    me.treeList.push(treeValue)
-                })
-                console.log(me.treeList)
+                    me.treeList.push(codeValue)
+                
+                } else if (template == 'Separate File for kind') {
+
+                    me.value.definition.forEach(function (item) {
+                        var codeValue = {
+                            'key': item.elementView.id,
+                            'name': item.elementView._type + '.yaml',
+                            'code': json2yaml.stringify(item.object),
+                            'file': me.fileType('.yaml')
+                        }                        
+                        var index = me.treeList.findIndex(function (val) {
+                            if(val.name == codeValue.name) {
+                                val.code += codeValue.code
+                            }
+                            return val.name == codeValue.name
+                        })
+                        
+                        if (index == -1) {
+                            me.treeList.push(codeValue)
+                        }
+                    })
+
+                } else {
+                }
+                
             },
+            yamlFilter(yaml_text) {
+                let lines = yaml_text.split('\n')
+                lines.splice(0, 1)
+                for (let i in lines) {
+                    lines[i] = lines[i].substring(2, lines[i].length)
+                }
+                yaml_text = lines.join('\n')
+                yaml_text = yaml_text.replace(/ null/g, ' ')
+                return yaml_text
+            },
+            async generateZip() {
+                var me = this
+
+                if (me.treeList.length > 0) {
+                    var zip = new JSZip();
+                    
+                    if(!me.projectName) {
+                        var name = 'local'
+                    } else {
+                        var name = me.projectName
+                    }
+
+                    me.treeList.forEach(function (item) {
+                        zip.folder(name).file(item.name, item.code)
+                    })
+
+                    zip.generateAsync({type: "blob"})
+                        .then(function (content) {
+                            saveAs(content, `${name}.zip`);
+                        });
+
+                }
+            },
+            
         }
     }
 </script>
