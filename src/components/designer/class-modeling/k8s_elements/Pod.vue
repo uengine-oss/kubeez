@@ -91,13 +91,14 @@
                 return 'Pod'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pod.svg`
+                return `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pod.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
                     _type: this.className(),
                     name: '',
-                    
+                    namespace: '',
+                    namespaceId: '',
                     elementView: {
                         '_type': this.className(),
                         'id': elementId,
@@ -132,40 +133,44 @@
                         }
                     },
                     outboundVolumes: []
-                    
+
                 }
             },
-
             name() {
                 try {
                     return this.value.object.metadata.name;
-                } catch(e) {
+                } catch (e) {
                     return "Untitled";
                 }
             },
-
             outboundVolumeNames() {
                 try {
                     var names;
-                    
+
                     this.value.outboundVolumes.forEach(element => {
-                        names += element.object.metadata.name +  ","
+                        names += element.object.metadata.name + ","
                     });
-                    
+
                     return names;
 
-                } catch(e) {
+                } catch (e) {
                     return "";
                 }
+            },
+            namespace: {
+                get: function () {
+                    return this.value.object.metadata.namespace
+                },
+                set: function (newVal) {
+                    this.value.object.metadata.namespace = newVal
+                }
             }
-
         },
         data: function () {
-            return {            
-            };
+            return {};
         },
         created: function () {
-            
+
         },
         mounted: function () {
 
@@ -173,31 +178,40 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 console.log(obj)
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistenceVolumeClaim"){
+                if (obj.state == "addRelation" && obj.element && obj.element.targetElement
+                    && obj.element.targetElement._type == "PersistenceVolumeClaim") {
                     console.log("inner")
                     me.value.outboundVolumes.push(obj.element.targetElement);
                 }
 
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistenceVolumeClaim"){
+                if (obj.state == "deleteRelation" && obj.element && obj.element.targetElement
+                    && obj.element.targetElement._type == "PersistenceVolumeClaim") {
 
                     me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
                 }
+                if (obj.state == "changeName") {
+                    me.namespace = obj.element
+                }
             })
-            
+
+        },
+        beforeDestroy() {
+            var me = this
+            var obj = {
+                state: "deleteElement",
+                element: me.value.elementView.id
+            }
+            this.$EventBus.$emit(`${me.value.namespaceId}`, obj)
         },
         watch: {
-            name(appName){
+            name(appName) {
                 this.value.object.metadata.labels.name = appName;
                 this.value.object.spec.containers[0].name = appName;
             },
-
-            outboundVolumeNames(names){
-
+            outboundVolumeNames(names) {
                 this.value.object.spec.volumes = [];
                 var me = this;
-                var i=0; 
+                var i = 0;
                 this.value.outboundVolumes.forEach(element => {
                         me.value.object.spec.volumes.push(
                             {
@@ -209,12 +223,11 @@
                         );
                     }
                 );
-                
+
             }
         },
 
-        methods: {
-        }
+        methods: {}
     }
 </script>
 

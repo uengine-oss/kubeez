@@ -8,7 +8,7 @@
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
-                :label.sync="value.object.metadata.name"
+                :label.sync="name"
                 :width.sync="value.elementView.width"
                 :height.sync="value.elementView.height"
                 v-on:selectShape="selectedActivity"
@@ -60,7 +60,6 @@
         name: 'namespace',
         props: {},
         computed: {
-
             defaultStyle() {
                 return {}
             },
@@ -73,14 +72,14 @@
             createNew(elementId, x, y, width, height) {
                 return {
                     _type: this.className(),
-                    name: 'Namespace',
+                    name: '',
                     elementView: {
                         '_type': this.className(),
                         'id': elementId,
                         'x': x,
                         'y': y,
-                        'width': 150,
-                        'height': 150,
+                        'width': 800,
+                        'height': 400,
                         'style': JSON.stringify({}),
                         'angle': 0,
                     },
@@ -96,9 +95,16 @@
                             ]
                         }
                     },
-                    outboundVolumes: []
+                    innerElement: []
                 }
-            }
+            },
+            name() {
+                try {
+                    return this.value.object.metadata.name;
+                } catch(e) {
+                    return "Untitled";
+                }
+            },
         },
         data: function () {
             return {
@@ -107,10 +113,24 @@
         created: function () {
         },
         watch: {
-
+            name: _.debounce(function(appName) {
+                var me= this
+                this.value.name = appName
+                var obj = {
+                    state: 'changeName',
+                    element: appName
+                }
+                this.value.innerElement.forEach(function(element)  {
+                    me.$EventBus.$emit(element, obj)
+                })
+            }, 300),
         },
         mounted: function () {
             var me = this
+            me.$EventBus.$on(`${me.value.elementView.id}`, function(message) {
+                console.log(message)
+                me.value.innerElement.splice(me.value.innerElement.indexOf(message.element), 1);
+            })
         },
         methods: {
             deleteNameSpace() {
@@ -124,7 +144,7 @@
                         }
                         me.$EventBus.$emit(aggregate.elementView.id, obj)
                     })
-                    me.deleteInBounded(me.value.name)
+                    me.deleteInNameSpace(me.value.name)
                     me.$EventBus.$off(`${me.value.elementView.id}`);
                     me.$emit('update:value', null);
                     // me.$EventBus.$emit('storage')

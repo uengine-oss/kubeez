@@ -96,7 +96,7 @@
                 return {
                     _type: this.className(),
                     name: '',
-                    
+                    namespace: '',
                     elementView: {
                         '_type': this.className(),
                         'id': elementId,
@@ -131,10 +131,9 @@
                     outboundDeployment: null,
                     outboundPod: null,
                     outboundReplicaSet: null,
-                    connectableType: ["Deployment", "Pod","ReplicaSet"]
+                    connectableType: ["Deployment", "Pod", "ReplicaSet"]
                 }
             },
-
             name() {
                 try {
                     return this.value.object.metadata.name    
@@ -142,7 +141,14 @@
                     return "Untitled";
                 }
             },
-
+            namespace: {
+                get: function() {
+                    return this.value.object.metadata.namespace
+                },
+                set: function (newVal){
+                    this.value.object.metadata.namespace = newVal
+                }
+            },
             outboundDeploymentName() {
                 try {
                     return this.value.outboundDeployment.object.metadata.name;

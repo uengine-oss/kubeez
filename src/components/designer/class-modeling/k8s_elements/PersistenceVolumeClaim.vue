@@ -96,7 +96,7 @@
                 return {
                     _type: this.className(),
                     name: '',
-                    
+                    namespace: '',
                     elementView: {
                         '_type': this.className(),
                         'id': elementId,
@@ -140,7 +140,14 @@
                     return "Untitled";
                 }
             },
-
+            namespace: {
+                get: function() {
+                    return this.value.object.metadata.namespace
+                },
+                set: function (newVal){
+                    this.value.object.metadata.namespace = newVal
+                }
+            },
             outboundVolumeName(){
                 try{
                     return this.value.outboundVolume.object.metadata.name;

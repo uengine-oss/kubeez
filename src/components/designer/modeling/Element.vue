@@ -306,30 +306,8 @@
              */
             onAddToGroup: function (groupElement, elements, eventOffset) {
                 var me = this
-                elements.forEach(function (element) {
-                    var inner = false
-                    groupElement.$parent.value.groups.some(function (tmp) {
-                        if (tmp == element.$parent.value.elementView.id) {
-                            return inner = true;
-                        }
-                    })
 
-                    if (inner == false) {
-                        if (groupElement.$parent.value._type == 'org.uengine.modeling.model.BoundedContext' && element.$parent.value._type == 'org.uengine.modeling.model.Aggregate') {
-                            groupElement.$parent.value.aggregates.push(element.$parent.value)
-                            groupElement.$parent.value.groups.push(element.$parent.value.elementView.id)
-                        } else if (groupElement.$parent.value._type == 'org.uengine.modeling.model.BoundedContext' && element.$parent.value._type == 'org.uengine.modeling.model.Policy') {
-                            groupElement.$parent.value.policies.push(element.$parent.value)
-                            groupElement.$parent.value.groups.push(element.$parent.value.elementView.id)
-                        } else if (groupElement.$parent.value._type == 'org.uengine.modeling.model.BoundedContext' && element.$parent.value._type == 'org.uengine.modeling.model.View') {
-                            groupElement.$parent.value.viewes.push(element.$parent.value)
-                            groupElement.$parent.value.groups.push(element.$parent.value.elementView.id)
-                        } else if (groupElement.$parent.value._type == 'org.uengine.modeling.model.BoundedContext' && element.$parent.value._type == 'org.uengine.modeling.model.Event') {
-                            groupElement.$parent.value.groups.push(element.$parent.value.elementView.id)
-                        }
-                    }
 
-                })
             },
             /**
              * 자신이 그룹속으로 들어갔을 때의 이벤트
@@ -342,66 +320,15 @@
 
                 if (groupElement.tagName) {
                     // Canvas로 나가는 경우
-                    console.log("Out BoundedContext")
-                    designer.value.definition.forEach(function (tmp) {
-                        if (tmp != null) {
-                            if (tmp._type == 'org.uengine.modeling.model.BoundedContext' && tmp.name == element.$parent.value.boundedContext.name) {
-                                if (element.$parent.value._type == 'org.uengine.modeling.model.Aggregate') {
-                                    tmp.aggregates.some(function (boundedTmp, idx) {
-                                        if (boundedTmp.elementView.id == element.$parent.value.elementView.id) {
-                                            tmp.aggregates = [
-                                                ...tmp.aggregates.slice(0, idx),
-                                                ...tmp.aggregates.slice(idx + 1)
-                                            ]
-                                        }
-                                    })
-                                } else if (element.$parent.value._type == 'org.uengine.modeling.model.Policy') {
-                                    tmp.policies.some(function (boundedTmp, idx) {
-                                        if (boundedTmp.elementView.id == element.$parent.value.elementView.id) {
-                                            tmp.policies = [
-                                                ...tmp.policies.slice(0, idx),
-                                                ...tmp.policies.slice(idx + 1)
-                                            ]
-                                        }
-                                    })
-                                } else if (element.$parent.value._type == 'org.uengine.modeling.model.View') {
-                                    tmp.viewes.some(function (boundedTmp, idx) {
-                                        if (boundedTmp.elementView.id == element.$parent.value.elementView.id) {
-                                            tmp.viewes = [
-                                                ...tmp.viewes.slice(0, idx),
-                                                ...tmp.viewes.slice(idx + 1)
-                                            ]
-                                        }
-                                    })
-                                }
 
-                                tmp.groups.some(function (groupsId, idx) {
-                                    if (groupsId == element.$parent.value.elementView.id) {
-                                        tmp.groups = [
-                                            ...tmp.groups.slice(0, idx),
-                                            ...tmp.groups.slice(idx + 1)
-                                        ]
-                                    }
-                                })
-                            }
-                        }
-
-                    })
-
-                    // element.$parent.value.boundedContext = {}
+                    element.$parent.namespace = undefined;
 
                 } else {
-                    // console.log("Into BoundedContext")
-                    // Bounded Context로 들어가는 경우
-                    // 초기화 하고 새로운 값으로 변경
-                    if (groupElement.$parent.value._type == 'org.uengine.modeling.model.BoundedContext') {
-                        var boundedOb = {
-                            id: groupElement.$parent.value.elementView.id,
-                            name: groupElement.$parent.value.name
-                        }
-
-                        element.$parent.value.boundedContext = {}
-                        element.$parent.value.boundedContext = boundedOb
+                    if (groupElement.$parent.value._type == 'Namespace') {
+                        var namespace = groupElement.$parent.value.name;
+                        groupElement.$parent.value.innerElement.push(element.$parent.value.elementView.id)
+                        element.$parent.namespace = namespace
+                        element.$parent.value.namespaceId = groupElement.$parent.value.elementView.id;
                     }
                 }
 

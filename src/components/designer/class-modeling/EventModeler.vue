@@ -72,8 +72,8 @@
                     {
                         'component': 'namespace',
                         'label': 'Namespace',
-                        'width': '100',
-                        'height': '100',
+                        'width': '400',
+                        'height': '400',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ns-palette.svg`
                     },
                 ],

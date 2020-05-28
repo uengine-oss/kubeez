@@ -97,7 +97,7 @@
                 return {
                     _type: this.className(),
                     name: '',
-                    
+                    namespace:'',
                     elementView: {
                         '_type': this.className(),
                         'id': elementId,
@@ -144,7 +144,14 @@
                     connectableType: ["Pod"]
                 }
             },
-
+            namespace: {
+                get: function() {
+                    return this.value.object.metadata.namespace
+                },
+                set: function (newVal){
+                    this.value.object.metadata.namespace = newVal
+                }
+            },
             name(){
                 try{
                     return this.value.object.metadata.name;
