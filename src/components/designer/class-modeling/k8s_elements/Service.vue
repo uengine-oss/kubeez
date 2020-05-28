@@ -131,7 +131,7 @@
                     outboundDeployment: null,
                     outboundPod: null,
                     outboundReplicaSet: null,
-                    connectableType: ["Deployment", "Pod"]
+                    connectableType: ["Deployment", "Pod","ReplicaSet"]
                 }
             },
 

@@ -69,6 +69,13 @@
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/rs-palette.svg`
                     },
+                    {
+                        'component': 'namespace',
+                        'label': 'Namespace',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ns-palette.svg`
+                    },
                 ],
             }
         },
