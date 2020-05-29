@@ -1094,16 +1094,24 @@
                         var name = me.projectName
                     }
 
-                    me.treeList.forEach(function (item) {
-                        zip.folder(name).file(item.name, item.code)
-                    })
+                    if(me.template == 'Single File') {
+                        var filename = name + '.yaml'
+                        var code = me.treeList[0].code
+                        var file = new File([code], filename, {type: "text/yaml;charset=utf-8"})
 
-                    zip.generateAsync({type: "blob"})
-                        .then(function (content) {
-                            saveAs(content, `${name}.zip`);
-                        });
+                        FileSaver.saveAs(file);
+                    } else {
+                        me.treeList.forEach(function (item) {
+                            zip.folder(name).file(item.name, item.code)
+                        })
 
+                        zip.generateAsync({type: "blob"})
+                            .then(function (content) {
+                                saveAs(content, `${name}.zip`);
+                            });
+                    }
                 }
+
             },
             
         }
