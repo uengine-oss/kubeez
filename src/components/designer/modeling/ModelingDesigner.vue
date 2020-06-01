@@ -330,7 +330,7 @@
                 getCodeList: [],
                 openCode: [],
                 template: '',
-                templateList: ['Separate File', 'Single File', 'Separate File for kind', 'Helm'],
+                templateList: ['Separate File', 'Single File', 'Separate File per kind', 'Helm'],
                 treeOpen: true,
                 gitUrl: '',
                 gitPath: [],
@@ -1047,7 +1047,7 @@
 
                     me.treeList.push(codeValue)
                 
-                } else if (template == 'Separate File for kind') {
+                } else if (template == 'Separate File per kind') {
 
                     me.value.definition.forEach(function (item) {
                         var codeValue = {
@@ -1068,7 +1068,8 @@
                         }
                     })
 
-                } else {
+                } else if (template == 'Helm') {
+                    me.getHelmChartSetting()
                 }
                 
             },
@@ -1100,6 +1101,27 @@
                         var file = new File([code], filename, {type: "text/yaml;charset=utf-8"})
 
                         FileSaver.saveAs(file);
+                    } else if (me.template == 'Helm') {
+                        var name = me.treeList[0].name
+                        var templates = []
+
+                        me.treeList[0].children.forEach(function (item) {
+                            if(item.name == 'templates') {
+                                templates = item
+                            } else {
+                                zip.folder(name).file(item.name, item.code)
+                            }
+                        })
+
+                        templates.children.forEach(function (item) {
+                            zip.folder(name).folder('templates').file(item.name, item.code)
+                        })
+
+                        zip.generateAsync({type: "blob"})
+                            .then(function (content) {
+                                saveAs(content, `${name}.zip`);
+                            });
+
                     } else {
                         me.treeList.forEach(function (item) {
                             zip.folder(name).file(item.name, item.code)
@@ -1111,6 +1133,66 @@
                             });
                     }
                 }
+
+            },
+            getHelmChartSetting() {
+                var me = this
+                var templates = []
+
+                if(me.projectName) {
+                    var name = me.projectName
+                } else {
+                    var name = 'kubernetes'
+                }
+
+                templates.push({
+                    'key': 'notes',
+                    'name': 'NOTES.txt',
+                    'code': '',
+                    'file': 'txt'
+                })
+
+                me.value.definition.forEach(function (item) {
+                    var codeValue = {
+                        'key': item.elementView.id,
+                        'name': item.object.metadata.name + '.yaml',
+                        'code': me.yamlFilter(json2yaml.stringify(item.object)),
+                        'file': me.fileType('.yaml')
+                    }
+                    templates.push(codeValue)
+                })
+                
+                var chartJson = {
+                    "apiVersion": "v1",
+                    "name": name,
+                    "version": "0.1.0",
+                    "description": ""
+                }
+
+                var valuesJson = {}
+
+                var folder = {
+                    'name': name,
+                    'children': [
+                        {
+                            'key': 'chart',
+                            'name': 'Chart.yaml',
+                            'code': me.yamlFilter(json2yaml.stringify(chartJson)),
+                            'file': me.fileType('.yaml')
+                        },
+                        {
+                            'name': 'templates',
+                            'children': templates
+                        },
+                        {
+                            'key': 'values',
+                            'name': 'values.yaml',
+                            'code': me.yamlFilter(json2yaml.stringify(valuesJson)),
+                            'file': me.fileType('.yaml')
+                        }
+                    ]
+                }
+                me.treeList.push(folder)
 
             },
             
