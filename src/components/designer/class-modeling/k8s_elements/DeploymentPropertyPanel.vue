@@ -44,16 +44,14 @@
                                     label="Image"
                                     v-model="value.object.spec.template.spec.containers[0].image"
                                 ></v-text-field>
-                                <v-text-field
-                                    label="Replicas"
+                                <number-field
+                                    :label="'Replicas'"
                                     v-model="value.object.spec.replicas"
-                                    type="number"
-                                ></v-text-field>
-                                <v-text-field
-                                    label="Target Port"
+                                ></number-field>
+                                <number-field
+                                    :label="'Target Port'"
                                     v-model="value.object.spec.template.spec.containers[0].ports[0].containerPort"
-                                    type="number"
-                                ></v-text-field>
+                                ></number-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -70,6 +68,7 @@
     import yaml from "js-yaml";
 
     import YamlEditor from "./YamlEditor";
+    import NumberField from "./NumberField";
 
     export default {
         name: 'service-property-panel',
@@ -78,13 +77,14 @@
             img: String,
         },
         components: {
-            "yaml-editor": YamlEditor
+            "yaml-editor": YamlEditor,
+            "number-field": NumberField,
         },
         computed: {
             descriptionText() {
                 return 'Deployment'
             },
-            
+
         },
         data: function () {
             return {
@@ -92,8 +92,6 @@
         },
 
         watch: {
-
-            
         },
         methods: {
         }

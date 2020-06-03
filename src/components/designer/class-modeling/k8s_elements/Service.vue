@@ -108,7 +108,7 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "apps/v1",
+                        "apiVersion": "v1",
                         "kind": "Service",
                         "metadata": {
                             "name": "",
@@ -119,8 +119,8 @@
                         "spec": {
                             "ports": [
                                 {
-                                    "port": "80",
-                                    "targetPort": "80"
+                                    "port": 80,
+                                    "targetPort": 80
                                 }
                             ],
                             "selector": {

@@ -45,16 +45,14 @@
                                     label="Deployment Name"
                                     v-model="value.object.spec.selector.app"
                                 ></v-text-field>
-                                <v-text-field
-                                    label="Port"
+                                <number-field
+                                    :label="'Port'"
                                     v-model="value.object.spec.ports[0].port"
-                                    type="number"
-                                ></v-text-field>
-                                <v-text-field
-                                    label="Target Port"
+                                ></number-field>
+                                <number-field
+                                    :label="'Target Port'"
                                     v-model="value.object.spec.ports[0].targetPort"
-                                    type="number"
-                                ></v-text-field>
+                                ></number-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -71,6 +69,7 @@
     import yaml from "js-yaml";
 
     import YamlEditor from "./YamlEditor";
+    import NumberField from "./NumberField";
 
     export default {
         name: 'service-property-panel',
@@ -79,7 +78,8 @@
             img: String,
         },
         components: {
-            "yaml-editor": YamlEditor
+            "yaml-editor": YamlEditor,
+            "number-field": NumberField,
         },
         computed: {
             descriptionText() {
@@ -93,8 +93,7 @@
         },
 
         watch: {
-            
-            
+
         },
         methods: {
            

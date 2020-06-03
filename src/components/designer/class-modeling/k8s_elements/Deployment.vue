@@ -125,7 +125,7 @@
                                     "app": ""
                                 }
                             },
-                            "replicas": "1",
+                            "replicas": 1,
                             "template": {
                                 "metadata": {
                                     "labels": {
@@ -139,7 +139,7 @@
                                             "image": "",
                                             "ports": [
                                                 {
-                                                    "containerPort": "80"
+                                                    "containerPort": 80
                                                 }
                                             ]
                                         }
@@ -227,7 +227,6 @@
 
             outboundVolumeNames(names){
 
-                console.log(names)
                 this.value.object.spec.volumes = [];
                 var me = this;
                 var i=0; 
