@@ -388,6 +388,14 @@
                 //     element: this.value
                 // }
                 // me.$EventBus.$emit('undoRedo', obj)
+            },
+            deleteRelation: function(relationId) {
+                var me = this
+                var obj = {
+                    state: "delete",
+                    element: me.value
+                }
+                me.$EventBus.$emit(relationId, obj)
             }
         }
     }

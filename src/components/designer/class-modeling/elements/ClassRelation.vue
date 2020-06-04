@@ -145,6 +145,8 @@
                 // if (obj.state == 'delete' && obj.element._type == 'org.uengine.modeling.model.Relation') {
                 //     me.deleteRelation()
                 // }
+
+                me.deleteRelation()
             })
             console.log(me.value.sourceElement)
             console.log(me.value.targetElement)

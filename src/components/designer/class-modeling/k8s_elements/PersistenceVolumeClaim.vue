@@ -108,7 +108,7 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "extensions/v1beta1",
+                        "apiVersion": "v1",
                         "kind": "PersistentVolumeClaim",
                         "metadata": {
                             "name": "",
@@ -119,7 +119,7 @@
                             ],
                             "resources": {
                                 "requests": {
-                                    "storage": "1"
+                                    "storage": "1Gi"
                                 }
                             },
                             "storageClassName": "",
@@ -171,13 +171,13 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistenceVolume"){
+                    && obj.element.targetElement._type == "PersistentVolume"){
 
                     me.value.outboundVolume = obj.element.targetElement;
                 }
 
                 if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistenceVolume"){
+                    && obj.element.targetElement._type == "PersistentVolume"){
 
                     me.value.outboundVolume = null;
                 }

@@ -87,7 +87,7 @@
                 return {}
             },
             className() {
-                return 'PersistenceVolume'
+                return 'PersistentVolume'
             },
             imgSrc() {
                 return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pv.svg`
@@ -118,10 +118,13 @@
                                 ""
                             ],
                             "capacity": {
-                                "storage": "1"
+                                "storage": "1Gi"
                             },
                             "persistentVolumeReclaimPolicy": "Retain",
-                            "volumeMode": "Filesystem"
+                            "volumeMode": "Filesystem",
+                            "hostPath": {
+                                "path": ""
+                            }
                         },
                     }
                     

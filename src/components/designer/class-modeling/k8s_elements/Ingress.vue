@@ -114,10 +114,6 @@
                             "name": "",
                         },
                         "spec": {
-                            "backend": {
-                                "serviceName": "",
-                                "servicePort": 80
-                            },
                             "rules": [
                                 {
                                     "host": "insurance.infogra.io",
@@ -168,7 +164,11 @@
                 } catch(e) {
                     return ""
                 }
-            }
+            },
+
+            paths() {
+                return this.value.object.spec.rules[0].http.paths
+            },
 
         },
         data: function () {
@@ -186,9 +186,9 @@
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
                     && obj.element.targetElement._type == "Service"){
-
-                    me.value.outboundServices.push(obj.element.targetElement);
-                    // console.log(me.value.outboundServices.length)
+                    
+                    obj.element.targetElement.relationId = obj.element.relationView.id
+                    me.value.outboundServices.push(obj.element.targetElement)
                 }
                 
                 if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
@@ -215,11 +215,37 @@
                         );
                     }
                 );
-                
+            },
+
+            paths: {
+                deep: true,
+                handler: function (newVal, oldVal) {
+                    var me = this
+                    if(newVal.length < oldVal.length) {
+                        var index = me.getIndex(newVal, oldVal)
+
+                        if (me.value.outboundServices[index]) {
+                            me.deleteRelation(me.value.outboundServices[index].relationId)
+                        }
+                    }
+                }
             }
         },
 
         methods: {
+            getIndex(newArr, oldArr) {
+                var index
+                oldArr.some(function(item, idx) {
+                    if (newArr[idx] == undefined) {
+                        index = idx
+                        return true
+                    } else if (item.backend.serviceName != newArr[idx].backend.serviceName) {
+                        index = idx
+                        return true
+                    }
+                })
+                return index
+            },
         }
     }
 </script>
