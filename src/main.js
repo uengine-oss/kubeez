@@ -19,10 +19,10 @@ import VueYouTubeEmbed from 'vue-youtube-embed'
 import vuetify from './plugins/vuetify';
 import * as VueWindow from '@hscmap/vue-window'
 //view
-//import ModelingPropertyPanel from "./components/designer/modeling/ModelingPropertyPanel";
 
 import dashEditYaml from "./components/dashEdityamlpage.vue";
 import dashYaml from "./components/dashYaml.vue";
+import Login from "./components/Login.vue"
 
 Vue.use(VueFriendlyIframe);
 Vue.use(VueWindow)
@@ -41,7 +41,7 @@ Vue.component('dashYaml', dashYaml)
 
 Vue.component('EditYaml', EditYaml)
 Vue.component('text-reader', textReader)
-//Vue.component('ModelingPropertyPanel',ModelingPropertyPanel)
+Vue.component('Login', Login)
 
 // Vue.use(Metaworks4);
 
@@ -70,7 +70,8 @@ window.$Mustache = Mustache
 
 
 if( true ){
-    window.API_HOST = "localhost:8080";
+    // window.API_HOST = "localhost:8080";
+    window.API_HOST = "http://localhost:8080";
 }else{
     window.API_HOST = process.env.VUE_APP_API_HOST
 }

@@ -106,8 +106,28 @@
                 </v-card>
             </v-menu>
 
+            <v-btn
+                    v-if="!successLogin"
+                    @click="loginPage"
+                    fab icon>
+                <v-avatar>
+                    <v-icon x-large>mdi-account-circle</v-icon>
+                </v-avatar>
+            </v-btn>
 
-
+            <v-btn
+                    v-if="successLogin"
+                    @click="logout()"
+                    fab icon>
+                <v-avatar
+                        size="40"
+                >
+                    <img
+                            v-if="loginUser.picture"
+                            :src=loginUser.picture
+                    >
+                </v-avatar>
+            </v-btn>
 
             <v-btn icon color="white" @click="wikiOpen">
                 <v-icon medium>info</v-icon>
@@ -408,6 +428,7 @@
                 } else {
                     me.successLogin = false
                 }
+                me.loginDialog = false
                 me.authorized
                 // me.vm.$forceUpdate();
                 me.$forceUpdate();
@@ -540,18 +561,10 @@
             // },
             logout() {
                 var me = this
+                var userId = localStorage.getItem('uid')
 
-                var userId;
-                firebase.auth().onAuthStateChanged(function (user) {
-                    if (user) {
-                        userId = user.uid;
-                        // me.$nextTick(function () {
-                        //     me.logoutUpdate(userId)
-                        // })
-                    } else {
-                        // No user is signed in.
-                        // console.log(user)
-                    }
+                firebase.database().ref('users/' + userId).update({
+                    state: 'signOut'
                 });
 
                 firebase.auth().signOut().then(function (result) {

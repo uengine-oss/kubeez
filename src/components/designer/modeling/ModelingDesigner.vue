@@ -45,6 +45,26 @@
                         </template>
                     </v-menu> -->
 
+                     <v-menu
+                            class="pa-2"
+                            style="margin-right: 3px"
+                            open-on-hover
+                            offset-y
+                    >
+                        <template v-slot:activator="{ on }">
+                            <v-btn
+                                    style="margin-right: 5px;margin-top: 15px;"
+                                    color="primary"
+                                    dark
+                                    @click="onTokenDialog()"
+                                    v-on="on"
+                            >
+                                <v-icon>mdi-powershell</v-icon>
+                                Deploy
+                            </v-btn>
+                        </template>
+                    </v-menu>
+
                     <v-menu
                             class="pa-2"
                             style="margin-right: 3px"
@@ -189,6 +209,23 @@
             </v-card>
         </v-dialog>
 
+        <v-dialog v-model="tokenDialog" max-width="290">
+            <v-card>
+                <v-card-title class="headline">Token Dialog</v-card-title>
+                <v-card-text>
+                    <v-text-field v-model="clusterAddress" label="API Server"
+                                  required></v-text-field>
+                    <v-text-field v-model="kubernetesToken" label="Token"
+                                  required></v-text-field>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="green darken-1" text @click="saveClusterData()">Deploy</v-btn>
+                    <v-btn color="red darken-1" text @click="tokenDialog = false">Cancel</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
 
     </div>
 
@@ -199,6 +236,7 @@
     import {
         saveAs
     } from 'file-saver';
+    import firebase from 'firebase'
     import * as io from 'socket.io-client'
     import {codemirror} from 'vue-codemirror'
     import yaml from 'js-yaml'
@@ -434,6 +472,7 @@
             var me = this
 
             //database db setting
+            me.database = firebase.database()
             window.io = io
 
 
@@ -1195,7 +1234,79 @@
                 me.treeList.push(folder)
 
             },
-            
+            deploy() {
+                var me = this
+
+                me.value.definition.forEach(function (item) {
+                    var reqUrl = me.getReqUrl(item)
+                    // post
+                    // axios.post(reqUrl, item.object).then(function (res) {
+                    //     console.log(res)
+                    // }).catch(function (err) {
+                    //     console.log(err)
+                    // })
+                })
+            },
+            getReqUrl(item) {
+                var me = this
+                var reqUrl = `${API_HOST}` + '/'
+                var type = (item._type).toLowerCase() + 's'
+
+                if(item.object.apiVersion == 'v1') {
+                    var apiVersion = 'api/' + item.object.apiVersion
+                } else {
+                    var apiVersion = 'apis/' + item.object.apiVersion
+                }
+
+                if(item.object.metadata.namespace) {
+                    var namespace = item.object.metadata.namespace
+                } else {
+                    var namespace = 'default'
+                }
+
+                reqUrl += apiVersion + '/namespaces/' + namespace + '/' + type + '/'
+                
+                return reqUrl
+            },
+            onTokenDialog() {
+                var me = this
+                if (localStorage.getItem('kubernetesToken') == null) {
+                    me.tokenDialog = true
+                } else {
+                    me.clusterAddress = localStorage.getItem('kubernetesToken')
+                    me.kubernetesToken = localStorage.getItem('clusterAddress')
+                    me.deploy()
+                }
+            },
+            saveClusterData() {
+                var me = this
+                var userId = ''
+                var newClusterKey = ''
+
+                localStorage.setItem('kubernetesToken', me.kubernetesToken);
+                localStorage.setItem('clusterAddress', me.clusterAddress);
+
+                if(!me.projectName) {
+                    var projectName = 'localTest'
+                } else {
+                    var projectName = me.projectName
+                }
+                
+                var cluster = {
+                    "name" : projectName,
+                    "api-server" : me.clusterAddress,
+                    "token": me.kubernetesToken
+                }
+                // console.log(cluster)
+
+                userId = firebase.auth().currentUser.uid
+                newClusterKey = me.database.ref('userList/').child(userId + '/clusters/').push().key
+
+                me.database.ref('userList/').child(userId + '/clusters/' + newClusterKey).update(cluster)
+
+                me.tokenDialog = false
+                me.deploy()
+            },
         }
     }
 </script>
