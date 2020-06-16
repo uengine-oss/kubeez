@@ -35,17 +35,7 @@
             <v-flex style="justify:end; align:start;">
                 <v-row justify="end" align="start" style="margin-right: 10px;">
 
-                    <!-- <v-menu
-                            class="pa-2"
-                            style="margin-right: 3px"
-                            open-on-hover
-                            offset-y>
-                        <template v-slot:activator="{ on }">
-                            <v-btn color="info" @click="codeModalShow()" status ="add">YAML</v-btn>
-                        </template>
-                    </v-menu> -->
-
-                     <v-menu
+                    <v-menu
                             class="pa-2"
                             style="margin-right: 3px"
                             open-on-hover
@@ -56,13 +46,22 @@
                                     style="margin-right: 5px;margin-top: 15px;"
                                     color="primary"
                                     dark
-                                    @click="onTokenDialog()"
+                                    @click="goToClusters()"
                                     v-on="on"
                             >
                                 <v-icon>mdi-powershell</v-icon>
                                 Deploy
                             </v-btn>
                         </template>
+                        <v-list>
+                            <v-list-item
+                                    v-for="(item, index) in deployItems"
+                                    :key="index"
+                                    @click="functionSelect(item.title)"
+                            >
+                                <v-list-item-title>{{ item.title }}</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
                     </v-menu>
 
                     <v-menu
@@ -120,9 +119,58 @@
 
         </v-layout>
 
-        <!-- <modal ref="modal" name="codeModal" :height='"70%"' :width="'80%'">
-            <dashEditYaml :status="'add'" :plainText.sync="plainText" :types="types"></dashEditYaml>
-        </modal> -->
+        <v-dialog
+                v-model="showClustersDialog"
+                fullscreen
+                hide-overlay
+                scrollable
+        >
+            <v-card tile>
+                <v-toolbar
+                        class="canvas-panel"
+                        flat
+                        dark
+                        color="primary"
+                >
+                    <v-toolbar-title>Manage Clusters</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items>
+                        <v-btn
+                                icon
+                                dark
+                                @click="showClustersDialog = false"
+                        >
+                            <v-icon>mdi-close</v-icon>
+                        </v-btn>
+                    </v-toolbar-items>
+                </v-toolbar>
+                <v-list
+                        three-line
+                        subheader
+                >
+                    <v-subheader></v-subheader>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <ViewManageClustersPage v-model="clustersList" />
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+                <v-card-text></v-card-text>
+                <v-card-actions>
+                    <v-btn 
+                            fab
+                            dark
+                            left
+                            bottom
+                            class="mx-5 my-5"
+                            color="primary"
+                            @click="onTokenDialog()"
+                    >
+                        <v-icon dark>mdi-plus</v-icon>
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
 
         <modal name="codeModal" :height='"auto"' :width="'80%'" scrollable>
             <v-card flat>
@@ -209,19 +257,52 @@
             </v-card>
         </v-dialog>
 
-        <v-dialog v-model="tokenDialog" max-width="290">
+        <v-dialog v-model="tokenDialog" max-width="350">
             <v-card>
-                <v-card-title class="headline">Token Dialog</v-card-title>
+                <v-card-title class="headline">Cluster</v-card-title>
                 <v-card-text>
-                    <v-text-field v-model="clusterAddress" label="API Server"
-                                  required></v-text-field>
-                    <v-text-field v-model="kubernetesToken" label="Token"
-                                  required></v-text-field>
+                    <v-text-field
+                            v-model="clusterName"
+                            label="Name"
+                            required
+                    ></v-text-field>
+                    <v-text-field
+                            v-model="clusterAddress"
+                            label="API Server"
+                            required
+                    ></v-text-field>
+                    <v-textarea
+                            label="Token"
+                            v-model="kubernetesToken"
+                            required
+                    ></v-textarea>
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="green darken-1" text @click="saveClusterData()">Deploy</v-btn>
+                    <v-btn color="green darken-1" text @click="saveClusterData()">Save</v-btn>
                     <v-btn color="red darken-1" text @click="tokenDialog = false">Cancel</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="deployDialog" max-width="350">
+            <v-card>
+                <v-card-title class="headline">Deploy to Server</v-card-title>
+                <v-card-text>
+                    <v-text-field
+                            v-model="projectName"
+                            label="projectName"
+                    ></v-text-field>
+                    <v-select
+                            :items="clustersNameList"
+                            label="cluster"
+                    ></v-select>
+                </v-card-text>
+
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="green darken-1" text @click="deploy()">Deploy</v-btn>
+                    <v-btn color="red darken-1" text @click="deployDialog = false">Cancel</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -307,6 +388,10 @@
                     {title: 'Code Preview'},
                     {title: 'Download Archive'},
                 ],
+                deployItems: [
+                    {title: 'Manage Clusters'},
+                    {title: 'Deploy to Server'},
+                ],
                 onlineSaveDialog: false,
                 onlineSaveComfirmDialog: false,
                 isLoadVersion: false,
@@ -383,9 +468,16 @@
                 version: '',
                 revisionInfo: {},
                 showVersionsDialog: false,
+                //cluster
                 kubernetesToken: '',
                 clusterAddress: '',
+                clusterName: '',
+                showClustersDialog: false,
                 tokenDialog: false,
+                clustersList: [],
+                clustersNameList: [],
+                //deploy
+                deployDialog: false,
                 projectAuthor: '',
                 parmVersion: '',
                 parmType: '',
@@ -663,6 +755,10 @@
                     me.codeModalShow()
                 } else if (title == 'Download Archive') {
                     me.generateZipDialog = true
+                } else if (title == 'Manage Clusters') {
+                    me.goToClusters()
+                } else if (title == 'Deploy to Server') {
+                    me.deployDialogReady()
                 }
             },
             async codeModalShow() {
@@ -1234,17 +1330,26 @@
                 me.treeList.push(folder)
 
             },
+            async deployDialogReady() {
+                var me = this
+                var list = []
+                var userId = localStorage.getItem('uid')
+
+                await me.getClustersList()
+                
+                me.deployDialog = true
+            },
             deploy() {
                 var me = this
 
                 me.value.definition.forEach(function (item) {
                     var reqUrl = me.getReqUrl(item)
-                    // post
-                    // axios.post(reqUrl, item.object).then(function (res) {
-                    //     console.log(res)
-                    // }).catch(function (err) {
-                    //     console.log(err)
-                    // })
+                    
+                    axios.post(reqUrl, item.object).then(function (res) {
+                        console.log(res.status)
+                    }).catch(function (err) {
+                        console.log(err)
+                    })
                 })
             },
             getReqUrl(item) {
@@ -1268,15 +1373,32 @@
                 
                 return reqUrl
             },
+            async goToClusters() {
+                var me = this
+                await me.getClustersList()
+                me.showClustersDialog = true
+            },
+            getClustersList() {
+                var me = this
+                var list = []
+                var userId = localStorage.getItem('uid')
+
+                me.database.ref('userList/' + userId + '/clusters/')
+                    .once('value', function(snapshot) {
+                        if (snapshot.exists()) {
+                            var clusterIds = Object.keys(snapshot.val())
+                            clusterIds.forEach(function (clusterId, index) {
+                                var cluster = snapshot.val()[clusterId]
+                                list.push(cluster)
+                                me.clustersNameList.push(cluster.name)
+                            })
+                        }
+                    })
+                me.clustersList = list
+            },
             onTokenDialog() {
                 var me = this
-                if (localStorage.getItem('kubernetesToken') == null) {
-                    me.tokenDialog = true
-                } else {
-                    me.clusterAddress = localStorage.getItem('kubernetesToken')
-                    me.kubernetesToken = localStorage.getItem('clusterAddress')
-                    me.deploy()
-                }
+                me.tokenDialog = true
             },
             saveClusterData() {
                 var me = this
@@ -1285,27 +1407,21 @@
 
                 localStorage.setItem('kubernetesToken', me.kubernetesToken);
                 localStorage.setItem('clusterAddress', me.clusterAddress);
-
-                if(!me.projectName) {
-                    var projectName = 'localTest'
-                } else {
-                    var projectName = me.projectName
-                }
+                localStorage.setItem('clusterName', me.clusterName);
                 
                 var cluster = {
-                    "name" : projectName,
-                    "api-server" : me.clusterAddress,
+                    "name" : me.clusterName,
+                    "apiServer" : me.clusterAddress,
                     "token": me.kubernetesToken
                 }
-                // console.log(cluster)
 
-                userId = firebase.auth().currentUser.uid
+                userId = localStorage.getItem('uid')
                 newClusterKey = me.database.ref('userList/').child(userId + '/clusters/').push().key
 
                 me.database.ref('userList/').child(userId + '/clusters/' + newClusterKey).update(cluster)
 
+                me.getClustersList()
                 me.tokenDialog = false
-                me.deploy()
             },
         }
     }
