@@ -46,7 +46,7 @@
                                     style="margin-right: 5px;margin-top: 15px;"
                                     color="primary"
                                     dark
-                                    @click="goToClusters()"
+                                    @click="deployDialogReady()"
                                     v-on="on"
                             >
                                 <v-icon>mdi-powershell</v-icon>
@@ -94,7 +94,6 @@
                     </v-menu>
                 </v-row>
             </v-flex>
-
 
             <v-card class="tools" style="top:100px; text-align: center;">
                 <span class="bpmn-icon-hand-tool" v-bind:class="{ icons : !dragPageMovable, hands : dragPageMovable }"
@@ -272,7 +271,7 @@
                             required
                     ></v-text-field>
                     <v-textarea
-                            label="Token"
+                            label="TOKEN"
                             v-model="kubernetesToken"
                             required
                     ></v-textarea>
@@ -287,7 +286,7 @@
 
         <v-dialog v-model="deployDialog" max-width="350">
             <v-card>
-                <v-card-title class="headline">Deploy to Server</v-card-title>
+                <v-card-title class="headline">Deploy</v-card-title>
                 <v-card-text>
                     <v-text-field
                             v-model="projectName"
@@ -1331,6 +1330,7 @@
 
             },
             async deployDialogReady() {
+                clearInterval()
                 var me = this
                 var list = []
                 var userId = localStorage.getItem('uid')
@@ -1339,18 +1339,29 @@
                 
                 me.deployDialog = true
             },
-            deploy() {
+            async deploy() {
                 var me = this
-
-                me.value.definition.forEach(function (item) {
+                
+                await me.value.definition.forEach(function (item) {
                     var reqUrl = me.getReqUrl(item)
                     
-                    axios.post(reqUrl, item.object).then(function (res) {
+                    me.$http.post(reqUrl, item.object).then(function (res) {
                         console.log(res.status)
+                        me.getJsonData(reqUrl, item.object)
                     }).catch(function (err) {
                         console.log(err)
                     })
+                    
+                    reqUrl += item.object.metadata.name                    
+                    // me.$http.put(reqUrl, item.object).then(function (res) {
+                    //     console.log(res.status)
+                    // }).catch(function (err) {
+                    //     console.log(err)
+                    // })
+                    
                 })
+
+                me.deployDialog = false
             },
             getReqUrl(item) {
                 var me = this
@@ -1383,14 +1394,14 @@
                 var list = []
                 var userId = localStorage.getItem('uid')
 
-                me.database.ref('userList/' + userId + '/clusters/')
+                me.database.ref('userLists/' + userId + '/clusters/')
                     .once('value', function(snapshot) {
                         if (snapshot.exists()) {
                             var clusterIds = Object.keys(snapshot.val())
                             clusterIds.forEach(function (clusterId, index) {
                                 var cluster = snapshot.val()[clusterId]
                                 list.push(cluster)
-                                me.clustersNameList.push(cluster.name)
+                                me.clustersNameList.push(cluster.NAME)
                             })
                         }
                     })
@@ -1410,19 +1421,32 @@
                 localStorage.setItem('clusterName', me.clusterName);
                 
                 var cluster = {
-                    "name" : me.clusterName,
-                    "apiServer" : me.clusterAddress,
-                    "token": me.kubernetesToken
+                    "NAME" : me.clusterName,
+                    "APISERVER" : me.clusterAddress,
+                    "TOKEN": me.kubernetesToken
                 }
 
                 userId = localStorage.getItem('uid')
-                newClusterKey = me.database.ref('userList/').child(userId + '/clusters/').push().key
+                newClusterKey = me.database.ref('userLists/').child(userId + '/clusters/').push().key
 
-                me.database.ref('userList/').child(userId + '/clusters/' + newClusterKey).update(cluster)
+                me.database.ref('userLists/').child(userId + '/clusters/' + newClusterKey).update(cluster)
 
                 me.getClustersList()
                 me.tokenDialog = false
             },
+            getJsonData(reqUrl, jsonData) {
+                var me = this
+                
+                setInterval(function () {
+                    me.$http.get(reqUrl, jsonData).then(function (res) {
+                        console.log(res.data.status)
+                    }).catch(function (err) {
+                        console.log(err)
+                    })
+                }, 500)
+
+            },
+            
         }
     }
 </script>
