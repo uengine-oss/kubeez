@@ -18,6 +18,7 @@ import CodeMirror from 'vue-codemirror'
 import VueYouTubeEmbed from 'vue-youtube-embed'
 import vuetify from './plugins/vuetify';
 import * as VueWindow from '@hscmap/vue-window'
+import TreeView from 'vue-json-tree-view'
 //view
 
 import dashEditYaml from "./components/dashEdityamlpage.vue";
@@ -33,7 +34,7 @@ Vue.use(ClassModeling);
 Vue.use(Modeling);
 // Vue.use(i18n);
 Vue.use(VModal)
-
+Vue.use(TreeView)
 
 
 Vue.component('dashEditYaml', dashEditYaml)

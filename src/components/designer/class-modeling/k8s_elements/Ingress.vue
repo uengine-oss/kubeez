@@ -55,9 +55,7 @@
                         :sub-top="5"
                         :sub-left="5"
                         :sub-width="30"
-                        :sub-height="30"
-                >
-
+                        :sub-height="30">
                 </image-element>
             </sub-elements>
         </geometry-element>
@@ -132,7 +130,8 @@
                         }
                     },
                     outboundServices: [],
-                    connectableType: ["Service"]
+                    connectableType: ["Service"],
+                    status: null,
                 }
             },
             namespace: {
@@ -196,6 +195,11 @@
 
                     me.value.outboundServices.splice(me.value.outboundServices.indexOf(obj.element.targetElement), 1);
                 }
+
+                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
+                    me.value.status = obj.element.status
+                }
+
             })
             
         },

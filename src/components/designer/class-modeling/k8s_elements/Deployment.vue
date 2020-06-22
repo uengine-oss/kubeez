@@ -55,10 +55,27 @@
                         :sub-top="5"
                         :sub-left="5"
                         :sub-width="30"
-                        :sub-height="30"
-                >
-
+                        :sub-height="30">
                 </image-element>
+            </sub-elements>
+
+            <sub-elements>
+                <rectangle-element
+                        v-if="value.status"
+                        :sub-bottom="-20"
+                        :sub-width="'50%'"
+                        :sub-height="30"
+                        :sub-align="'center'"
+                        :sub-style="{
+                            'stroke': statusColor,
+                            fill: statusColor,
+                            'fill-opacity': 1,
+                            'font-weight': 'bold',
+                            'font-size': '15',
+                            'font-color': '#ffffff'
+                        }"
+                        :label.sync="value.replicasStatus">
+                </rectangle-element>
             </sub-elements>
         </geometry-element>
 
@@ -148,8 +165,10 @@
                             }
                         }
                     },
-                    connectableType: ["ReplicaSet"]
-
+                    connectableType: ["ReplicaSet"],
+                    status: null,
+                    replicasStatus: "",
+                    
                 }
             },
             namespace: {
@@ -183,8 +202,7 @@
                 }catch(e){
                     return "";
                 }
-            }
-
+            },
 
         },
         data: function () {
@@ -202,17 +220,24 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistenceVolumeClaim"){
+                    && obj.element.targetElement._type == "PersistentVolumeClaim"){
 
                     me.value.outboundVolumes.push(obj.element.targetElement);
                 }
 
                 if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistenceVolumeClaim"){
+                    && obj.element.targetElement._type == "PersistentVolumeClaim"){
 
                     me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
-                    console.log(me.value.outboundVolumes)
+                    // console.log(me.value.outboundVolumes)
                 }
+
+                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
+                    me.value.status = obj.element.status
+                    me.setReplicasStatus()
+                    me.refresh()
+                }
+                
             })
 
         },
@@ -234,19 +259,38 @@
                         me.value.object.spec.volumes.push(
                             {
                                 "name": "volume" + (++i),
-                                "persistenceVolumeClaim": {
+                                "persistentVolumeClaim": {
                                     "claimName": element.object.metadata.name
                                 }
                             }
                         );
                     }
                 );
-                
-            }
+
+            },
+
         },
 
         methods: {
+            setReplicasStatus() {
+                var me = this
+                var replicas = 0
+                var availableReplicas = 0
 
+                availableReplicas = me.value.status.availableReplicas ?
+                    me.value.status.availableReplicas : me.value.status.replicas - me.value.status.unavailableReplicas
+                replicas = me.value.status.replicas ? me.value.status.replicas : me.value.status.replicas
+                
+                me.value.replicasStatus = String(availableReplicas) + " / " + String(replicas)
+
+                if(availableReplicas == NaN || replicas == undefined) {
+                    me.value.replicasStatus = "Ready"
+                }
+                
+                if(replicas > 0 && availableReplicas > 0 && availableReplicas == replicas) {
+                    me.changeStatusColor()
+                }
+            }
         }
     }
 </script>

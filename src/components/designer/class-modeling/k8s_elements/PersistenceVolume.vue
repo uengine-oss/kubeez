@@ -55,10 +55,23 @@
                         :sub-top="5"
                         :sub-left="5"
                         :sub-width="30"
-                        :sub-height="30"
-                >
-
+                        :sub-height="30">
                 </image-element>
+            </sub-elements>
+            
+            <sub-elements>
+                <circle-element
+                        v-if="value.status"
+                        :sub-bottom="-15"
+                        :sub-width="30"
+                        :sub-height="30"
+                        :sub-align="'center'"
+                        :sub-style="{
+                            'stroke': statusColor,
+                            fill: statusColor,
+                            'fill-opacity': 1,
+                        }">
+                </circle-element>
             </sub-elements>
         </geometry-element>
 
@@ -123,10 +136,11 @@
                             "persistentVolumeReclaimPolicy": "Retain",
                             "volumeMode": "Filesystem",
                             "hostPath": {
-                                "path": ""
+                                "path": "/tmp"
                             }
                         },
-                    }
+                    },
+                    status: null,
                     
                 }
             },
@@ -155,13 +169,29 @@
             
         },
         mounted: function () {
-            
+            var me = this;
+
+            this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
+                
+                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
+                    me.value.status = obj.element.status
+                    me.setStatus()
+                    me.refresh()
+                }
+            })
         },
         watch: {
            
         },
 
         methods: {
+            setStatus() {
+                var me = this
+
+                if(me.value.status.phase == 'Bound') {
+                    me.changeStatusColor()
+                }
+            },
         }
     }
 </script>

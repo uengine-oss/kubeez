@@ -55,10 +55,23 @@
                         :sub-top="5"
                         :sub-left="5"
                         :sub-width="30"
-                        :sub-height="30"
-                >
-
+                        :sub-height="30">
                 </image-element>
+            </sub-elements>
+
+            <sub-elements>
+                <circle-element
+                        v-if="value.status"
+                        :sub-bottom="-15"
+                        :sub-width="30"
+                        :sub-height="30"
+                        :sub-align="'center'"
+                        :sub-style="{
+                            'stroke': statusColor,
+                            fill: statusColor,
+                            'fill-opacity': 1,
+                        }">
+                </circle-element>
             </sub-elements>
         </geometry-element>
 
@@ -87,7 +100,7 @@
                 return {}
             },
             className() {
-                return 'PersistenceVolumeClaim'
+                return 'PersistentVolumeClaim'
             },
             imgSrc() {
                 return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pvc.svg`
@@ -128,7 +141,8 @@
                         }
                     },
                     connectableType: ["PersistentVolume"],
-                    outboundVolume: null
+                    outboundVolume: null,
+                    status: null,
                     
                 }
             },
@@ -181,6 +195,12 @@
 
                     me.value.outboundVolume = null;
                 }
+
+                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
+                    me.value.status = obj.element.status
+                    me.setStatus()
+                    me.refresh()
+                }
             })
             
         },
@@ -191,6 +211,13 @@
         },
 
         methods: {
+            setStatus() {
+                var me = this
+                
+                if(me.value.status.phase == 'Bound') {
+                    me.changeStatusColor()
+                }
+            },
         }
     }
 </script>

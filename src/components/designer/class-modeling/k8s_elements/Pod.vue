@@ -60,6 +60,21 @@
 
                 </image-element>
             </sub-elements>
+
+            <sub-elements>
+                <circle-element
+                        v-if="value.status"
+                        :sub-bottom="-15"
+                        :sub-width="30"
+                        :sub-height="30"
+                        :sub-align="'center'"
+                        :sub-style="{
+                            'stroke': statusColor,
+                            fill: statusColor,
+                            'fill-opacity': 1,
+                        }">
+                </circle-element>
+            </sub-elements>
         </geometry-element>
 
 
@@ -132,7 +147,8 @@
                             ]
                         }
                     },
-                    outboundVolumes: []
+                    outboundVolumes: [],
+                    status: null,
 
                 }
             },
@@ -177,7 +193,6 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                console.log(obj)
                 if (obj.state == "addRelation" && obj.element && obj.element.targetElement
                     && obj.element.targetElement._type == "PersistenceVolumeClaim") {
                     console.log("inner")
@@ -192,6 +207,13 @@
                 if (obj.state == "changeName") {
                     me.namespace = obj.element
                 }
+
+                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
+                    me.value.status = obj.element.status
+                    me.setStatus()
+                    me.refresh()
+                }
+
             })
 
         },
@@ -227,7 +249,21 @@
             }
         },
 
-        methods: {}
+        methods: {
+            setStatus() {
+                var me = this
+                
+                if(me.value.status.containerStatuses) {
+                    // var state = me.value.status.containerStatuses[0].state
+                    // var stateKey = Object.keys(state)
+                    // console.log(me.value.status.containerStatuses[0].ready)
+                    if(me.value.status.containerStatuses[0].ready) {
+                        me.changeStatusColor()
+                    }
+                }
+
+            },
+        },
     }
 </script>
 

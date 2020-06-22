@@ -476,6 +476,7 @@
                 clustersList: [],
                 clustersNameList: [],
                 //deploy
+                getStatus: null,
                 deployDialog: false,
                 projectAuthor: '',
                 parmVersion: '',
@@ -1330,7 +1331,6 @@
 
             },
             async deployDialogReady() {
-                clearInterval()
                 var me = this
                 var list = []
                 var userId = localStorage.getItem('uid')
@@ -1342,22 +1342,29 @@
             async deploy() {
                 var me = this
                 
+                clearInterval(me.getStatus)
+
                 await me.value.definition.forEach(function (item) {
                     var reqUrl = me.getReqUrl(item)
                     
-                    me.$http.post(reqUrl, item.object).then(function (res) {
-                        console.log(res.status)
-                        me.getJsonData(reqUrl, item.object)
-                    }).catch(function (err) {
-                        console.log(err)
-                    })
-                    
-                    reqUrl += item.object.metadata.name                    
-                    // me.$http.put(reqUrl, item.object).then(function (res) {
-                    //     console.log(res.status)
-                    // }).catch(function (err) {
-                    //     console.log(err)
-                    // })
+                    if (item.status) {
+                        reqUrl += item.object.metadata.name
+
+                        me.$http.put(reqUrl, item.object).then(function (res) {
+                            console.log(res.status)
+                            me.getStatusData(reqUrl, item)
+                        }).catch(function (err) {
+                            console.log(err)
+                        })
+                    } else {
+                        me.$http.post(reqUrl, item.object).then(function (res) {
+                            console.log(res.status)
+                            reqUrl += item.object.metadata.name
+                            me.getStatusData(reqUrl, item)
+                        }).catch(function (err) {
+                            console.log(err)
+                        })
+                    }
                     
                 })
 
@@ -1365,8 +1372,15 @@
             },
             getReqUrl(item) {
                 var me = this
-                var reqUrl = `${API_HOST}` + '/'
-                var type = (item._type).toLowerCase() + 's'
+                var reqUrl = ''
+                var type = (item._type).toLowerCase()
+                var lastChar = type.charAt(type.length-1);
+
+                if(lastChar == 's') {
+                    type += 'es'
+                } else {
+                    type += 's'
+                }
 
                 if(item.object.apiVersion == 'v1') {
                     var apiVersion = 'api/' + item.object.apiVersion
@@ -1380,8 +1394,12 @@
                     var namespace = 'default'
                 }
 
-                reqUrl += apiVersion + '/namespaces/' + namespace + '/' + type + '/'
+                reqUrl = `${API_HOST}` + '/' + apiVersion + '/namespaces/' + namespace + '/' + type + '/'
                 
+                if (type == 'persistentvolumes') {
+                    reqUrl = `${API_HOST}` + '/' + apiVersion + '/' + type + '/'
+                }
+
                 return reqUrl
             },
             async goToClusters() {
@@ -1434,16 +1452,23 @@
                 me.getClustersList()
                 me.tokenDialog = false
             },
-            getJsonData(reqUrl, jsonData) {
+            getStatusData(reqUrl, element) {
                 var me = this
+                var jsonData = element.object
                 
-                setInterval(function () {
+                me.getStatus = setInterval(function() {
                     me.$http.get(reqUrl, jsonData).then(function (res) {
-                        console.log(res.data.status)
+                        // console.log(res.data.status)
+                        var obj = {
+                            state: "get",
+                            element: res.data
+                        }
+                        me.$EventBus.$emit(`${element.elementView.id}`, obj)
                     }).catch(function (err) {
                         console.log(err)
+                        clearInterval(me.getStatus)
                     })
-                }, 500)
+                }, 200)
 
             },
             
