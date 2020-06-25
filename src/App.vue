@@ -129,13 +129,13 @@
                 </v-avatar>
             </v-btn>
 
+            <v-btn icon @click="clusterOpen">
+                <v-icon>settings</v-icon>
+            </v-btn>
+
             <v-btn icon color="white" @click="wikiOpen">
                 <v-icon medium>info</v-icon>
             </v-btn>
-
-            <!--            <v-btn icon @click="dialog = true">-->
-            <!--                <v-icon>settings</v-icon>-->
-            <!--            </v-btn>-->
         </v-app-bar>
 
         <v-content>
@@ -227,40 +227,20 @@
         <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition">
             <v-card>
                 <v-toolbar dark color="primary">
-                    <v-btn icon dark @click="dialog = false; kubeToken=''; kubeHost='';">
-                        <v-icon>close</v-icon>
-                    </v-btn>
-                    <v-toolbar-title>Settings</v-toolbar-title>
+                    <v-toolbar-title>Manage Clusters</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                        <v-btn dark flat @click="saveSetting()">Save</v-btn>
+                        <v-btn icon dark @click="dialog = false">
+                            <v-icon>mdi-close</v-icon>
+                        </v-btn>
                     </v-toolbar-items>
                 </v-toolbar>
                 <v-list three-line subheader>
-                    <v-subheader>Connection Setting</v-subheader>
-                    <v-list-tile avatar>
-                        <v-list-tile-content>
-                            <v-list-tile-sub-title>
-                                <v-text-field
-                                        label="Kube Host"
-                                        v-model="kubeHost"
-                                        hint="Ex) https://api.k8s.bzdvops.com"
-                                        outline
-                                ></v-text-field>
-                            </v-list-tile-sub-title>
-                        </v-list-tile-content>
-                    </v-list-tile>
-                    <v-list-tile avatar>
-                        <v-list-tile-content>
-                            <v-list-tile-sub-title>
-                                <v-text-field
-                                        label="Kube Token"
-                                        v-model="kubeToken"
-                                        outline
-                                ></v-text-field>
-                            </v-list-tile-sub-title>
-                        </v-list-tile-content>
-                    </v-list-tile>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <ViewManageClustersPage />
+                        </v-list-item-content>
+                    </v-list-item>
                 </v-list>
             </v-card>
         </v-dialog>
@@ -609,7 +589,10 @@
             wikiOpen() {
                 window.open('http://uengine.org/eventstorming/#/')
             },
-
+            clusterOpen() {
+                var me = this
+                me.dialog = true
+            },
         }
     }
 </script>

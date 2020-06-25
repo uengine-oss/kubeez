@@ -258,9 +258,11 @@
                     // var stateKey = Object.keys(state)
                     // console.log(me.value.status.containerStatuses[0].ready)
                     if(me.value.status.containerStatuses[0].ready) {
-                        me.changeStatusColor()
+                        me.changeStatusColor('success')
+                    } else {
+                        me.changeStatusColor('waiting')
                     }
-                }
+                }    
 
             },
         },

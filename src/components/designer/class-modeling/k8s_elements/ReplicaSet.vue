@@ -224,7 +224,9 @@
                 me.value.replicasStatus = String(availableReplicas) + " / " + String(replicas)
 
                 if(replicas > 0 && availableReplicas > 0 && availableReplicas == replicas) {
-                    me.changeStatusColor()
+                    me.changeStatusColor('success')
+                } else {
+                    me.changeStatusColor('waiting')
                 }
             },
         },

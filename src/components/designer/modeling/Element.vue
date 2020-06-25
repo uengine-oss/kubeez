@@ -405,12 +405,24 @@
                 }
                 me.$EventBus.$emit(relationId, obj)
             },
-            changeStatusColor() {
+            changeStatusColor(status) {
                 var me = this
                 var designer = me.getComponent('modeling-designer');
                 
-                me.deploySuccess = true
+                if(status == 'success') {
+                    me.deploySuccess = true
+                } else {
+                    me.deploySuccess = false
+                }
             },
+            handleClick(event) {
+                var me = this
+                if(me.value.status) {
+                    event.pageY = event.pageY - 62
+                    me.$refs.vueSimpleContextMenu.showMenu(event)
+                }
+            },
+
         }
     }
 </script>

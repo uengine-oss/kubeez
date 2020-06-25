@@ -189,7 +189,9 @@
                 var me = this
 
                 if(me.value.status.phase == 'Bound') {
-                    me.changeStatusColor()
+                    me.changeStatusColor('success')
+                } else {
+                    me.changeStatusColor('waiting')
                 }
             },
         }
