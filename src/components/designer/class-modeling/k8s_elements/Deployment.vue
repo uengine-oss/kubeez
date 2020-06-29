@@ -43,9 +43,9 @@
             ></geometry-rect>
 
             <sub-controller
-                v-if="value.status"
-                :image="'subprocess.png'"
-                @click.prevent.stop="handleClick($event)"
+                    v-if="value.status"
+                    :image="'subprocess.png'"
+                    @click.prevent.stop="handleClick($event)"
             ></sub-controller>
 
             <sub-elements>
@@ -95,7 +95,8 @@
         <vue-context-menu
             :elementId="'deplpoyment'"
             :options="menus"
-            :ref="'vueSimpleContextMenu'">
+            :ref="'vueSimpleContextMenu'"
+            @option-clicked="optionClicked">
         </vue-context-menu>
     </div>
 </template>
@@ -220,8 +221,7 @@
         data: function () {
             return {
                 menus : [
-                    { name: "Get Pods" }, 
-                    { name: "Delete" },
+                    { name: "Get Pods" }, { name: "Delete" },
                 ]
             };
         },

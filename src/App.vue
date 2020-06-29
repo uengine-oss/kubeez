@@ -106,6 +106,10 @@
                 </v-card>
             </v-menu>
 
+            <span>
+                {{ kubeCluster }}
+            </span>
+
             <v-btn
                     v-if="!successLogin"
                     @click="loginPage"
@@ -150,13 +154,15 @@
                 </v-layout>
             </v-container>
         </v-content>
-<!--        <vue-friendly-iframe-->
-<!--                v-if="terminal"-->
-<!--                className="eventTerminal"-->
-<!--                style="width: 100%; left: 0; bottom: 0; display: block; position: fixed"-->
-<!--                :src="terminalUrl" @load="onLoad"-->
-<!--                frameborder="0"-->
-<!--        ></vue-friendly-iframe>-->
+
+        <vue-friendly-iframe
+               v-if="terminal"
+               className="eventTerminal"
+               style="width: 100%; left: 0; bottom: 0; display: block; position: fixed"
+               :src="terminalUrl" @load="onLoad"
+               frameborder="0"
+        ></vue-friendly-iframe>
+        
         <v-overlay
                 :value="overlay"
                 align="end"
@@ -238,7 +244,7 @@
                 <v-list three-line subheader>
                     <v-list-item>
                         <v-list-item-content>
-                            <ViewManageClustersPage />
+                            <ViewManageClustersPage v-model="kubeCluster" />
                         </v-list-item-content>
                     </v-list-item>
                 </v-list>
@@ -274,7 +280,7 @@
         data: () => ({
             terminalUrl: '',
             terminal: false,
-            // iframeLoading: true,
+            iframeLoading: true,
             infoSlider: [
                 'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/event.png',
                 'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/policy.png',
@@ -285,6 +291,7 @@
             dialog: false,
             drawer: false,
             infoDialog: false,
+            kubeCluster: '',
             kubeHost: '',
             kubeToken: '',
             loginDialog: false,
@@ -428,12 +435,13 @@
 
             me.$EventBus.$on('terminalOn', function (val) {
                 var token = val;
-                console.log(location.pathname)
-                me.terminalUrl = location.pathname + "terminal/?token=" + token;
+                // console.log(location.pathname)
+                // me.terminalUrl = location.pathname + "terminal/?token=" + token;
+                me.terminalUrl = "http://192.168.99.125:31405/" + "terminal/?token=" + token
                 me.terminal = true;
             })
             me.$EventBus.$on('terminalOff', function (val) {
-
+                me.terminal = false
             })
             me.$EventBus.$on('progressValue',function (newVal) {
                 me.progressValue = newVal
@@ -472,10 +480,10 @@
             // Multi(){
             //   this.$EventBus.$emit('webrtcDialog')
             // },
-            // onLoad() {
-            //     console.log('iframe loaded');
-            //     this.iframeLoading = false;
-            // },
+            onLoad() {
+                console.log('iframe loaded');
+                this.iframeLoading = false;
+            },
             // onIframeLoad() {
             //     console.log('iframe loaded');
             // },
@@ -597,20 +605,19 @@
     }
 </script>
 <style>
-    /*.iframe-wrapper {*/
-    /*    border: 1px solid gray;*/
-    /*    height: 600px;*/
-    /*}*/
+    .iframe-wrapper {
+       border: 1px solid gray;
+       height: 600px;
+    }
 
-    /*.vue-friendly-iframe {*/
+    .vue-friendly-iframe {
+       height: 35%;
+       width: 100%;
+    }
 
-    /*    height: 35%;*/
-    /*    width: 100%;*/
-    /*}*/
-
-    /*iframe {*/
-    /*    height: 100%;*/
-    /*    width: 100%;*/
-    /*}*/
+    iframe {
+       height: 100%;
+       width: 100%;
+    }
 
 </style>

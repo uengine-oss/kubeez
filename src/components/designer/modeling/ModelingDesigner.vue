@@ -50,7 +50,7 @@
                                     @click="deployDialogReady()"
                                     v-on="on"
                             >
-                                <v-icon>mdi-powershell</v-icon>
+                                <v-icon>{{ files.version }}</v-icon>
                                 Deploy
                             </v-btn>
                         </template>
@@ -70,7 +70,7 @@
                                     @click="deployDialogReady()"
                                     v-on="on"
                             >
-                                <v-icon>mdi-powershell</v-icon>
+                                <v-icon>{{ files.version }}</v-icon>
                                 Update
                             </v-btn>
                         </template>
@@ -1354,6 +1354,22 @@
                     })
                 }, 200)
 
+            },
+            terminal() {
+                var me = this
+                var url = "api/kube-token"
+                
+                var item = {
+                    "type": "Token",
+                    "name" : localStorage.getItem('clusterName'),
+                    "apiServer" : localStorage.getItem('clusterAddress'),
+                    "token": localStorage.getItem('kubernetesToken'),
+                }
+
+                me.$http.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
+                me.$http.post(url, item).then(function (response) {
+                    me.$EventBus.$emit('terminalOn', response.data.token)
+                })
             },
             
         }

@@ -68,7 +68,8 @@
     "vuedraggable": "^2.23.2",
     "vuejs-jwt": "^1.1.0",
     "vuetify": "^2.1.0",
-    "vuex": "^3.0.1"
+    "vuex": "^3.0.1",
+    "xterm": "^4.7.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-pwa": "^3.4.0",

@@ -9,7 +9,8 @@
                         outlined
                         class="mx-auto"
                         max-width="400"
-                        max-height="400">
+                        max-height="400"
+                        @click="selectCluster(item.NAME)">
                     <v-card-title>
                         {{ item.NAME }}
                         <v-spacer></v-spacer>
@@ -65,7 +66,9 @@
     
     export default {
         name: 'ViewManageClustersPage',
-        props: {},
+        props: {
+            value: String,
+        },
         data() {
             return {
                 clustersList: [],
@@ -121,6 +124,11 @@
 
                 await me.getClusterData()
                 
+                me.close()
+            },
+            selectCluster(val) {
+                var me = this
+                console.log(val)
                 me.close()
             },
             close() {

@@ -7,6 +7,7 @@
 
     var changeCase = require('change-case');
     var pluralize = require('pluralize');
+    var Terminal = require('xterm').Terminal;
 
     export default {
         name: 'modeling-element-base',
@@ -422,7 +423,13 @@
                     me.$refs.vueSimpleContextMenu.showMenu(event)
                 }
             },
+            optionClicked(event) {
+                var me = this
+                var designer = me.getComponent('modeling-designer');
+                designer.terminal();
 
+                var code = "kubectl " + (event.option.name).toLowerCase();
+            },
         }
     }
 </script>
