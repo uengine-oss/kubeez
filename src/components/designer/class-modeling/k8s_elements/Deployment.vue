@@ -43,7 +43,7 @@
             ></geometry-rect>
 
             <sub-controller
-                    v-if="value.status"
+                    
                     :image="'subprocess.png'"
                     @click.prevent.stop="handleClick($event)"
             ></sub-controller>

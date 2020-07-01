@@ -10,16 +10,13 @@
                         class="mx-auto"
                         max-width="400"
                         max-height="400"
-                        @click="selectCluster(item.NAME)">
+                        @dblclick="selectCluster(item)">
                     <v-card-title>
-                        {{ item.NAME }}
+                        {{ item.name }}
                         <v-spacer></v-spacer>
-                        <!-- <v-btn icon>
-                            <v-icon>delete</v-icon>
-                        </v-btn> -->
                     </v-card-title>
                     <v-card-text>
-                        API Server : {{ item.APISERVER }}
+                        API Server : {{ item.apiServer }}
                     </v-card-text>
                 </v-card>
             </v-col>
@@ -46,7 +43,7 @@
                     ></v-text-field>
                     <v-text-field
                             label="TOKEN"
-                            v-model="kubernetesToken"
+                            v-model="kuberToken"
                             required
                             outline
                     ></v-text-field>
@@ -75,7 +72,7 @@
                 tokenDialog: false,
                 clusterName: '',
                 clusterAddress: '',
-                kubernetesToken: '',
+                kuberToken: '',
             }
         },
         mounted: function () {
@@ -106,15 +103,11 @@
                 var me = this
                 var userId = ''
                 var newClusterKey = ''
-
-                localStorage.setItem('kubernetesToken', me.kubernetesToken);
-                localStorage.setItem('clusterAddress', me.clusterAddress);
-                localStorage.setItem('clusterName', me.clusterName);
                 
                 var cluster = {
-                    "NAME" : me.clusterName,
-                    "APISERVER" : me.clusterAddress,
-                    "TOKEN": me.kubernetesToken
+                    "name" : me.clusterName,
+                    "apiServer" : me.clusterAddress,
+                    "token": me.kuberToken
                 }
 
                 userId = localStorage.getItem('uid')
@@ -122,20 +115,30 @@
 
                 firebase.database().ref('userLists/').child(userId + '/clusters/' + newClusterKey).update(cluster)
 
+                localStorage.setItem('clusterName', me.clusterName);
+                localStorage.setItem('clusterAddress', me.clusterAddress);
+                localStorage.setItem('kuberToken', me.kuberToken);
+
                 await me.getClusterData()
                 
                 me.close()
             },
             selectCluster(val) {
                 var me = this
-                console.log(val)
-                me.close()
+
+                localStorage.setItem('clusterName', val.name);
+                localStorage.setItem('clusterAddress', val.apiServer);
+                localStorage.setItem('kuberToken', val.token);
+                
+                me.$emit('input', localStorage.getItem('clusterName'))
+                me.$EventBus.$emit('terminalOff')
+                me.$emit('close')
             },
             close() {
                 var me = this
                 me.clusterName = ''
                 me.clusterAddress = ''
-                me.kubernetesToken = ''
+                me.kuberToken = ''
                 me.tokenDialog = false
             }
         },

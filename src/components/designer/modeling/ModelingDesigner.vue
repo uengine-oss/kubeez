@@ -31,6 +31,9 @@
 
             </opengraph>
 
+            <v-layout>
+                <div id="terminal"></div>
+            </v-layout>
 
             <v-flex style="justify:end; align:start;">
                 <v-row justify="end" align="start" style="margin-right: 10px;">
@@ -223,10 +226,16 @@
                             v-model="projectName"
                             label="projectName"
                     ></v-text-field>
-                    <v-select
-                            :items="clustersNameList"
+                    <v-text-field
                             label="cluster"
-                    ></v-select>
+                            :value="clusterName"
+                            readonly
+                    ></v-text-field>
+                    <v-text-field
+                            label="API Server"
+                            :value="clusterAddress"
+                            readonly
+                    ></v-text-field>
                 </v-card-text>
 
                 <v-card-actions>
@@ -395,8 +404,9 @@
                 revisionInfo: {},
                 showVersionsDialog: false,
                 //cluster
-                clustersList: [],
-                clustersNameList: [],
+                clusterName: '',
+                clusterAddress: '',
+                kuberToken: '',
                 //deploy
                 isDeploy: false,
                 getStatus: null,
@@ -1253,8 +1263,16 @@
             },
             deployDialogReady() {
                 var me = this
-                me.getClustersList()
-                me.deployDialog = true
+
+                if (localStorage.getItem('kuberToken')) {
+                    me.clusterName = localStorage.getItem('clusterName')
+                    me.clusterAddress = localStorage.getItem('clusterAddress')
+                    me.kuberToken = localStorage.getItem('kuberToken')
+
+                    me.deployDialog = true
+                } else {
+                    alert("클러스터 정보가 없습니다")
+                }
             },
             async deploy() {
                 var me = this
@@ -1318,24 +1336,6 @@
 
                 return reqUrl
             },
-            getClustersList() {
-                var me = this
-                var list = []
-                var userId = localStorage.getItem('uid')
-
-                me.database.ref('userLists/' + userId + '/clusters/')
-                    .once('value', function(snapshot) {
-                        if (snapshot.exists()) {
-                            var clusterIds = Object.keys(snapshot.val())
-                            clusterIds.forEach(function (clusterId, index) {
-                                var cluster = snapshot.val()[clusterId]
-                                list.push(cluster)
-                                me.clustersNameList.push(cluster.NAME)
-                            })
-                        }
-                    })
-                me.clustersList = list
-            },
             getStatusData(reqUrl, element) {
                 var me = this
                 var jsonData = element.object
@@ -1363,7 +1363,7 @@
                     "type": "Token",
                     "name" : localStorage.getItem('clusterName'),
                     "apiServer" : localStorage.getItem('clusterAddress'),
-                    "token": localStorage.getItem('kubernetesToken'),
+                    "token": localStorage.getItem('kuberToken'),
                 }
 
                 me.$http.defaults.headers.common['Access-Control-Allow-Origin'] = '*';

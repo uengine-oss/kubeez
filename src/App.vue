@@ -106,9 +106,9 @@
                 </v-card>
             </v-menu>
 
-            <span>
-                {{ kubeCluster }}
-            </span>
+            <v-toolbar-title class="mr-5">
+                {{ clusterInfo }}
+            </v-toolbar-title>
 
             <v-btn
                     v-if="!successLogin"
@@ -133,7 +133,10 @@
                 </v-avatar>
             </v-btn>
 
-            <v-btn icon @click="clusterOpen">
+            <v-btn 
+                    v-if="successLogin"
+                    @click="clusterOpen"
+                    icon>
                 <v-icon>settings</v-icon>
             </v-btn>
 
@@ -230,13 +233,13 @@
         </v-dialog>
 
         <!-- Setting Dialog -->
-        <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition">
+        <v-dialog v-model="clusterDialog" fullscreen hide-overlay transition="dialog-bottom-transition">
             <v-card>
                 <v-toolbar dark color="primary">
                     <v-toolbar-title>Manage Clusters</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                        <v-btn icon dark @click="dialog = false">
+                        <v-btn icon dark @click="clusterClose()">
                             <v-icon>mdi-close</v-icon>
                         </v-btn>
                     </v-toolbar-items>
@@ -244,7 +247,9 @@
                 <v-list three-line subheader>
                     <v-list-item>
                         <v-list-item-content>
-                            <ViewManageClustersPage v-model="kubeCluster" />
+                            <ViewManageClustersPage 
+                                    @close="clusterClose"
+                                    v-model="clusterInfo" />
                         </v-list-item-content>
                     </v-list-item>
                 </v-list>
@@ -288,10 +293,10 @@
             messageLists: [],
             infoNum: 0,
             chatWindow: false,
-            dialog: false,
+            clusterDialog: false,
+            clusterInfo: '',
             drawer: false,
             infoDialog: false,
-            kubeCluster: '',
             kubeHost: '',
             kubeToken: '',
             loginDialog: false,
@@ -403,6 +408,9 @@
         mounted() {
             var me = this
 
+            if (localStorage.getItem('clusterName')) {
+                me.clusterInfo = localStorage.getItem('clusterName')
+            }
 
             if (localStorage.getItem('projectName')) {
                 me.overlay = false
@@ -437,10 +445,11 @@
                 var token = val;
                 // console.log(location.pathname)
                 // me.terminalUrl = location.pathname + "terminal/?token=" + token;
-                me.terminalUrl = "http://192.168.99.125:31405/" + "terminal/?token=" + token
+                me.terminalUrl = "http://192.168.99.125:30807/" + "terminal/?token=" + token
                 me.terminal = true;
             })
             me.$EventBus.$on('terminalOff', function (val) {
+                me.terminalUrl = ''
                 me.terminal = false
             })
             me.$EventBus.$on('progressValue',function (newVal) {
@@ -566,6 +575,9 @@
                     window.localStorage.removeItem("picture");
                     window.localStorage.removeItem("loadData");
                     window.localStorage.removeItem("uid");
+                    window.localStorage.removeItem("clusterName");
+                    window.localStorage.removeItem("clusterAddress");
+                    window.localStorage.removeItem("kuberToken");
 
                     me.$EventBus.$emit('login', localStorage.getItem("accessToken"))
 
@@ -599,8 +611,12 @@
             },
             clusterOpen() {
                 var me = this
-                me.dialog = true
+                me.clusterDialog = true
             },
+            clusterClose() {
+                var me = this
+                me.clusterDialog = false
+            }
         }
     }
 </script>
