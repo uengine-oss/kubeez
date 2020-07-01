@@ -12,6 +12,6 @@ module.exports = {
         host: 'es2cd.io',
         port: 8080,
         disableHostCheck : true,
-        proxy: 'http://192.168.99.125:30807/',
+        proxy: 'http://34.69.16.54:8080/',
     },
 }

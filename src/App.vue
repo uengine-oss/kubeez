@@ -160,6 +160,7 @@
 
         <vue-friendly-iframe
                v-if="terminal"
+               name="terminalFrame"
                className="eventTerminal"
                style="width: 100%; left: 0; bottom: 0; display: block; position: fixed"
                :src="terminalUrl" @load="onLoad"
@@ -278,6 +279,9 @@
     import axios from 'axios'
     import https from 'https'
     import firebase from 'firebase'
+
+    var Terminal = require('xterm').Terminal;
+    
 
     export default {
         name: 'App',
@@ -445,7 +449,7 @@
                 var token = val;
                 // console.log(location.pathname)
                 // me.terminalUrl = location.pathname + "terminal/?token=" + token;
-                me.terminalUrl = "http://192.168.99.125:30807/" + "terminal/?token=" + token
+                me.terminalUrl = "http://34.69.16.54:8080/" + "terminal/?token=" + token
                 me.terminal = true;
             })
             me.$EventBus.$on('terminalOff', function (val) {

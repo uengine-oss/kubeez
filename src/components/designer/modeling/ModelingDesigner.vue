@@ -31,10 +31,6 @@
 
             </opengraph>
 
-            <v-layout>
-                <div id="terminal"></div>
-            </v-layout>
-
             <v-flex style="justify:end; align:start;">
                 <v-row justify="end" align="start" style="margin-right: 10px;">
 
@@ -1357,7 +1353,6 @@
             },
             terminal() {
                 var me = this
-                var url = "api/kube-token"
                 
                 var item = {
                     "type": "Token",
@@ -1367,7 +1362,7 @@
                 }
 
                 me.$http.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
-                me.$http.post(url, item).then(function (response) {
+                me.$http.post("api/kube-token", item).then(function (response) {
                     me.$EventBus.$emit('terminalOn', response.data.token)
                 })
             },
