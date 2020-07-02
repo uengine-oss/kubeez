@@ -158,14 +158,13 @@
             </v-container>
         </v-content>
 
-        <vue-friendly-iframe
-               v-if="terminal"
-               name="terminalFrame"
-               className="eventTerminal"
-               style="width: 100%; left: 0; bottom: 0; display: block; position: fixed"
-               :src="terminalUrl" @load="onLoad"
-               frameborder="0"
-        ></vue-friendly-iframe>
+        <iframe
+                v-if="terminal"
+                id="eventTerminal"
+                :src="terminalUrl"
+                @load="onLoad"
+                style="width: 100%; left: 0; bottom: 0; display: block; position: fixed"
+        ></iframe>
         
         <v-overlay
                 :value="overlay"
@@ -456,6 +455,12 @@
                 me.terminalUrl = ''
                 me.terminal = false
             })
+            me.$EventBus.$on('sendCode', function (val) {
+                var iframe = document.getElementById('eventTerminal')
+                iframe.contentWindow.postMessage(val, me.terminalUrl)
+                console.log(val)
+            })
+
             me.$EventBus.$on('progressValue',function (newVal) {
                 me.progressValue = newVal
             })
@@ -620,7 +625,8 @@
             clusterClose() {
                 var me = this
                 me.clusterDialog = false
-            }
+            },
+
         }
     }
 </script>
@@ -630,7 +636,7 @@
        height: 600px;
     }
 
-    .vue-friendly-iframe {
+    /* .vue-friendly-iframe {
        height: 35%;
        width: 100%;
     }
@@ -638,6 +644,12 @@
     iframe {
        height: 100%;
        width: 100%;
+    } */
+
+    iframe {
+        height: 35%;
+        width: 100%;
+        border: 0;
     }
 
 </style>

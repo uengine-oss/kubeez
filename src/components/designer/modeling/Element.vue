@@ -7,7 +7,6 @@
 
     var changeCase = require('change-case');
     var pluralize = require('pluralize');
-    var Terminal = require('xterm').Terminal;
 
     export default {
         name: 'modeling-element-base',
@@ -418,20 +417,18 @@
             },
             handleClick(event) {
                 var me = this
-                // if(me.value.status) {
+                if(me.value.status) {
                     event.pageY = event.pageY - 62
                     me.$refs.vueSimpleContextMenu.showMenu(event)
-                // }
+                }
             },
             async optionClicked(event) {
                 var me = this
                 var designer = me.getComponent('modeling-designer')
                 await designer.terminal()
 
-                var eventTerminal = document.getElementsByClassName('eventTerminal').namedItem('terminalFrame')
-                console.log(eventTerminal)
-                var xterm = new Terminal()
-                xterm.element = eventTerminal
+                var code = 'kubectl get pods \n'
+                me.$EventBus.$emit('sendCode', code)
             },
         }
     }
