@@ -106,7 +106,7 @@
                 </v-row>
             </v-flex>
 
-            <v-card class="tools" style="top:100px; text-align: center;">
+            <v-card class="tools" style="top:100px; text-align: center;" max-height="450">
                 <span class="bpmn-icon-hand-tool" v-bind:class="{ icons : !dragPageMovable, hands : dragPageMovable }"
                       _width="30"
                       _height="30" v-on:click="toggleGrip">
@@ -1406,11 +1406,12 @@
 
         .tools {
             position: absolute;
-            width: 48px;
+            width: 60px;
             left: 20px;
             top: 20px;
             padding: 4px;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
 
             .icons {
                 margin-top: 5px;

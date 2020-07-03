@@ -21,8 +21,8 @@
                 v-on:removeShape="onRemoveShape(value)"
                 :label.sync="name"
                 :_style="{
-                'label-angle':value.elementView.angle,
-                'font-weight': 'bold','font-size': '16'
+                    'label-angle':value.elementView.angle,
+                    'font-weight': 'bold','font-size': '16'
                 }"
         >
 
@@ -33,8 +33,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#cccccc',
-                        fill: '#cccccc',
+                        'stroke': '#34aace',
+                        fill: '#34aace',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -48,7 +48,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'PVC'">
+                        :text="'CronJob'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -58,40 +58,26 @@
                         :sub-height="30">
                 </image-element>
             </sub-elements>
-
-            <sub-elements>
-                <circle-element
-                        v-if="value.status"
-                        :sub-bottom="-15"
-                        :sub-width="30"
-                        :sub-height="30"
-                        :sub-align="'center'"
-                        :sub-style="{
-                            'stroke': statusColor,
-                            fill: statusColor,
-                            'fill-opacity': 1,
-                        }">
-                </circle-element>
-            </sub-elements>
         </geometry-element>
 
-
-        <property-panel
-                v-if="openPanel"
-                v-model="value"
-                :img="imgSrc">
+         <property-panel
+            v-if="openPanel"
+            v-model="value"
+            :img="imgSrc">
         </property-panel>
     </div>
 </template>
 
 <script>
     import Element from '../../modeling/Element'
-    import PropertyPanel from './PersistenceVolumeClaimPropertyPanel'
+    import PropertyPanel from './CronJobPropertyPanel'
+    import ImageElement from "../../../opengraph/shape/ImageElement";
 
     export default {
         mixins: [Element],
-        name: 'persistence-volume-claim',
+        name: 'cronjob',
         components: {
+            ImageElement,
             "property-panel": PropertyPanel
         },
         props: {},
@@ -100,10 +86,10 @@
                 return {}
             },
             className() {
-                return 'PersistentVolumeClaim'
+                return 'CronJob'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pvc.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/cronjob.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -121,34 +107,39 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "v1",
-                        "kind": "PersistentVolumeClaim",
+                        "apiVersion": "batch/v1beta1",
+                        "kind": "CronJob",
                         "metadata": {
-                            "name": "",
+                            "name": ""
                         },
                         "spec": {
-                            "accessModes": [ "" ],
-                            "resources": {
-                                "requests": {
-                                    "storage": "1Gi"
+                            "schedule": "*/1 * * * *",
+                            "jobTemplate": {
+                                "spec": {
+                                    "template": {
+                                        "spec": {
+                                            "containers": [
+                                                {
+                                                    "name": "",
+                                                    "image": "",
+                                                    "args": []
+                                                }
+                                            ],
+                                            "restartPolicy": "OnFailure"
+                                        }
+                                    }
                                 }
-                            },
-                            "storageClassName": "",
-                            "volumeMode": "Filesystem",
-                            "volumeName": ""
+                            }
                         }
                     },
-                    connectableType: ["PersistentVolume"],
-                    outboundVolume: null,
+                    connectableType: [""],
                     status: null,
-                    
                 }
             },
-
-            name(){
-                try{
+            name() {
+                try {
                     return this.value.object.metadata.name;
-                }catch(e){
+                } catch (e) {
                     return "Untitled";
                 }
             },
@@ -160,68 +151,37 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-            outboundVolumeName(){
-                try{
-                    return this.value.outboundVolume.object.metadata.name;
-                }catch(e){
-                    return "";
-                }
-            }
 
         },
         data: function () {
-            return {
-                                
-            };
+            return {};
         },
         created: function () {
-            
         },
-        mounted: function () {
-
+        mounted(){
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistentVolume"){
-
-                    me.value.outboundVolume = obj.element.targetElement;
-                }
-
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistentVolume"){
-
-                    me.value.outboundVolume = null;
-                }
 
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
                     me.value.status = obj.element.status
-                    me.setStatus()
                     me.refresh()
                 }
             })
-            
-        },
-        watch: {
-            "outboundVolumeName": function(volumeName){
-                this.value.object.spec.volumeName = volumeName;
-            }
+
         },
 
-        methods: {
-            setStatus() {
-                var me = this
-                
-                if(me.value.status.phase == 'Bound') {
-                    me.changeStatusColor('success')
-                } else {
-                    me.changeStatusColor('waiting')
-                }
+        watch: {
+            name(appName) {
+                this.value.object.spec.jobTemplate.spec.template.spec.containers[0].name = appName;
             },
+
+        },
+        methods: {            
         }
     }
 </script>
-
+  
 <style>
 
 </style>

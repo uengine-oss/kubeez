@@ -76,6 +76,34 @@
                         'height': '400',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ns-palette.svg`
                     },
+                    {
+                        'component': 'job',
+                        'label': 'Job',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/job-palette.svg`
+                    },
+                    {
+                        'component': 'cronjob',
+                        'label': 'CronJob',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/cronjob-palette.svg`
+                    },
+                    {
+                        'component': 'statefulSet',
+                        'label': 'StatefulSet',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sts-palette.svg`
+                    },
+                    {
+                        'component': 'daemonSet',
+                        'label': 'DaemonSet',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ds-palette.svg`
+                    },
                 ],
             }
         },

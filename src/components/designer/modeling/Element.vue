@@ -427,8 +427,8 @@
                 var designer = me.getComponent('modeling-designer')
                 await designer.terminal()
 
-                var code = 'kubectl get pods \n'
-                me.$EventBus.$emit('sendCode', code)
+                // var code = 'kubectl get pods \n'
+                // me.$EventBus.$emit('sendCode', code)
             },
         }
     }
