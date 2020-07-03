@@ -60,6 +60,25 @@
 
                 </image-element>
             </sub-elements>
+
+            <sub-elements>
+                <rectangle-element
+                        v-if="value.status"
+                        :sub-bottom="-20"
+                        :sub-width="'50%'"
+                        :sub-height="30"
+                        :sub-align="'center'"
+                        :sub-style="{
+                            'stroke': statusColor,
+                            fill: statusColor,
+                            'fill-opacity': 1,
+                            'font-weight': 'bold',
+                            'font-size': '15',
+                            'font-color': '#ffffff'
+                        }"
+                        :label.sync="value.replicasStatus">
+                </rectangle-element>
+            </sub-elements>
         </geometry-element>
 
 
@@ -141,7 +160,9 @@
                             }
                         }
                     },
-                    connectableType: ["Pod"]
+                    connectableType: ["Pod"],
+                    status: null,
+                    replicasStatus: "",
                 }
             },
             namespace: {
@@ -174,6 +195,11 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 
+                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
+                    me.value.status = obj.element.status
+                    me.setReplicasStatus()
+                    me.refresh()
+                }
             })
             
         },
@@ -187,7 +213,23 @@
         },
 
         methods: {
-        }
+            setReplicasStatus() {
+                var me = this
+                var replicas = 0
+                var availableReplicas = 0
+
+                availableReplicas = me.value.status.availableReplicas ? me.value.status.availableReplicas : 0
+                replicas = me.value.status.replicas ? me.value.status.replicas : me.value.status.replicas
+                
+                me.value.replicasStatus = String(availableReplicas) + " / " + String(replicas)
+
+                if(replicas > 0 && availableReplicas > 0 && availableReplicas == replicas) {
+                    me.changeStatusColor('success')
+                } else {
+                    me.changeStatusColor('waiting')
+                }
+            },
+        },
     }
 </script>
 

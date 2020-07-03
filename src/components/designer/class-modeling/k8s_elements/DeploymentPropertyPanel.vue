@@ -8,7 +8,19 @@
                     <v-list-item-avatar>
                         <img :src="img">
                     </v-list-item-avatar>
-                    <v-list-item-title class="headline">{{ value._type }}
+                    <v-tabs
+                            v-model="activeTab"
+                            v-if="value.status">
+                        <v-tab
+                            v-for="(tab, idx) in tabItems"
+                            :key="idx">
+                            <v-list-item-title>{{ tab }}</v-list-item-title>
+                        </v-tab>
+                    </v-tabs>
+                    <v-list-item-title 
+                            v-else
+                            class="headline">
+                        {{ value._type }}
                     </v-list-item-title>
                     <v-tooltip top>
                         <template v-slot:activator="{ on }">
@@ -22,7 +34,25 @@
             </v-list>
 
             <v-list class="pt-0" dense flat>
-                <v-layout wrap>
+                <v-layout 
+                        v-if="value.status && activeTab == 0"
+                        wrap>
+                    <v-flex>
+                        <v-card flat>
+                            <v-card-text>
+                                <tree-view
+                                        :data="status"
+                                        :options="{
+                                                rootObjectKey: 'status'
+                                            }"
+                                ></tree-view>
+                            </v-card-text>
+                        </v-card>
+                    </v-flex>
+                </v-layout>
+                <v-layout 
+                        v-else
+                        wrap>
                     <v-flex grow style="width: 500px;">
                         <v-card flat>
                             <v-card-text>
@@ -84,14 +114,24 @@
             descriptionText() {
                 return 'Deployment'
             },
-
+            status() {
+                return JSON.parse(JSON.stringify(this.value.status))
+            }
+            
         },
         data: function () {
             return {
+                activeTab: 0,
+                tabItems: [ "status", "property" ],
             }
         },
-
         watch: {
+            status: {
+                deep: true,
+                handler: function () {
+                    // console.log(this.status)
+                }
+            }
         },
         methods: {
         }

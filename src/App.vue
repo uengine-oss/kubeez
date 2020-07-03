@@ -106,6 +106,10 @@
                 </v-card>
             </v-menu>
 
+            <v-toolbar-title class="mr-5">
+                {{ clusterInfo }}
+            </v-toolbar-title>
+
             <v-btn
                     v-if="!successLogin"
                     @click="loginPage"
@@ -129,13 +133,16 @@
                 </v-avatar>
             </v-btn>
 
+            <v-btn 
+                    v-if="successLogin"
+                    @click="clusterOpen"
+                    icon>
+                <v-icon>settings</v-icon>
+            </v-btn>
+
             <v-btn icon color="white" @click="wikiOpen">
                 <v-icon medium>info</v-icon>
             </v-btn>
-
-            <!--            <v-btn icon @click="dialog = true">-->
-            <!--                <v-icon>settings</v-icon>-->
-            <!--            </v-btn>-->
         </v-app-bar>
 
         <v-content>
@@ -150,13 +157,15 @@
                 </v-layout>
             </v-container>
         </v-content>
-<!--        <vue-friendly-iframe-->
-<!--                v-if="terminal"-->
-<!--                className="eventTerminal"-->
-<!--                style="width: 100%; left: 0; bottom: 0; display: block; position: fixed"-->
-<!--                :src="terminalUrl" @load="onLoad"-->
-<!--                frameborder="0"-->
-<!--        ></vue-friendly-iframe>-->
+
+        <iframe
+                v-if="terminal"
+                id="eventTerminal"
+                :src="terminalUrl"
+                @load="onLoad"
+                style="width: 100%; left: 0; bottom: 0; display: block; position: fixed"
+        ></iframe>
+        
         <v-overlay
                 :value="overlay"
                 align="end"
@@ -224,43 +233,25 @@
         </v-dialog>
 
         <!-- Setting Dialog -->
-        <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition">
+        <v-dialog v-model="clusterDialog" fullscreen hide-overlay transition="dialog-bottom-transition">
             <v-card>
                 <v-toolbar dark color="primary">
-                    <v-btn icon dark @click="dialog = false; kubeToken=''; kubeHost='';">
-                        <v-icon>close</v-icon>
-                    </v-btn>
-                    <v-toolbar-title>Settings</v-toolbar-title>
+                    <v-toolbar-title>Manage Clusters</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                        <v-btn dark flat @click="saveSetting()">Save</v-btn>
+                        <v-btn icon dark @click="clusterClose()">
+                            <v-icon>mdi-close</v-icon>
+                        </v-btn>
                     </v-toolbar-items>
                 </v-toolbar>
                 <v-list three-line subheader>
-                    <v-subheader>Connection Setting</v-subheader>
-                    <v-list-tile avatar>
-                        <v-list-tile-content>
-                            <v-list-tile-sub-title>
-                                <v-text-field
-                                        label="Kube Host"
-                                        v-model="kubeHost"
-                                        hint="Ex) https://api.k8s.bzdvops.com"
-                                        outline
-                                ></v-text-field>
-                            </v-list-tile-sub-title>
-                        </v-list-tile-content>
-                    </v-list-tile>
-                    <v-list-tile avatar>
-                        <v-list-tile-content>
-                            <v-list-tile-sub-title>
-                                <v-text-field
-                                        label="Kube Token"
-                                        v-model="kubeToken"
-                                        outline
-                                ></v-text-field>
-                            </v-list-tile-sub-title>
-                        </v-list-tile-content>
-                    </v-list-tile>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <ViewManageClustersPage 
+                                    @close="clusterClose"
+                                    v-model="clusterInfo" />
+                        </v-list-item-content>
+                    </v-list-item>
                 </v-list>
             </v-card>
         </v-dialog>
@@ -288,13 +279,16 @@
     import https from 'https'
     import firebase from 'firebase'
 
+    var Terminal = require('xterm').Terminal;
+    
+
     export default {
         name: 'App',
         props: {},
         data: () => ({
             terminalUrl: '',
             terminal: false,
-            // iframeLoading: true,
+            iframeLoading: true,
             infoSlider: [
                 'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/event.png',
                 'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/event/policy.png',
@@ -302,7 +296,8 @@
             messageLists: [],
             infoNum: 0,
             chatWindow: false,
-            dialog: false,
+            clusterDialog: false,
+            clusterInfo: '',
             drawer: false,
             infoDialog: false,
             kubeHost: '',
@@ -416,6 +411,9 @@
         mounted() {
             var me = this
 
+            if (localStorage.getItem('clusterName')) {
+                me.clusterInfo = localStorage.getItem('clusterName')
+            }
 
             if (localStorage.getItem('projectName')) {
                 me.overlay = false
@@ -448,13 +446,21 @@
 
             me.$EventBus.$on('terminalOn', function (val) {
                 var token = val;
-                console.log(location.pathname)
-                me.terminalUrl = location.pathname + "terminal/?token=" + token;
+                // console.log(location.pathname)
+                // me.terminalUrl = location.pathname + "terminal/?token=" + token;
+                me.terminalUrl = "http://34.69.16.54:8080/" + "terminal/?token=" + token
                 me.terminal = true;
             })
             me.$EventBus.$on('terminalOff', function (val) {
-
+                me.terminalUrl = ''
+                me.terminal = false
             })
+            me.$EventBus.$on('sendCode', function (val) {
+                var iframe = document.getElementById('eventTerminal')
+                iframe.contentWindow.postMessage(val, me.terminalUrl)
+                console.log(val)
+            })
+
             me.$EventBus.$on('progressValue',function (newVal) {
                 me.progressValue = newVal
             })
@@ -492,10 +498,10 @@
             // Multi(){
             //   this.$EventBus.$emit('webrtcDialog')
             // },
-            // onLoad() {
-            //     console.log('iframe loaded');
-            //     this.iframeLoading = false;
-            // },
+            onLoad() {
+                console.log('iframe loaded');
+                this.iframeLoading = false;
+            },
             // onIframeLoad() {
             //     console.log('iframe loaded');
             // },
@@ -578,6 +584,9 @@
                     window.localStorage.removeItem("picture");
                     window.localStorage.removeItem("loadData");
                     window.localStorage.removeItem("uid");
+                    window.localStorage.removeItem("clusterName");
+                    window.localStorage.removeItem("clusterAddress");
+                    window.localStorage.removeItem("kuberToken");
 
                     me.$EventBus.$emit('login', localStorage.getItem("accessToken"))
 
@@ -609,25 +618,38 @@
             wikiOpen() {
                 window.open('http://uengine.org/eventstorming/#/')
             },
+            clusterOpen() {
+                var me = this
+                me.clusterDialog = true
+            },
+            clusterClose() {
+                var me = this
+                me.clusterDialog = false
+            },
 
         }
     }
 </script>
 <style>
-    /*.iframe-wrapper {*/
-    /*    border: 1px solid gray;*/
-    /*    height: 600px;*/
-    /*}*/
+    .iframe-wrapper {
+       border: 1px solid gray;
+       height: 600px;
+    }
 
-    /*.vue-friendly-iframe {*/
+    /* .vue-friendly-iframe {
+       height: 35%;
+       width: 100%;
+    }
 
-    /*    height: 35%;*/
-    /*    width: 100%;*/
-    /*}*/
+    iframe {
+       height: 100%;
+       width: 100%;
+    } */
 
-    /*iframe {*/
-    /*    height: 100%;*/
-    /*    width: 100%;*/
-    /*}*/
+    iframe {
+        height: 35%;
+        width: 100%;
+        border: 0;
+    }
 
 </style>

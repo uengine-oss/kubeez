@@ -918,6 +918,12 @@
             event.stopPropagation();
             me.$emit('dblclick', event, me);
           });
+
+          $(me.element).unbind('contextmenu');
+          $(me.element).bind('contextmenu', function (event) {
+            event.stopPropagation();
+            me.$emit('contextmenu', event, me);
+          });
         }
       },
       /**

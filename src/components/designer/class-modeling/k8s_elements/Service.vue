@@ -55,9 +55,7 @@
                         :sub-top="5"
                         :sub-left="5"
                         :sub-width="30"
-                        :sub-height="30"
-                >
-
+                        :sub-height="30">
                 </image-element>
             </sub-elements>
         </geometry-element>
@@ -131,7 +129,8 @@
                     outboundDeployment: null,
                     outboundPod: null,
                     outboundReplicaSet: null,
-                    connectableType: ["Deployment", "Pod", "ReplicaSet"]
+                    connectableType: ["Deployment", "Pod", "ReplicaSet"],
+                    status: null,
                 }
             },
             name() {
@@ -206,6 +205,10 @@
                 else if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
                     me.value.outboundReplicaSet = null;
                 }
+
+                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
+                    me.value.status = obj.element.status
+                }
             })
             
         },
@@ -229,7 +232,7 @@
         },
 
         methods: {
-        }
+        },
     }
 </script>
 

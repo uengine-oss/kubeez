@@ -31,11 +31,11 @@
 
             </opengraph>
 
-
             <v-flex style="justify:end; align:start;">
                 <v-row justify="end" align="start" style="margin-right: 10px;">
-
+                    
                     <v-menu
+                            v-if="!isDeploy"
                             class="pa-2"
                             style="margin-right: 3px"
                             open-on-hover
@@ -49,19 +49,30 @@
                                     @click="deployDialogReady()"
                                     v-on="on"
                             >
-                                <v-icon>mdi-powershell</v-icon>
+                                <v-icon>{{ files.version }}</v-icon>
                                 Deploy
                             </v-btn>
                         </template>
-                        <v-list>
-                            <v-list-item
-                                    v-for="(item, index) in deployItems"
-                                    :key="index"
-                                    @click="functionSelect(item.title)"
+                    </v-menu>
+                    <v-menu
+                            v-if="isDeploy"
+                            class="pa-2"
+                            style="margin-right: 3px"
+                            open-on-hover
+                            offset-y
+                    >
+                        <template v-slot:activator="{ on }">
+                            <v-btn
+                                    style="margin-right: 5px;margin-top: 15px;"
+                                    color="green"
+                                    dark
+                                    @click="deployDialogReady()"
+                                    v-on="on"
                             >
-                                <v-list-item-title>{{ item.title }}</v-list-item-title>
-                            </v-list-item>
-                        </v-list>
+                                <v-icon>{{ files.version }}</v-icon>
+                                Update
+                            </v-btn>
+                        </template>
                     </v-menu>
 
                     <v-menu
@@ -117,59 +128,6 @@
             </v-card>
 
         </v-layout>
-
-        <v-dialog
-                v-model="showClustersDialog"
-                fullscreen
-                hide-overlay
-                scrollable
-        >
-            <v-card tile>
-                <v-toolbar
-                        class="canvas-panel"
-                        flat
-                        dark
-                        color="primary"
-                >
-                    <v-toolbar-title>Manage Clusters</v-toolbar-title>
-                    <v-spacer></v-spacer>
-                    <v-toolbar-items>
-                        <v-btn
-                                icon
-                                dark
-                                @click="showClustersDialog = false"
-                        >
-                            <v-icon>mdi-close</v-icon>
-                        </v-btn>
-                    </v-toolbar-items>
-                </v-toolbar>
-                <v-list
-                        three-line
-                        subheader
-                >
-                    <v-subheader></v-subheader>
-                    <v-list-item>
-                        <v-list-item-content>
-                            <ViewManageClustersPage v-model="clustersList" />
-                        </v-list-item-content>
-                    </v-list-item>
-                </v-list>
-                <v-card-text></v-card-text>
-                <v-card-actions>
-                    <v-btn 
-                            fab
-                            dark
-                            left
-                            bottom
-                            class="mx-5 my-5"
-                            color="primary"
-                            @click="onTokenDialog()"
-                    >
-                        <v-icon dark>mdi-plus</v-icon>
-                    </v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog>
 
         <modal name="codeModal" :height='"auto"' :width="'80%'" scrollable>
             <v-card flat>
@@ -256,34 +214,6 @@
             </v-card>
         </v-dialog>
 
-        <v-dialog v-model="tokenDialog" max-width="350">
-            <v-card>
-                <v-card-title class="headline">Cluster</v-card-title>
-                <v-card-text>
-                    <v-text-field
-                            v-model="clusterName"
-                            label="Name"
-                            required
-                    ></v-text-field>
-                    <v-text-field
-                            v-model="clusterAddress"
-                            label="API Server"
-                            required
-                    ></v-text-field>
-                    <v-textarea
-                            label="TOKEN"
-                            v-model="kubernetesToken"
-                            required
-                    ></v-textarea>
-                </v-card-text>
-                <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="green darken-1" text @click="saveClusterData()">Save</v-btn>
-                    <v-btn color="red darken-1" text @click="tokenDialog = false">Cancel</v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog>
-
         <v-dialog v-model="deployDialog" max-width="350">
             <v-card>
                 <v-card-title class="headline">Deploy</v-card-title>
@@ -292,10 +222,16 @@
                             v-model="projectName"
                             label="projectName"
                     ></v-text-field>
-                    <v-select
-                            :items="clustersNameList"
+                    <v-text-field
                             label="cluster"
-                    ></v-select>
+                            :value="clusterName"
+                            readonly
+                    ></v-text-field>
+                    <v-text-field
+                            label="API Server"
+                            :value="clusterAddress"
+                            readonly
+                    ></v-text-field>
                 </v-card-text>
 
                 <v-card-actions>
@@ -387,10 +323,6 @@
                     {title: 'Code Preview'},
                     {title: 'Download Archive'},
                 ],
-                deployItems: [
-                    {title: 'Manage Clusters'},
-                    {title: 'Deploy to Server'},
-                ],
                 onlineSaveDialog: false,
                 onlineSaveComfirmDialog: false,
                 isLoadVersion: false,
@@ -468,14 +400,12 @@
                 revisionInfo: {},
                 showVersionsDialog: false,
                 //cluster
-                kubernetesToken: '',
-                clusterAddress: '',
                 clusterName: '',
-                showClustersDialog: false,
-                tokenDialog: false,
-                clustersList: [],
-                clustersNameList: [],
+                clusterAddress: '',
+                kuberToken: '',
                 //deploy
+                isDeploy: false,
+                getStatus: null,
                 deployDialog: false,
                 projectAuthor: '',
                 parmVersion: '',
@@ -754,8 +684,6 @@
                     me.codeModalShow()
                 } else if (title == 'Download Archive') {
                     me.generateZipDialog = true
-                } else if (title == 'Manage Clusters') {
-                    me.goToClusters()
                 } else if (title == 'Deploy to Server') {
                     me.deployDialogReady()
                 }
@@ -1329,35 +1257,44 @@
                 me.treeList.push(folder)
 
             },
-            async deployDialogReady() {
-                clearInterval()
+            deployDialogReady() {
                 var me = this
-                var list = []
-                var userId = localStorage.getItem('uid')
 
-                await me.getClustersList()
-                
-                me.deployDialog = true
+                if (localStorage.getItem('kuberToken')) {
+                    me.clusterName = localStorage.getItem('clusterName')
+                    me.clusterAddress = localStorage.getItem('clusterAddress')
+                    me.kuberToken = localStorage.getItem('kuberToken')
+
+                    me.deployDialog = true
+                } else {
+                    alert("클러스터 정보가 없습니다")
+                }
             },
             async deploy() {
                 var me = this
-                
+
                 await me.value.definition.forEach(function (item) {
                     var reqUrl = me.getReqUrl(item)
                     
-                    me.$http.post(reqUrl, item.object).then(function (res) {
-                        console.log(res.status)
-                        me.getJsonData(reqUrl, item.object)
-                    }).catch(function (err) {
-                        console.log(err)
-                    })
-                    
-                    reqUrl += item.object.metadata.name                    
-                    // me.$http.put(reqUrl, item.object).then(function (res) {
-                    //     console.log(res.status)
-                    // }).catch(function (err) {
-                    //     console.log(err)
-                    // })
+                    if (item.status) {
+                        reqUrl += item.object.metadata.name
+
+                        me.$http.put(reqUrl, item.object).then(function (res) {
+                            console.log(res.status)
+                            me.getStatusData(reqUrl, item)
+                        }).catch(function (err) {
+                            console.log(err)
+                        })
+                    } else {
+                        me.$http.post(reqUrl, item.object).then(function (res) {
+                            me.isDeploy = true
+                            console.log(res.status)
+                            reqUrl += item.object.metadata.name
+                            me.getStatusData(reqUrl, item)
+                        }).catch(function (err) {
+                            console.log(err)
+                        })
+                    }
                     
                 })
 
@@ -1365,8 +1302,15 @@
             },
             getReqUrl(item) {
                 var me = this
-                var reqUrl = `${API_HOST}` + '/'
-                var type = (item._type).toLowerCase() + 's'
+                var reqUrl = ''
+                var type = (item._type).toLowerCase()
+                var lastChar = type.charAt(type.length-1);
+
+                if(lastChar == 's') {
+                    type += 'es'
+                } else {
+                    type += 's'
+                }
 
                 if(item.object.apiVersion == 'v1') {
                     var apiVersion = 'api/' + item.object.apiVersion
@@ -1380,71 +1324,47 @@
                     var namespace = 'default'
                 }
 
-                reqUrl += apiVersion + '/namespaces/' + namespace + '/' + type + '/'
+                reqUrl = `${API_HOST}` + '/' + apiVersion + '/namespaces/' + namespace + '/' + type + '/'
                 
-                return reqUrl
-            },
-            async goToClusters() {
-                var me = this
-                await me.getClustersList()
-                me.showClustersDialog = true
-            },
-            getClustersList() {
-                var me = this
-                var list = []
-                var userId = localStorage.getItem('uid')
-
-                me.database.ref('userLists/' + userId + '/clusters/')
-                    .once('value', function(snapshot) {
-                        if (snapshot.exists()) {
-                            var clusterIds = Object.keys(snapshot.val())
-                            clusterIds.forEach(function (clusterId, index) {
-                                var cluster = snapshot.val()[clusterId]
-                                list.push(cluster)
-                                me.clustersNameList.push(cluster.NAME)
-                            })
-                        }
-                    })
-                me.clustersList = list
-            },
-            onTokenDialog() {
-                var me = this
-                me.tokenDialog = true
-            },
-            saveClusterData() {
-                var me = this
-                var userId = ''
-                var newClusterKey = ''
-
-                localStorage.setItem('kubernetesToken', me.kubernetesToken);
-                localStorage.setItem('clusterAddress', me.clusterAddress);
-                localStorage.setItem('clusterName', me.clusterName);
-                
-                var cluster = {
-                    "NAME" : me.clusterName,
-                    "APISERVER" : me.clusterAddress,
-                    "TOKEN": me.kubernetesToken
+                if (type == 'persistentvolumes') {
+                    reqUrl = `${API_HOST}` + '/' + apiVersion + '/' + type + '/'
                 }
 
-                userId = localStorage.getItem('uid')
-                newClusterKey = me.database.ref('userLists/').child(userId + '/clusters/').push().key
-
-                me.database.ref('userLists/').child(userId + '/clusters/' + newClusterKey).update(cluster)
-
-                me.getClustersList()
-                me.tokenDialog = false
+                return reqUrl
             },
-            getJsonData(reqUrl, jsonData) {
+            getStatusData(reqUrl, element) {
                 var me = this
+                var jsonData = element.object
                 
-                setInterval(function () {
+                me.getStatus = setInterval(function() {
                     me.$http.get(reqUrl, jsonData).then(function (res) {
-                        console.log(res.data.status)
+                        // console.log(res.data.status)
+                        var obj = {
+                            state: "get",
+                            element: res.data
+                        }
+                        me.$EventBus.$emit(`${element.elementView.id}`, obj)
                     }).catch(function (err) {
                         console.log(err)
+                        clearInterval(me.getStatus)
                     })
-                }, 500)
+                }, 200)
 
+            },
+            terminal() {
+                var me = this
+                
+                var item = {
+                    "type": "Token",
+                    "name" : localStorage.getItem('clusterName'),
+                    "apiServer" : localStorage.getItem('clusterAddress'),
+                    "token": localStorage.getItem('kuberToken'),
+                }
+
+                me.$http.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
+                me.$http.post("api/kube-token", item).then(function (response) {
+                    me.$EventBus.$emit('terminalOn', response.data.token)
+                })
             },
             
         }

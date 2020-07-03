@@ -29,7 +29,8 @@
                 selected: false,
                 openPanel: false,
                 namePanel: '',
-                editUserImg:[]
+                editUserImg:[],
+                deploySuccess: false
             }
         },
         computed: {
@@ -79,6 +80,13 @@
             valueChangeElement() {
                 return _.cloneDeep(this.value)
             },
+            statusColor() {
+                if(this.deploySuccess) {
+                    return '#27ae60'
+                } else {
+                    return '#e74c3c'
+                }
+            }
 
         },
         watch: {
@@ -347,13 +355,13 @@
                 var me = this
                 me.value.elementView.x = me.value.elementView.x + 1
                 me.$nextTick(function () {
-                    me.value.elementView.width = me.tmpWidth
-                    me.value.elementView.height = me.tmpHeight
+                    me.value.elementView.width = me.tmpWidth > 0 ? me.tmpWidth : me.value.elementView.width
+                    me.value.elementView.height = me.tmpHeight > 0 ? me.tmpHeight : me.value.elementView.height
                     me.rotateMove = true
                     me.value.elementView.x = me.value.elementView.x - 1
                     me.$nextTick(function () {
-                        me.value.elementView.width = me.tmpWidth
-                        me.value.elementView.height = me.tmpHeight
+                        me.value.elementView.width = me.tmpWidth > 0 ? me.tmpWidth : me.value.elementView.width
+                        me.value.elementView.height = me.tmpHeight > 0 ? me.tmpHeight : me.value.elementView.height
                     })
                 })
             },
@@ -396,7 +404,32 @@
                     element: me.value
                 }
                 me.$EventBus.$emit(relationId, obj)
-            }
+            },
+            changeStatusColor(status) {
+                var me = this
+                var designer = me.getComponent('modeling-designer');
+                
+                if(status == 'success') {
+                    me.deploySuccess = true
+                } else {
+                    me.deploySuccess = false
+                }
+            },
+            handleClick(event) {
+                var me = this
+                if(me.value.status) {
+                    event.pageY = event.pageY - 62
+                    me.$refs.vueSimpleContextMenu.showMenu(event)
+                }
+            },
+            async optionClicked(event) {
+                var me = this
+                var designer = me.getComponent('modeling-designer')
+                await designer.terminal()
+
+                var code = 'kubectl get pods \n'
+                me.$EventBus.$emit('sendCode', code)
+            },
         }
     }
 </script>

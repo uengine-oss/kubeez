@@ -18,6 +18,10 @@ import CodeMirror from 'vue-codemirror'
 import VueYouTubeEmbed from 'vue-youtube-embed'
 import vuetify from './plugins/vuetify';
 import * as VueWindow from '@hscmap/vue-window'
+import TreeView from 'vue-json-tree-view'
+import 'vue-simple-context-menu/dist/vue-simple-context-menu.css'
+import VueSimpleContextMenu from 'vue-simple-context-menu'
+
 //view
 
 import dashEditYaml from "./components/dashEdityamlpage.vue";
@@ -33,7 +37,7 @@ Vue.use(ClassModeling);
 Vue.use(Modeling);
 // Vue.use(i18n);
 Vue.use(VModal)
-
+Vue.use(TreeView)
 
 
 Vue.component('dashEditYaml', dashEditYaml)
@@ -42,6 +46,7 @@ Vue.component('dashYaml', dashYaml)
 Vue.component('EditYaml', EditYaml)
 Vue.component('text-reader', textReader)
 Vue.component('Login', Login)
+Vue.component('vue-context-menu', VueSimpleContextMenu)
 
 // Vue.use(Metaworks4);
 
