@@ -118,8 +118,7 @@
                                     "containers": [
                                         {
                                             "name": "",
-                                            "image": "",
-                                            "command": []
+                                            "image": ""
                                         }
                                     ],
                                     "restartPolicy": "Never"

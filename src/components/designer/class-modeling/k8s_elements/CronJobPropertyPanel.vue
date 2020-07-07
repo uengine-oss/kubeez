@@ -74,15 +74,15 @@
                                     label="Image"
                                     v-model="value.object.spec.jobTemplate.spec.template.spec.containers[0].image"
                                 ></v-text-field>
-                                <v-text-field                                
-                                    label="schedule"
-                                    v-model="value.object.spec.schedule"
-                                ></v-text-field>
                                 <v-select                                
                                     label="restartPolicy"
                                     v-model="value.object.spec.jobTemplate.spec.template.spec.restartPolicy"
                                     :items="restartPolicyList"
                                 ></v-select>
+                                <v-label>Schedule</v-label>
+                                <v-cron-field
+                                    v-model="value.object.spec.schedule"
+                                ></v-cron-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -99,7 +99,7 @@
     import yaml from "js-yaml";
 
     import YamlEditor from "./YamlEditor";
-    import NumberField from "./NumberField";
+    import CronField from './CronField.vue';
 
     export default {
         name: 'property-panel',
@@ -109,7 +109,7 @@
         },
         components: {
             "yaml-editor": YamlEditor,
-            "number-field": NumberField,
+            CronField,
         },
         computed: {
             descriptionText() {
@@ -127,7 +127,6 @@
                 tabItems: [ "status", "property" ],
             }
         },
-
         watch: {
             status: {
                 deep: true,
@@ -136,7 +135,6 @@
             },
         },
         methods: {
-           
         }
     }
 </script>

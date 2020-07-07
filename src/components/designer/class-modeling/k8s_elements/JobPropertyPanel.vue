@@ -118,7 +118,6 @@
             status() {
                 return JSON.parse(JSON.stringify(this.value.status))
             },
-
         },
         data: function () {
             return {
@@ -127,7 +126,6 @@
                 tabItems: [ "status", "property" ],
             }
         },
-
         watch: {
             status: {
                 deep: true,

@@ -126,43 +126,19 @@
                                     }
                                 },
                                 "spec": {
-                                    "terminationGracePeriodSeconds": 10,
                                     "containers": [
                                         {
                                             "name": "",
                                             "image": "",
                                             "ports": [
                                                 {
-                                                    "containerPort": 80,
-                                                    "name": ""
-                                                }
-                                            ],
-                                            "volumeMounts": [
-                                                {
-                                                    "name": "",
-                                                    "mountPath": "/usr"
+                                                    "containerPort": 80
                                                 }
                                             ]
                                         }
                                     ]
                                 }
-                            },
-                            "volumeClaimTemplates": [
-                                {
-                                    "metadata": {
-                                        "name": ""
-                                    },
-                                    "spec": {
-                                        "accessModes": [],
-                                        "storageClassName": "",
-                                        "resources": {
-                                            "requests": {
-                                                "storage": ""
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            }
                         }
                     },
                     outboundVolumes: [],
@@ -243,7 +219,6 @@
                 var i=0;
                 me.value.object.spec.volumeClaimTemplates = [];
                 me.value.outboundVolumes.forEach(element => {
-                        me.value.object.spec.template.spec.containers[0].volumeMounts[0].name = element.object.metadata.name
                         me.value.object.spec.volumeClaimTemplates.push(
                             {
                                 "metadata": {

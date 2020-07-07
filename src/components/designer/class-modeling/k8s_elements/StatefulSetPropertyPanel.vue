@@ -79,10 +79,6 @@
                                     v-model="value.object.spec.replicas"
                                 ></number-field>
                                 <number-field
-                                    :label="'TerminationGracePeriodSeconds'"
-                                    v-model="value.object.spec.template.spec.terminationGracePeriodSeconds"
-                                ></number-field>
-                                <number-field
                                     :label="'Target Port'"
                                     v-model="value.object.spec.template.spec.containers[0].ports[0].containerPort"
                                 ></number-field>

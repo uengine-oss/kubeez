@@ -113,7 +113,6 @@
                             "name": ""
                         },
                         "spec": {
-                            "schedule": "*/1 * * * *",
                             "jobTemplate": {
                                 "spec": {
                                     "template": {
@@ -121,15 +120,15 @@
                                             "containers": [
                                                 {
                                                     "name": "",
-                                                    "image": "",
-                                                    "args": []
+                                                    "image": ""
                                                 }
                                             ],
                                             "restartPolicy": "OnFailure"
                                         }
                                     }
                                 }
-                            }
+                            },
+                            "schedule": "*/1 * * * *",
                         }
                     },
                     connectableType: [""],

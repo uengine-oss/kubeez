@@ -108,11 +108,7 @@
                         "apiVersion": "apps/v1",
                         "kind": "DaemonSet",
                         "metadata": {
-                            "name": "",
-                            "namespace": "kube-system",
-                            "labels": {
-                                "k8s-app": ""
-                            }
+                            "name": ""
                         },
                         "spec": {
                             "selector": {
@@ -127,23 +123,22 @@
                                     }
                                 },
                                 "spec": {
-                                    "tolerations": [
-                                        {
-                                            "key": "",
-                                            "effect": ""
-                                        }
-                                    ],
                                     "containers": [
                                         {
                                             "name": "",
                                             "image": ""
                                         }
                                     ],
-                                    "terminationGracePeriodSeconds": 30
+                                    "tolerations": [
+                                        {
+                                            "key": "",
+                                            "effect": ""
+                                        }
+                                    ]
                                 }
                             }
                         }
-                        },
+                    },
                     status: null,                    
                 }
             },

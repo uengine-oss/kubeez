@@ -279,8 +279,6 @@
     import https from 'https'
     import firebase from 'firebase'
 
-    var Terminal = require('xterm').Terminal;
-    
 
     export default {
         name: 'App',

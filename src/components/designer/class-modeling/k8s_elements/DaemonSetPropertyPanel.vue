@@ -71,6 +71,10 @@
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
                                 <v-text-field
+                                    label="Image"
+                                    v-model="value.object.spec.template.spec.containers[0].image"
+                                ></v-text-field>
+                                <v-text-field
                                     label="Key"
                                     v-model="value.object.spec.template.spec.tolerations[0].key"
                                 ></v-text-field>
@@ -79,14 +83,6 @@
                                     v-model="value.object.spec.template.spec.tolerations[0].effect"
                                     :items="effectList"
                                 ></v-select>
-                                <v-text-field
-                                    label="Image"
-                                    v-model="value.object.spec.template.spec.containers[0].image"
-                                ></v-text-field>
-                                <number-field
-                                    :label="'Termination Grace Period Seconds'"
-                                    v-model="value.object.spec.template.spec.terminationGracePeriodSeconds"
-                                ></number-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>
