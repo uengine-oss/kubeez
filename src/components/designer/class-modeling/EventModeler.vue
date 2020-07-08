@@ -104,6 +104,34 @@
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ds-palette.svg`
                     },
+                    {
+                        'component': 'configMap',
+                        'label': 'ConfigMap',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/cm-palette.svg`
+                    },
+                    {
+                        'component': 'secret',
+                        'label': 'Secret',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/secret-palette.svg`
+                    },
+                    {
+                        'component': 'role',
+                        'label': 'Role',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/role-palette.svg`
+                    },
+                    {
+                        'component': 'role-binding',
+                        'label': 'RoleBinding',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/rb-palette.svg`
+                    },
                 ],
             }
         },
