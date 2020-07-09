@@ -425,7 +425,13 @@
             async optionClicked(event) {
                 var me = this
                 var designer = me.getComponent('modeling-designer')
-                await designer.terminal()
+                
+                if(event.option.name == 'Delete') {
+                    await designer.deleteObj(me.value)
+                    me.refresh()
+                } else {
+                    await designer.terminal()
+                }
 
                 // var code = 'kubectl get pods \n'
                 // me.$EventBus.$emit('sendCode', code)

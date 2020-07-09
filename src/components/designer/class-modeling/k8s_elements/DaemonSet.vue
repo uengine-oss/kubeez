@@ -24,20 +24,28 @@
                     'label-angle':value.elementView.angle,
                     'font-weight': 'bold','font-size': '16'
                 }"
+                v-on:contextmenu.prevent.stop="handleClick($event)"
         >
+            
             <geometry-rect
                     :_style="{
                         'fill-r': 1,
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#ffeb3b',
-                        fill: '#ffeb3b',
+                        'stroke': '#e9ff3b',
+                        fill: '#e9ff3b',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
                     }"
             ></geometry-rect>
+
+            <sub-controller
+                    v-if="value.status"
+                    :image="'subprocess.png'"
+                    @click.prevent.stop="handleClick($event)"
+            ></sub-controller>
 
             <sub-elements>
                 <!--title-->
@@ -63,6 +71,13 @@
             v-model="value"
             :img="imgSrc">
         </property-panel>
+
+        <vue-context-menu
+            :elementId="value._type"
+            :options="menuList"
+            :ref="'vueSimpleContextMenu'"
+            @option-clicked="optionClicked">
+        </vue-context-menu>
     </div>
 </template>
 
@@ -156,12 +171,15 @@
                 }catch(e){
                     return "";
                 }
-                
             },
-
         },
         data() {
-            return {};
+            return {
+                menuList : [
+                    { name: "View Terminal" },
+                    { name: "Delete" }
+                ]
+            };
         },
         created() {
         },
@@ -175,9 +193,7 @@
                 }
                 
             })
-
         },
-
         watch: {
             name(appName) {
                 this.value.object.spec.selector.matchLabels.app = appName;
@@ -186,7 +202,6 @@
             },
 
         },
-
         methods: {   
         }
     }

@@ -24,6 +24,7 @@
                     'label-angle':value.elementView.angle,
                     'font-weight': 'bold','font-size': '16'
                 }"
+                v-on:contextmenu.prevent.stop="handleClick($event)"
         >
             <geometry-rect
                     :_style="{
@@ -31,13 +32,19 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#ffeb3b',
-                        fill: '#ffeb3b',
+                        'stroke': '#ffdd2c',
+                        fill: '#ffdd2c',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
                     }"
             ></geometry-rect>
+
+            <sub-controller
+                    v-if="value.status"
+                    :image="'subprocess.png'"
+                    @click.prevent.stop="handleClick($event)"
+            ></sub-controller>
 
             <sub-elements>
                 <!--title-->
@@ -64,6 +71,12 @@
             :img="imgSrc">
         </property-panel>
 
+        <vue-context-menu
+            :elementId="value._type"
+            :options="menuList"
+            :ref="'vueSimpleContextMenu'"
+            @option-clicked="optionClicked">
+        </vue-context-menu>
     </div>
 </template>
 
@@ -176,7 +189,12 @@
 
         },
         data() {
-            return {};
+            return {
+                menuList : [
+                    { name: "View Terminal" },
+                    { name: "Delete" }
+                ]
+            };
         },
         created() {
         },

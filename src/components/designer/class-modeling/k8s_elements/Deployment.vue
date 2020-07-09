@@ -93,8 +93,8 @@
         </property-panel>
 
         <vue-context-menu
-            :elementId="'deplpoyment'"
-            :options="menus"
+            :elementId="value._type"
+            :options="menuList"
             :ref="'vueSimpleContextMenu'"
             @option-clicked="optionClicked">
         </vue-context-menu>
@@ -220,9 +220,9 @@
         },
         data: function () {
             return {
-                menus : [
-                    // { name: "Get Pods" }, { name: "Delete" },
-                    { name: "View Terminal" }
+                menuList : [
+                    { name: "View Terminal" },
+                    { name: "Delete" }
                 ]
             };
         },

@@ -132,6 +132,20 @@
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/rb-palette.svg`
                     },
+                    {
+                        'component': 'cluster-role',
+                        'label': 'ClusterRole',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/c-role-palette.svg`
+                    },
+                    {
+                        'component': 'cluster-role-binding',
+                        'label': 'ClusterRoleBinding',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/crb-palette.svg`
+                    },
                 ],
             }
         },

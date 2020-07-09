@@ -1300,6 +1300,19 @@
 
                 me.deployDialog = false
             },
+            deleteObj(item) {
+                var me = this
+                var reqUrl = me.getReqUrl(item)
+                
+                clearInterval(me.getStatus)
+
+                me.$http.delete(reqUrl, item.object).then(function (res) {
+                    item.status = null
+                    console.log(res.status)
+                }).catch(function (err) {
+                    console.log(err)
+                })
+            },
             getReqUrl(item) {
                 var me = this
                 var reqUrl = ''
@@ -1326,7 +1339,7 @@
 
                 reqUrl = `${API_HOST}` + '/' + apiVersion + '/namespaces/' + namespace + '/' + type + '/'
                 
-                if (type == 'persistentvolumes') {
+                if (type == 'persistentvolumes' || type == 'clusterroles' || type == 'clusterrolebindings') {
                     reqUrl = `${API_HOST}` + '/' + apiVersion + '/' + type + '/'
                 }
 

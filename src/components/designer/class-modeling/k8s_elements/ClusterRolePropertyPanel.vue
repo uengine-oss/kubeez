@@ -79,7 +79,7 @@
         },
         computed: {
             descriptionText() {
-                return 'Role'
+                return 'ClusterRole'
             },
         },
         data: function () {

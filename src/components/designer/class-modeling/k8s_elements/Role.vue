@@ -24,6 +24,7 @@
                     'label-angle':value.elementView.angle,
                     'font-weight': 'bold','font-size': '16'
                 }"
+                v-on:contextmenu.prevent.stop="handleClick($event)"
         >
 
             <geometry-rect
@@ -39,6 +40,12 @@
                         'z-index': '998'
                     }"
             ></geometry-rect>
+
+            <sub-controller
+                    v-if="value.status"
+                    :image="'subprocess.png'"
+                    @click.prevent.stop="handleClick($event)"
+            ></sub-controller>
 
             <sub-elements>
                 <!--title-->
@@ -64,6 +71,13 @@
             v-model="value"
             :img="imgSrc">
         </property-panel>
+
+        <vue-context-menu
+            :elementId="value._type"
+            :options="menuList"
+            :ref="'vueSimpleContextMenu'"
+            @option-clicked="optionClicked">
+        </vue-context-menu>
     </div>
 </template>
 
@@ -141,7 +155,12 @@
 
         },
         data: function () {
-            return {};
+            return {
+                menuList : [
+                    { name: "View Terminal" },
+                    { name: "Delete" }
+                ]
+            };
         },
         created: function () {
         },

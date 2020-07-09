@@ -41,15 +41,18 @@
                                     label="Name"
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
+                                <v-select
+                                    label="Subjects Kind"
+                                    v-model="value.object.subjects[0].kind"
+                                    :items="kindList"
+                                ></v-select>
                                 <v-text-field
-                                    label="Resource"
-                                    v-model="resource"
-                                    @keyup.enter="setResources(resource)"
+                                    label="Subjects Name"
+                                    v-model="value.object.subjects[0].name"
                                 ></v-text-field>
                                 <v-text-field
-                                    label="Verb"
-                                    v-model="verb"
-                                    @keyup.enter="setVerbs(verb)"
+                                    label="Role Name"
+                                    v-model="value.object.roleRef.name"
                                 ></v-text-field>
                             </v-card-text>
                         </v-card>
@@ -79,26 +82,17 @@
         },
         computed: {
             descriptionText() {
-                return 'Role'
+                return 'ClusterRoleBinding'
             },
         },
         data: function () {
             return {
-                resource: "",
-                verb: "",
+                kindList: [ "User", "Group", "ServiceAccount" ],
             }
         },
         watch: {
         },
-        methods: {
-            setResources(val) {
-                this.value.object.rules[0].resources.push(val)
-                this.resource = ""
-            },
-            setVerbs(val) {
-                this.value.object.rules[0].verbs.push(val)
-                this.verb = ""
-            },
+        methods: { 
         }
     }
 </script>

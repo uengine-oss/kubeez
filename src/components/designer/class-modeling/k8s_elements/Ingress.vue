@@ -21,9 +21,10 @@
                 v-on:removeShape="onRemoveShape(value)"
                 :label.sync="name"
                 :_style="{
-                'label-angle':value.elementView.angle,
-                'font-weight': 'bold','font-size': '16'
+                    'label-angle':value.elementView.angle,
+                    'font-weight': 'bold','font-size': '16'
                 }"
+                v-on:contextmenu.prevent.stop="handleClick($event)"
         >
 
             <!--v-on:dblclick="$refs['dialog'].open()"-->
@@ -40,6 +41,12 @@
                         'z-index': '998'
                     }"
             ></geometry-rect>
+
+            <sub-controller
+                    v-if="value.status"
+                    :image="'subprocess.png'"
+                    @click.prevent.stop="handleClick($event)"
+            ></sub-controller>
 
             <sub-elements>
                 <!--title-->
@@ -60,12 +67,18 @@
             </sub-elements>
         </geometry-element>
 
-
         <property-panel
                 v-if="openPanel"
                 v-model="value"
                 :img="imgSrc">
         </property-panel>
+
+        <vue-context-menu
+            :elementId="value._type"
+            :options="menuList"
+            :ref="'vueSimpleContextMenu'"
+            @option-clicked="optionClicked">
+        </vue-context-menu>
     </div>
 </template>
 
@@ -149,7 +162,6 @@
                     return "Untitled";
                 }
             },
-
             outboundServiceNames() {
                 try {
                     var serviceNames = "";
@@ -164,22 +176,21 @@
                     return ""
                 }
             },
-
             paths() {
                 return this.value.object.spec.rules[0].http.paths
             },
-
         },
         data: function () {
             return {
-                                
+                menuList : [
+                    { name: "View Terminal" },
+                    { name: "Delete" }
+                ]
             };
         },
         created: function () {
-            
         },
         mounted: function () {
-
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
@@ -220,7 +231,6 @@
                     }
                 );
             },
-
             paths: {
                 deep: true,
                 handler: function (newVal, oldVal) {
@@ -235,7 +245,6 @@
                 }
             }
         },
-
         methods: {
             getIndex(newArr, oldArr) {
                 var index

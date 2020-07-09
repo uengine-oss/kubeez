@@ -83,6 +83,11 @@
                                     :label="'Target Port'"
                                     v-model="value.object.spec.ports[0].targetPort"
                                 ></number-field>
+                                <v-select
+                                    label="Type"
+                                    v-model="value.object.spec.type"
+                                    :items="typeList"
+                                ></v-select>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -122,6 +127,7 @@
         },
         data: function () {
             return {
+                typeList: [ "ClusterIP", "NodePort", "LoadBalancer" ],
                 activeTab: 0,
                 tabItems: [ "status", "property" ],
             }
