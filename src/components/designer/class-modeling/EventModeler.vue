@@ -146,6 +146,13 @@
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/crb-palette.svg`
                     },
+                    {
+                        'component': 'storage-class',
+                        'label': 'StorageClass',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sc-palette.svg`
+                    },
                 ],
             }
         },
