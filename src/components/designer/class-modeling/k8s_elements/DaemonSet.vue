@@ -147,7 +147,12 @@
                                     "tolerations": [
                                         {
                                             "key": "",
-                                            "effect": ""
+                                            "effect": "",
+                                            "ports": [
+                                                {
+                                                    "containerPort": 80
+                                                }
+                                            ]
                                         }
                                     ]
                                 }

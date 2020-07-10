@@ -160,8 +160,8 @@
                         }
                     },
                     outboundVolumes: [],
+                    connectableType: [ "PersistentVolumeClaim" ],
                     status: null,
-
                 }
             },
             name() {
@@ -211,13 +211,13 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 if (obj.state == "addRelation" && obj.element && obj.element.targetElement
-                    && obj.element.targetElement._type == "PersistenceVolumeClaim") {
+                    && obj.element.targetElement._type == "PersistentVolumeClaim") {
                     console.log("inner")
                     me.value.outboundVolumes.push(obj.element.targetElement);
                 }
 
                 if (obj.state == "deleteRelation" && obj.element && obj.element.targetElement
-                    && obj.element.targetElement._type == "PersistenceVolumeClaim") {
+                    && obj.element.targetElement._type == "PersistentVolumeClaim") {
 
                     me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
                 }
@@ -255,7 +255,7 @@
                         me.value.object.spec.volumes.push(
                             {
                                 "name": "volume" + (++i),
-                                "persistenceVolumeClaim": {
+                                "persistentVolumeClaim": {
                                     "claimName": element.object.metadata.name
                                 }
                             }

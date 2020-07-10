@@ -70,16 +70,15 @@
                                     label="Name"
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
+                                <template-field
+                                    v-model="value.object"
+                                ></template-field>
                                 <v-text-field
-                                    label="Image"
-                                    v-model="value.object.spec.template.spec.containers[0].image"
-                                ></v-text-field>
-                                <v-text-field
-                                    label="Key"
+                                    label="Toleration Key"
                                     v-model="value.object.spec.template.spec.tolerations[0].key"
                                 ></v-text-field>
                                 <v-select
-                                    label="Effect"
+                                    label="Toleration Effect"
                                     v-model="value.object.spec.template.spec.tolerations[0].effect"
                                     :items="effectList"
                                 ></v-select>
@@ -100,6 +99,7 @@
 
     import YamlEditor from "./YamlEditor";
     import NumberField from "./NumberField";
+    import TemplateField from "./TemplateField";
 
     export default {
         name: 'service-property-panel',
@@ -110,6 +110,7 @@
         components: {
             "yaml-editor": YamlEditor,
             "number-field": NumberField,
+            "template-field": TemplateField,
         },
         computed: {
             descriptionText() {

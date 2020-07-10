@@ -86,11 +86,11 @@
 
 <script>
     import Element from '../../modeling/Element'
-    import PropertyPanel from './PersistenceVolumeClaimPropertyPanel'
+    import PropertyPanel from './PersistentVolumeClaimPropertyPanel'
 
     export default {
         mixins: [Element],
-        name: 'persistence-volume-claim',
+        name: 'persistent-volume-claim',
         components: {
             "property-panel": PropertyPanel
         },

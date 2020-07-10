@@ -42,15 +42,15 @@
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ing-palette.svg`
                     },
                     {
-                        'component': 'persistence-volume',
-                        'label': 'Persistence Volume',
+                        'component': 'persistent-volume',
+                        'label': 'PersistentVolume',
                         'width': '100',
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pv-palette.svg`
                     },
                     {
-                        'component': 'persistence-volume-claim',
-                        'label': 'Persistence Volume Claim',
+                        'component': 'persistent-volume-claim',
+                        'label': 'PersistentVolumeClaim',
                         'width': '100',
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pvc-palette.svg`

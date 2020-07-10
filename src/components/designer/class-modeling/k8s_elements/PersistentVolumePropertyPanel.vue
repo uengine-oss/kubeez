@@ -77,13 +77,19 @@
                                 ></v-select>
                                 <v-text-field
                                     label="Storage"
-                                    v-model="value.object.spec.resources.requests.storage"
+                                    v-model="storage"
                                     type="number"
                                 ></v-text-field>
-                                <v-text-field
+                                <v-select
+                                    label="Persistent Volume Reclaim Policy"
+                                    v-model="value.object.spec.persistentVolumeReclaimPolicy"
+                                    :items="policyList"
+                                ></v-select>
+                                <v-select
                                     label="VolumeMode"
                                     v-model="value.object.spec.volumeMode"
-                                ></v-text-field>
+                                    :items="volumeModeList"
+                                ></v-select>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -102,7 +108,7 @@
     import YamlEditor from "./YamlEditor";
 
     export default {
-        name: 'property-panel',
+        name: 'ingress-property-panel',
         props: {
             value: Object,
             img: String,
@@ -112,16 +118,28 @@
         },
         computed: {
             descriptionText() {
-                return 'PersistentVolumeClaim'
+                return 'PersistentVolume'
             },
             status() {
                 return JSON.parse(JSON.stringify(this.value.status))
             },
-
+            storage: {
+                get() {
+                    var val = this.value.object.spec.capacity.storage
+                    val = val.replace('Gi', '')
+                    return val
+                },
+                set(val) {
+                    var me = this
+                    me.value.object.spec.capacity.storage = val + "Gi"
+                }
+            }
         },
         data: function () {
             return {
                 accessModeList: [ ['ReadWriteOnce'], ['ReadOnlyMany'], ['ReadWriteMany'] ],
+                policyList: [ "Retain", "Recycle", "Delete" ],
+                volumeModeList: [ "Filesystem", "Block" ],
                 activeTab: 0,
                 tabItems: [ "status", "property" ],
             }

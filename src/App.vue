@@ -106,9 +106,14 @@
                 </v-card>
             </v-menu>
 
-            <v-toolbar-title class="mr-5">
+            <v-toolbar-title>
                 {{ clusterInfo }}
             </v-toolbar-title>
+            <v-btn 
+                    @click="clusterOpen"
+                    icon>
+                <v-icon>settings</v-icon>
+            </v-btn>
 
             <v-btn
                     v-if="!successLogin"
@@ -131,13 +136,6 @@
                             :src=loginUser.picture
                     >
                 </v-avatar>
-            </v-btn>
-
-            <v-btn 
-                    v-if="successLogin"
-                    @click="clusterOpen"
-                    icon>
-                <v-icon>settings</v-icon>
             </v-btn>
 
             <v-btn icon color="white" @click="wikiOpen">
@@ -411,6 +409,8 @@
 
             if (localStorage.getItem('clusterName')) {
                 me.clusterInfo = localStorage.getItem('clusterName')
+            } else {
+                me.clusterInfo = 'none'
             }
 
             if (localStorage.getItem('projectName')) {

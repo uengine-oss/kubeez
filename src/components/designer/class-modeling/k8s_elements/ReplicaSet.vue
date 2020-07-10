@@ -165,7 +165,12 @@
                                     "containers": [
                                         {
                                             "name": "",
-                                            "image": ""
+                                            "image": "",
+                                            "ports": [
+                                                {
+                                                    "containerPort": 80
+                                                }
+                                            ]
                                         }
                                     ]
                                 }

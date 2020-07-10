@@ -139,7 +139,6 @@
                         'style': JSON.stringify({}),
                         'angle': 0,
                     },
-                    outboundVolumes: [],
                     object: {
                        "apiVersion": "apps/v1",
                         "kind": "Deployment",
@@ -178,7 +177,8 @@
                             }
                         }
                     },
-                    connectableType: ["ReplicaSet"],
+                    outboundVolumes: [],
+                    connectableType: [ "PersistentVolumeClaim" ],
                     status: null,
                     replicasStatus: "",
                     
