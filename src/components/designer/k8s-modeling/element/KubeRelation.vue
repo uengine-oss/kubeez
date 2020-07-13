@@ -32,11 +32,11 @@
 </template>
 
 <script>
-    import Element from '../../modeling/Element'
+    import Element from '../Kube-Element'
 
     export default {
         mixins: [Element],
-        name: 'class-relation',
+        name: 'kube-relation',
         props: {
             value: Object
         },

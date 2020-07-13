@@ -46,7 +46,7 @@
 
 <script>
     import PropertyPanel from './NamespacePropertyPanel'
-    import Element from '../../modeling/Element'
+    import Element from '../Kube-Element'
     import GroupElement from "../../../opengraph/shape/GroupElement";
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
@@ -153,7 +153,7 @@
             },
             deleteInNameSpace(boundedName) {
                 var me = this
-                var designer = this.getComponent('modeling-designer')
+                var designer = this.getComponent('kube-modeling-designer')
 
                 designer.value.definition.forEach(function (item, idx) {
                     if (item != null) {

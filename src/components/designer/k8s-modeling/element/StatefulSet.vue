@@ -26,15 +26,14 @@
                 }"
                 v-on:contextmenu.prevent.stop="handleClick($event)"
         >
-
             <geometry-rect
                     :_style="{
                         'fill-r': 1,
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#326ce5',
-                        fill: '#326ce5',
+                        'stroke': '#ffdd2c',
+                        fill: '#ffdd2c',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -54,7 +53,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'RoleBinding'">
+                        :text="'StatefulSet'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -82,13 +81,13 @@
 </template>
 
 <script>
-    import Element from '../../modeling/Element'
-    import PropertyPanel from './RoleBindingPropertyPanel'
+    import Element from '../Kube-Element'
+    import PropertyPanel from './StatefulSetPropertyPanel'
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
     export default {
         mixins: [Element],
-        name: 'role-binding',
+        name: 'statefulSet',
         components: {
             ImageElement,
             "property-panel": PropertyPanel
@@ -99,10 +98,10 @@
                 return {}
             },
             className() {
-                return 'RoleBinding'
+                return 'StatefulSet'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/rb.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sts.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -120,35 +119,44 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "rbac.authorization.k8s.io/v1",
-                        "kind": "RoleBinding",
+                        "apiVersion": "apps/v1",
+                        "kind": "StatefulSet",
                         "metadata": {
-                            "name": "",
-                            "namespace": "default",
+                            "name": ""
                         },
-                        "subjects": [
-                            {
-                                "kind": "",
-                                "name": "",
-                                "apiGroup": ""
+                        "spec": {
+                            "selector": {
+                                "matchLabels": {
+                                    "app": ""
+                                }
+                            },
+                            "serviceName": "",
+                            "replicas": 1,
+                            "template": {
+                                "metadata": {
+                                    "labels": {
+                                        "app": ""
+                                    }
+                                },
+                                "spec": {
+                                    "containers": [
+                                        {
+                                            "name": "",
+                                            "image": "",
+                                            "ports": [
+                                                {
+                                                    "containerPort": 80
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
                             }
-                        ],
-                        "roleRef": {
-                            "kind": "Role",
-                            "name": "",
-                            "apiGroup": "rbac.authorization.k8s.io"
                         }
                     },
+                    outboundVolumes: [],
+                    connectableType: ["PersistentVolumeClaim"],
                     status: null,
-                    connectableType: ["Role", "ClusterRole"],
-                    outboundRole: null,
-                }
-            },
-            name() {
-                try {
-                    return this.value.object.metadata.name;
-                } catch (e) {
-                    return "Untitled";
                 }
             },
             namespace: {
@@ -159,15 +167,28 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-            outboundRoleName() {
-                try {
-                    return this.value.outboundRole.object.metadata.name;
-                } catch(e) {
+            name(){
+                try{
+                    return this.value.object.metadata.name; 
+                }catch(e){
+                    return "";
+                }
+                
+            },
+            outboundVolumeNames(){
+                try{
+                    var names = "";
+                    this.value.outboundVolumes.forEach(element => {
+                        names += element.object.metadata.name +  ","
+                    });
+                    return names;
+                }catch(e){
                     return "";
                 }
             },
+
         },
-        data: function () {
+        data() {
             return {
                 menuList : [
                     { name: "View Terminal" },
@@ -175,36 +196,69 @@
                 ]
             };
         },
-        created: function () {
+        created() {
         },
-        mounted(){
+        mounted() {
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement._type == "PersistentVolumeClaim"){
 
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement){
-                    me.value.outboundRole = obj.element.targetElement;
+                    me.value.outboundVolumes.push(obj.element.targetElement);
                 }
 
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement){
-                    me.value.outboundRole = null;
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement._type == "PersistentVolumeClaim"){
+
+                    me.value.object.spec.template.spec.containers[0].volumeMounts[0].name = ""
+                    me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
                 }
 
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = "created"
-                    var designer = me.getComponent('modeling-designer')
-                    clearInterval(designer.getStatus)
+                    me.value.status = obj.element.status
+                    me.refresh()
                 }
+                
             })
 
         },
+
         watch: {
-            outboundRoleName(val) {
-                var me = this
-                me.value.object.roleRef.name = val
-                me.value.object.roleRef.kind = me.value.outboundRole.object.kind
+            name(appName) {
+                this.value.object.spec.serviceName = appName;
+                this.value.object.spec.selector.matchLabels.app = appName;
+                this.value.object.spec.template.metadata.labels.app = appName;
+                this.value.object.spec.template.spec.containers[0].name = appName;
+                this.value.object.spec.template.spec.containers[0].ports[0].name = appName;
             },
+            outboundVolumeNames(names){
+                var me = this;
+                var i=0;
+                me.value.object.spec.volumeClaimTemplates = [];
+                me.value.outboundVolumes.forEach(element => {
+                        me.value.object.spec.volumeClaimTemplates.push(
+                            {
+                                "metadata": {
+                                    "name": element.object.metadata.name
+                                },
+                                "spec": {
+                                    "accessModes": element.object.spec.accessModes,
+                                    "storageClassName": element.object.spec.storageClassName,
+                                    "resources": {
+                                        "requests": {
+                                            "storage": element.object.spec.resources.requests.storage
+                                        }
+                                    }
+                                }
+                            }
+                        );
+                    }
+                );
+            },
+
         },
+
         methods: {
         }
     }

@@ -33,8 +33,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#aaaaaa',
-                        fill: '#aaaaaa',
+                        'stroke': '#cccccc',
+                        fill: '#cccccc',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -48,7 +48,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'PV'">
+                        :text="'PVC'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -58,7 +58,7 @@
                         :sub-height="30">
                 </image-element>
             </sub-elements>
-            
+
             <sub-elements>
                 <circle-element
                         v-if="value.status"
@@ -85,12 +85,12 @@
 </template>
 
 <script>
-    import Element from '../../modeling/Element'
-    import PropertyPanel from './PersistentVolumePropertyPanel'
+    import Element from '../Kube-Element'
+    import PropertyPanel from './PersistentVolumeClaimPropertyPanel'
 
     export default {
         mixins: [Element],
-        name: 'persistent-volume',
+        name: 'persistent-volume-claim',
         components: {
             "property-panel": PropertyPanel
         },
@@ -100,10 +100,10 @@
                 return {}
             },
             className() {
-                return 'PersistentVolume'
+                return 'PersistentVolumeClaim'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pv.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pvc.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -122,26 +122,34 @@
                     },
                     object: {
                         "apiVersion": "v1",
-                        "kind": "PersistentVolume",
+                        "kind": "PersistentVolumeClaim",
                         "metadata": {
                             "name": "",
                         },
                         "spec": {
-                            "accessModes": [
-                                ""
-                            ],
-                            "capacity": {
-                                "storage": "1Gi"
+                            "accessModes": [ "" ],
+                            "resources": {
+                                "requests": {
+                                    "storage": "1Gi"
+                                }
                             },
-                            "persistentVolumeReclaimPolicy": "Retain",
+                            "storageClassName": "",
                             "volumeMode": "Filesystem",
-                            "hostPath": {
-                                "path": "/tmp"
-                            }
-                        },
+                            "volumeName": ""
+                        }
                     },
+                    connectableType: ["PersistentVolume"],
+                    outboundVolume: null,
                     status: null,
                     
+                }
+            },
+
+            name(){
+                try{
+                    return this.value.object.metadata.name;
+                }catch(e){
+                    return "Untitled";
                 }
             },
             namespace: {
@@ -152,13 +160,14 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-            name(){
+            outboundVolumeName(){
                 try{
-                    return this.value.object.metadata.name;
+                    return this.value.outboundVolume.object.metadata.name;
                 }catch(e){
-                    return "Untitled";
+                    return "";
                 }
             }
+
         },
         data: function () {
             return {
@@ -169,25 +178,40 @@
             
         },
         mounted: function () {
+
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement._type == "PersistentVolume"){
+
+                    me.value.outboundVolume = obj.element.targetElement;
+                }
+
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement._type == "PersistentVolume"){
+
+                    me.value.outboundVolume = null;
+                }
+
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
                     me.value.status = obj.element.status
                     me.setStatus()
                     me.refresh()
                 }
             })
+            
         },
         watch: {
-           
+            "outboundVolumeName": function(volumeName){
+                this.value.object.spec.volumeName = volumeName;
+            }
         },
 
         methods: {
             setStatus() {
                 var me = this
-
+                
                 if(me.value.status.phase == 'Bound') {
                     me.changeStatusColor('success')
                 } else {

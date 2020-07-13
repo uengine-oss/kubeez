@@ -33,8 +33,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#ff7050',
-                        fill: '#ff7050',
+                        'stroke': '#326ce5',
+                        fill: '#326ce5',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -54,7 +54,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'ConfigMap'">
+                        :text="'RoleBinding'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -82,13 +82,13 @@
 </template>
 
 <script>
-    import Element from '../../modeling/Element'
-    import PropertyPanel from './ConfigMapPropertyPanel'
+    import Element from '../Kube-Element'
+    import PropertyPanel from './RoleBindingPropertyPanel'
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
     export default {
         mixins: [Element],
-        name: 'configMap',
+        name: 'role-binding',
         components: {
             ImageElement,
             "property-panel": PropertyPanel
@@ -99,10 +99,10 @@
                 return {}
             },
             className() {
-                return 'ConfigMap'
+                return 'RoleBinding'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/cm.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/rb.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -120,14 +120,28 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "v1",
-                        "kind": "ConfigMap",
+                        "apiVersion": "rbac.authorization.k8s.io/v1",
+                        "kind": "RoleBinding",
                         "metadata": {
-                            "name": ""
+                            "name": "",
+                            "namespace": "default",
                         },
-                        "data": {},
+                        "subjects": [
+                            {
+                                "kind": "",
+                                "name": "",
+                                "apiGroup": ""
+                            }
+                        ],
+                        "roleRef": {
+                            "kind": "Role",
+                            "name": "",
+                            "apiGroup": "rbac.authorization.k8s.io"
+                        }
                     },
                     status: null,
+                    connectableType: ["Role", "ClusterRole"],
+                    outboundRole: null,
                 }
             },
             name() {
@@ -145,7 +159,13 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-
+            outboundRoleName() {
+                try {
+                    return this.value.outboundRole.object.metadata.name;
+                } catch(e) {
+                    return "";
+                }
+            },
         },
         data: function () {
             return {
@@ -162,15 +182,28 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
 
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement){
+                    me.value.outboundRole = obj.element.targetElement;
+                }
+
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement){
+                    me.value.outboundRole = null;
+                }
+
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
                     me.value.status = "created"
-                    var designer = me.getComponent('modeling-designer')
+                    var designer = me.getComponent('kube-modeling-designer')
                     clearInterval(designer.getStatus)
                 }
             })
 
         },
         watch: {
+            outboundRoleName(val) {
+                var me = this
+                me.value.object.roleRef.name = val
+                me.value.object.roleRef.kind = me.value.outboundRole.object.kind
+            },
         },
         methods: {
         }

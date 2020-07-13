@@ -34,8 +34,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#34aace',
-                        fill: '#34aace',
+                        'stroke': '#2dcbfb',
+                        fill: '#2dcbfb',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -55,7 +55,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'CronJob'">
+                        :text="'Job'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -83,13 +83,13 @@
 </template>
 
 <script>
-    import Element from '../../modeling/Element'
-    import PropertyPanel from './CronJobPropertyPanel'
+    import Element from '../Kube-Element'
+    import PropertyPanel from './JobPropertyPanel'
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
     export default {
         mixins: [Element],
-        name: 'cronjob',
+        name: 'job',
         components: {
             ImageElement,
             "property-panel": PropertyPanel
@@ -100,10 +100,10 @@
                 return {}
             },
             className() {
-                return 'CronJob'
+                return 'Job'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/cronjob.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/job.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -121,31 +121,26 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "batch/v1beta1",
-                        "kind": "CronJob",
+                        "apiVersion": "batch/v1",
+                        "kind": "Job",
                         "metadata": {
                             "name": ""
                         },
                         "spec": {
-                            "jobTemplate": {
+                            "template": {
                                 "spec": {
-                                    "template": {
-                                        "spec": {
-                                            "containers": [
-                                                {
-                                                    "name": "",
-                                                    "image": ""
-                                                }
-                                            ],
-                                            "restartPolicy": "OnFailure"
+                                    "containers": [
+                                        {
+                                            "name": "",
+                                            "image": ""
                                         }
-                                    }
+                                    ],
+                                    "restartPolicy": "Never"
                                 }
                             },
-                            "schedule": "*/1 * * * *",
-                        }
+                            "backoffLimit": 6,
+                        },
                     },
-                    connectableType: [""],
                     status: null,
                 }
             },
@@ -185,15 +180,13 @@
                     me.value.status = obj.element.status
                     me.refresh()
                 }
+
             })
-
         },
-
         watch: {
             name(appName) {
-                this.value.object.spec.jobTemplate.spec.template.spec.containers[0].name = appName;
+                this.value.object.spec.template.spec.containers[0].name = appName;
             },
-
         },
         methods: {            
         }

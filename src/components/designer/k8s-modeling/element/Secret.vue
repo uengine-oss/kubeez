@@ -33,8 +33,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#848484',
-                        fill: '#848484',
+                        'stroke': '#ff5757',
+                        fill: '#ff5757',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -54,7 +54,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'StorageClass'">
+                        :text="'Secret'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -82,13 +82,13 @@
 </template>
 
 <script>
-    import Element from '../../modeling/Element'
-    import PropertyPanel from './StorageClassPropertyPanel'
+    import Element from '../Kube-Element'
+    import PropertyPanel from './SecretPropertyPanel'
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
     export default {
         mixins: [Element],
-        name: 'storage-class',
+        name: 'secret',
         components: {
             ImageElement,
             "property-panel": PropertyPanel
@@ -99,10 +99,10 @@
                 return {}
             },
             className() {
-                return 'StorageClass'
+                return 'Secret'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sc.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/secret.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -120,16 +120,13 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "storage.k8s.io/v1",
-                        "kind": "StorageClass",
+                        "apiVersion": "v1",
+                        "kind": "Secret",
                         "metadata": {
                             "name": ""
                         },
-                        "provisioner": "",
-                        "parameters": {
-                            "type": "gp2"
-                        },
-                        "reclaimPolicy": "Delete",
+                        "type": "Opaque",
+                        "data": {},
                     },
                     status: null,
                 }
@@ -167,13 +164,16 @@
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
 
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
+                    me.value.status = "created"
+                    var designer = me.getComponent('kube-modeling-designer')
+                    clearInterval(designer.getStatus)
                 }
             })
 
         },
         watch: {
         },
-        methods: {
+        methods: {            
         }
     }
 </script>

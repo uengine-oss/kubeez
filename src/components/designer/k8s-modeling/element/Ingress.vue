@@ -21,8 +21,8 @@
                 v-on:removeShape="onRemoveShape(value)"
                 :label.sync="name"
                 :_style="{
-                'label-angle':value.elementView.angle,
-                'font-weight': 'bold','font-size': '16'
+                    'label-angle':value.elementView.angle,
+                    'font-weight': 'bold','font-size': '16'
                 }"
                 v-on:contextmenu.prevent.stop="handleClick($event)"
         >
@@ -34,8 +34,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#fbc02d',
-                        fill: '#fbc02d',
+                        'stroke': '#4caf50',
+                        fill: '#4caf50',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -55,32 +55,15 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'Pod'">
+                        :text="'Ingress'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
                         :sub-top="5"
                         :sub-left="5"
                         :sub-width="30"
-                        :sub-height="30"
-                >
-
+                        :sub-height="30">
                 </image-element>
-            </sub-elements>
-
-            <sub-elements>
-                <circle-element
-                        v-if="value.status"
-                        :sub-bottom="-15"
-                        :sub-width="30"
-                        :sub-height="30"
-                        :sub-align="'center'"
-                        :sub-style="{
-                            'stroke': statusColor,
-                            fill: statusColor,
-                            'fill-opacity': 1,
-                        }">
-                </circle-element>
             </sub-elements>
         </geometry-element>
 
@@ -100,12 +83,12 @@
 </template>
 
 <script>
-    import Element from '../../modeling/Element'
-    import PropertyPanel from './PodPropertyPanel'
+    import Element from '../Kube-Element'
+    import PropertyPanel from './IngressPropertyPanel'
 
     export default {
         mixins: [Element],
-        name: 'pod',
+        name: 'ingress',
         components: {
             "property-panel": PropertyPanel
         },
@@ -115,17 +98,16 @@
                 return {}
             },
             className() {
-                return 'Pod'
+                return 'Ingress'
             },
             imgSrc() {
-                return `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pod.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ing.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
                     _type: this.className(),
                     name: '',
-                    namespace: '',
-                    namespaceId: '',
+                    namespace:'',
                     elementView: {
                         '_type': this.className(),
                         'id': elementId,
@@ -137,62 +119,66 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "v1",
-                        "kind": "Pod",
+                        "apiVersion": "extensions/v1beta1",
+                        "kind": "Ingress",
                         "metadata": {
                             "name": "",
-                            "labels": {
-                                "name": ""
-                            }
                         },
                         "spec": {
-                            "containers": [
+                            "rules": [
                                 {
-                                    "name": "",
-                                    "image": "",
-                                    "ports": [
-                                        {
-                                            "containerPort": 80
-                                        }
-                                    ]
+                                    "host": "insurance.infogra.io",
+                                    "http": {
+                                        "paths": [
+                                            {
+                                                "backend": {
+                                                    "serviceName": "",
+                                                    "servicePort": 80
+                                                }
+                                            }
+                                        ]
+                                    }
                                 }
                             ]
                         }
                     },
-                    outboundVolumes: [],
-                    connectableType: [ "PersistentVolumeClaim" ],
+                    outboundServices: [],
+                    connectableType: ["Service"],
                     status: null,
+                }
+            },
+            namespace: {
+                get: function() {
+                    return this.value.object.metadata.namespace
+                },
+                set: function (newVal){
+                    this.value.object.metadata.namespace = newVal
                 }
             },
             name() {
                 try {
                     return this.value.object.metadata.name;
-                } catch (e) {
+                } catch(e) {
                     return "Untitled";
                 }
             },
-            outboundVolumeNames() {
+            outboundServiceNames() {
                 try {
-                    var names;
+                    var serviceNames = "";
+                    
+                    this.value.outboundServices.forEach(element => {
+                        serviceNames += element.object.metadata.name + ":" + element.object.spec.ports[0].port +  ","
+                    })
 
-                    this.value.outboundVolumes.forEach(element => {
-                        names += element.object.metadata.name + ","
-                    });
+                    return serviceNames;
 
-                    return names;
-
-                } catch (e) {
-                    return "";
+                } catch(e) {
+                    return ""
                 }
             },
-            namespace: {
-                get: function () {
-                    return this.value.object.metadata.namespace
-                },
-                set: function (newVal) {
-                    this.value.object.metadata.namespace = newVal
-                }
-            }
+            paths() {
+                return this.value.object.spec.rules[0].http.paths
+            },
         },
         data: function () {
             return {
@@ -203,86 +189,77 @@
             };
         },
         created: function () {
-
         },
         mounted: function () {
-
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if (obj.state == "addRelation" && obj.element && obj.element.targetElement
-                    && obj.element.targetElement._type == "PersistentVolumeClaim") {
-                    console.log("inner")
-                    me.value.outboundVolumes.push(obj.element.targetElement);
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement._type == "Service"){
+                    
+                    obj.element.targetElement.relationId = obj.element.relationView.id
+                    me.value.outboundServices.push(obj.element.targetElement)
                 }
+                
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement._type == "Service"){
 
-                if (obj.state == "deleteRelation" && obj.element && obj.element.targetElement
-                    && obj.element.targetElement._type == "PersistentVolumeClaim") {
-
-                    me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
-                }
-                if (obj.state == "changeName") {
-                    me.namespace = obj.element
+                    me.value.outboundServices.splice(me.value.outboundServices.indexOf(obj.element.targetElement), 1);
                 }
 
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
                     me.value.status = obj.element.status
-                    me.setStatus()
-                    me.refresh()
                 }
 
             })
-
-        },
-        beforeDestroy() {
-            var me = this
-            var obj = {
-                state: "deleteElement",
-                element: me.value.elementView.id
-            }
-            this.$EventBus.$emit(`${me.value.namespaceId}`, obj)
+            
         },
         watch: {
-            name(appName) {
-                this.value.object.metadata.labels.name = appName;
-                this.value.object.spec.containers[0].name = appName;
-            },
-            outboundVolumeNames(names) {
-                this.value.object.spec.volumes = [];
+            "outboundServiceNames": function(names){
+
+                this.value.object.spec.rules[0].http.paths = [];
                 var me = this;
-                var i = 0;
-                this.value.outboundVolumes.forEach(element => {
-                        me.value.object.spec.volumes.push(
+                this.value.outboundServices.forEach(element => {
+                        me.value.object.spec.rules[0].http.paths.push(
                             {
-                                "name": "volume" + (++i),
-                                "persistentVolumeClaim": {
-                                    "claimName": element.object.metadata.name
+                                "backend": {
+                                    "serviceName": element.object.metadata.name,
+                                    "servicePort": element.object.spec.ports[0].port
                                 }
                             }
                         );
                     }
                 );
+            },
+            paths: {
+                deep: true,
+                handler: function (newVal, oldVal) {
+                    var me = this
+                    if(newVal.length < oldVal.length) {
+                        var index = me.getIndex(newVal, oldVal)
 
+                        if (me.value.outboundServices[index]) {
+                            me.deleteRelation(me.value.outboundServices[index].relationId)
+                        }
+                    }
+                }
             }
         },
-
         methods: {
-            setStatus() {
-                var me = this
-                
-                if(me.value.status.containerStatuses) {
-                    // var state = me.value.status.containerStatuses[0].state
-                    // var stateKey = Object.keys(state)
-                    // console.log(me.value.status.containerStatuses[0].ready)
-                    if(me.value.status.containerStatuses[0].ready) {
-                        me.changeStatusColor('success')
-                    } else {
-                        me.changeStatusColor('waiting')
+            getIndex(newArr, oldArr) {
+                var index
+                oldArr.some(function(item, idx) {
+                    if (newArr[idx] == undefined) {
+                        index = idx
+                        return true
+                    } else if (item.backend.serviceName != newArr[idx].backend.serviceName) {
+                        index = idx
+                        return true
                     }
-                }    
-
+                })
+                return index
             },
-        },
+        }
     }
 </script>
 

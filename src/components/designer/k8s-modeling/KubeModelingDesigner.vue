@@ -285,7 +285,7 @@
 
 
     export default {
-        name: 'modeling-designer',
+        name: 'kube-modeling-designer',
         components: {
             TextReader,
             saveAs,

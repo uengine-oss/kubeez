@@ -21,19 +21,21 @@
                 v-on:removeShape="onRemoveShape(value)"
                 :label.sync="name"
                 :_style="{
-                    'label-angle':value.elementView.angle,
-                    'font-weight': 'bold','font-size': '16'
+                'label-angle':value.elementView.angle,
+                'font-weight': 'bold','font-size': '16'
                 }"
                 v-on:contextmenu.prevent.stop="handleClick($event)"
         >
+
+            <!--v-on:dblclick="$refs['dialog'].open()"-->
             <geometry-rect
                     :_style="{
                         'fill-r': 1,
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#ffdd2c',
-                        fill: '#ffdd2c',
+                        'stroke': '#fbc02d',
+                        fill: '#fbc02d',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -53,22 +55,39 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'StatefulSet'">
+                        :text="'Pod'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
                         :sub-top="5"
                         :sub-left="5"
                         :sub-width="30"
-                        :sub-height="30">
+                        :sub-height="30"
+                >
+
                 </image-element>
+            </sub-elements>
+
+            <sub-elements>
+                <circle-element
+                        v-if="value.status"
+                        :sub-bottom="-15"
+                        :sub-width="30"
+                        :sub-height="30"
+                        :sub-align="'center'"
+                        :sub-style="{
+                            'stroke': statusColor,
+                            fill: statusColor,
+                            'fill-opacity': 1,
+                        }">
+                </circle-element>
             </sub-elements>
         </geometry-element>
 
-         <property-panel
-            v-if="openPanel"
-            v-model="value"
-            :img="imgSrc">
+        <property-panel
+                v-if="openPanel"
+                v-model="value"
+                :img="imgSrc">
         </property-panel>
 
         <vue-context-menu
@@ -81,15 +100,13 @@
 </template>
 
 <script>
-    import Element from '../../modeling/Element'
-    import PropertyPanel from './StatefulSetPropertyPanel'
-    import ImageElement from "../../../opengraph/shape/ImageElement";
+    import Element from '../Kube-Element'
+    import PropertyPanel from './PodPropertyPanel'
 
     export default {
         mixins: [Element],
-        name: 'statefulSet',
+        name: 'pod',
         components: {
-            ImageElement,
             "property-panel": PropertyPanel
         },
         props: {},
@@ -98,16 +115,17 @@
                 return {}
             },
             className() {
-                return 'StatefulSet'
+                return 'Pod'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sts.svg`
+                return `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pod.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
                     _type: this.className(),
                     name: '',
                     namespace: '',
+                    namespaceId: '',
                     elementView: {
                         '_type': this.className(),
                         'id': elementId,
@@ -119,76 +137,64 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "apps/v1",
-                        "kind": "StatefulSet",
+                        "apiVersion": "v1",
+                        "kind": "Pod",
                         "metadata": {
-                            "name": ""
+                            "name": "",
+                            "labels": {
+                                "name": ""
+                            }
                         },
                         "spec": {
-                            "selector": {
-                                "matchLabels": {
-                                    "app": ""
-                                }
-                            },
-                            "serviceName": "",
-                            "replicas": 1,
-                            "template": {
-                                "metadata": {
-                                    "labels": {
-                                        "app": ""
-                                    }
-                                },
-                                "spec": {
-                                    "containers": [
+                            "containers": [
+                                {
+                                    "name": "",
+                                    "image": "",
+                                    "ports": [
                                         {
-                                            "name": "",
-                                            "image": "",
-                                            "ports": [
-                                                {
-                                                    "containerPort": 80
-                                                }
-                                            ]
+                                            "containerPort": 80
                                         }
                                     ]
                                 }
-                            }
+                            ]
                         }
                     },
                     outboundVolumes: [],
-                    connectableType: ["PersistentVolumeClaim"],
+                    connectableType: [ "PersistentVolumeClaim" ],
                     status: null,
                 }
             },
+            name() {
+                try {
+                    return this.value.object.metadata.name;
+                } catch (e) {
+                    return "Untitled";
+                }
+            },
+            outboundVolumeNames() {
+                try {
+                    var names;
+
+                    this.value.outboundVolumes.forEach(element => {
+                        names += element.object.metadata.name + ","
+                    });
+
+                    return names;
+
+                } catch (e) {
+                    return "";
+                }
+            },
             namespace: {
-                get: function() {
+                get: function () {
                     return this.value.object.metadata.namespace
                 },
-                set: function (newVal){
+                set: function (newVal) {
                     this.value.object.metadata.namespace = newVal
                 }
-            },
-            name(){
-                try{
-                    return this.value.object.metadata.name; 
-                }catch(e){
-                    return "";
-                }
-                
-            },
-            outboundVolumeNames(){
-                try{
-                    var names = "";
-                    this.value.outboundVolumes.forEach(element => {
-                        names += element.object.metadata.name +  ","
-                    });
-                    return names;
-                }catch(e){
-                    return "";
-                }
-            },
-
+            }
         },
-        data() {
+        data: function () {
             return {
                 menuList : [
                     { name: "View Terminal" },
@@ -196,74 +202,90 @@
                 ]
             };
         },
-        created() {
+        created: function () {
+
         },
-        mounted() {
+        mounted: function () {
+
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistentVolumeClaim"){
-
+                if (obj.state == "addRelation" && obj.element && obj.element.targetElement
+                    && obj.element.targetElement._type == "PersistentVolumeClaim") {
+                    console.log("inner")
                     me.value.outboundVolumes.push(obj.element.targetElement);
                 }
 
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistentVolumeClaim"){
+                if (obj.state == "deleteRelation" && obj.element && obj.element.targetElement
+                    && obj.element.targetElement._type == "PersistentVolumeClaim") {
 
-                    me.value.object.spec.template.spec.containers[0].volumeMounts[0].name = ""
                     me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
+                }
+                if (obj.state == "changeName") {
+                    me.namespace = obj.element
                 }
 
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
                     me.value.status = obj.element.status
+                    me.setStatus()
                     me.refresh()
                 }
-                
+
             })
 
         },
-
+        beforeDestroy() {
+            var me = this
+            var obj = {
+                state: "deleteElement",
+                element: me.value.elementView.id
+            }
+            this.$EventBus.$emit(`${me.value.namespaceId}`, obj)
+        },
         watch: {
             name(appName) {
-                this.value.object.spec.serviceName = appName;
-                this.value.object.spec.selector.matchLabels.app = appName;
-                this.value.object.spec.template.metadata.labels.app = appName;
-                this.value.object.spec.template.spec.containers[0].name = appName;
-                this.value.object.spec.template.spec.containers[0].ports[0].name = appName;
+                this.value.object.metadata.labels.name = appName;
+                this.value.object.spec.containers[0].name = appName;
             },
-            outboundVolumeNames(names){
+            outboundVolumeNames(names) {
+                this.value.object.spec.volumes = [];
                 var me = this;
-                var i=0;
-                me.value.object.spec.volumeClaimTemplates = [];
-                me.value.outboundVolumes.forEach(element => {
-                        me.value.object.spec.volumeClaimTemplates.push(
+                var i = 0;
+                this.value.outboundVolumes.forEach(element => {
+                        me.value.object.spec.volumes.push(
                             {
-                                "metadata": {
-                                    "name": element.object.metadata.name
-                                },
-                                "spec": {
-                                    "accessModes": element.object.spec.accessModes,
-                                    "storageClassName": element.object.spec.storageClassName,
-                                    "resources": {
-                                        "requests": {
-                                            "storage": element.object.spec.resources.requests.storage
-                                        }
-                                    }
+                                "name": "volume" + (++i),
+                                "persistentVolumeClaim": {
+                                    "claimName": element.object.metadata.name
                                 }
                             }
                         );
                     }
                 );
-            },
 
+            }
         },
 
         methods: {
-        }
+            setStatus() {
+                var me = this
+                
+                if(me.value.status.containerStatuses) {
+                    // var state = me.value.status.containerStatuses[0].state
+                    // var stateKey = Object.keys(state)
+                    // console.log(me.value.status.containerStatuses[0].ready)
+                    if(me.value.status.containerStatuses[0].ready) {
+                        me.changeStatusColor('success')
+                    } else {
+                        me.changeStatusColor('waiting')
+                    }
+                }    
+
+            },
+        },
     }
 </script>
-  
+
 <style>
 
 </style>

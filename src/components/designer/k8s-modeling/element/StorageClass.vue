@@ -33,8 +33,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#326ce5',
-                        fill: '#326ce5',
+                        'stroke': '#848484',
+                        fill: '#848484',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -54,7 +54,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'ClusterRole'">
+                        :text="'StorageClass'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -82,13 +82,13 @@
 </template>
 
 <script>
-    import Element from '../../modeling/Element'
-    import PropertyPanel from './ClusterRolePropertyPanel'
+    import Element from '../Kube-Element'
+    import PropertyPanel from './StorageClassPropertyPanel'
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
     export default {
         mixins: [Element],
-        name: 'cluster-role',
+        name: 'storage-class',
         components: {
             ImageElement,
             "property-panel": PropertyPanel
@@ -99,10 +99,10 @@
                 return {}
             },
             className() {
-                return 'ClusterRole'
+                return 'StorageClass'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/c-role.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sc.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -120,18 +120,16 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "rbac.authorization.k8s.io/v1",
-                        "kind": "ClusterRole",
+                        "apiVersion": "storage.k8s.io/v1",
+                        "kind": "StorageClass",
                         "metadata": {
-                            "name": "",
+                            "name": ""
                         },
-                        "rules": [
-                            {
-                                "apiGroups": [ "" ],
-                                "resources": [],
-                                "verbs": []
-                            }
-                        ]
+                        "provisioner": "",
+                        "parameters": {
+                            "type": "gp2"
+                        },
+                        "reclaimPolicy": "Delete",
                     },
                     status: null,
                 }
@@ -169,9 +167,6 @@
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
 
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = "created"
-                    var designer = me.getComponent('modeling-designer')
-                    clearInterval(designer.getStatus)
                 }
             })
 

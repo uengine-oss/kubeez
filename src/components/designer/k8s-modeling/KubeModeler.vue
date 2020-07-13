@@ -1,17 +1,17 @@
 <template xmlns:v-on="http://www.w3.org/1999/xhtml">
-    <modeling-designer
+    <kube-modeling-designer
             :elementTypes="elementTypes"
             elementListBeanPath="classDefinitions"
             relationListBeanPath="relations"
             relationVueComponentName="class-relation"
-            ref="designer"
+            ref="kuberDesigner"
     >
-    </modeling-designer>
+    </kube-modeling-designer>
 </template>
 
 <script>
     export default {
-        name: 'event-designer',
+        name: 'kube-designer',
         props: {
 
         },
@@ -26,6 +26,20 @@
                         'width': '100',
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/deploy-palette.svg`
+                    },
+                    {
+                        'component': 'replicaSet',
+                        'label': 'ReplicaSet',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/rs-palette.svg`
+                    },
+                    {
+                        'component': 'pod',
+                        'label': 'Pod',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pod-palette.svg`
                     },
                     {
                         'component': 'service',
@@ -56,18 +70,11 @@
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pvc-palette.svg`
                     },
                     {
-                        'component': 'pod',
-                        'label': 'Pod',
+                        'component': 'storage-class',
+                        'label': 'StorageClass',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pod-palette.svg`
-                    },
-                    {
-                        'component': 'replicaSet',
-                        'label': 'ReplicaSet',
-                        'width': '100',
-                        'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/rs-palette.svg`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sc-palette.svg`
                     },
                     {
                         'component': 'namespace',
@@ -145,13 +152,6 @@
                         'width': '100',
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/crb-palette.svg`
-                    },
-                    {
-                        'component': 'storage-class',
-                        'label': 'StorageClass',
-                        'width': '100',
-                        'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sc-palette.svg`
                     },
                 ],
             }

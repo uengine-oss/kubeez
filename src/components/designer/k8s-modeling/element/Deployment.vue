@@ -26,15 +26,16 @@
                 }"
                 v-on:contextmenu.prevent.stop="handleClick($event)"
         >
-            
+
+            <!--v-on:dblclick="$refs['dialog'].open()"-->
             <geometry-rect
                     :_style="{
                         'fill-r': 1,
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#e9ff3b',
-                        fill: '#e9ff3b',
+                        'stroke': '#ffeb3b',
+                        fill: '#ffeb3b',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -54,7 +55,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'DaemonSet'">
+                        :text="'Deployment'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -63,6 +64,25 @@
                         :sub-width="30"
                         :sub-height="30">
                 </image-element>
+            </sub-elements>
+
+            <sub-elements>
+                <rectangle-element
+                        v-if="value.status"
+                        :sub-bottom="-20"
+                        :sub-width="'50%'"
+                        :sub-height="30"
+                        :sub-align="'center'"
+                        :sub-style="{
+                            'stroke': statusColor,
+                            fill: statusColor,
+                            'fill-opacity': 1,
+                            'font-weight': 'bold',
+                            'font-size': '15',
+                            'font-color': '#ffffff'
+                        }"
+                        :label.sync="value.replicasStatus">
+                </rectangle-element>
             </sub-elements>
         </geometry-element>
 
@@ -82,13 +102,13 @@
 </template>
 
 <script>
-    import Element from '../../modeling/Element'
-    import PropertyPanel from './DaemonSetPropertyPanel'
+    import Element from '../Kube-Element'
+    import PropertyPanel from './DeploymentPropertyPanel'
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
     export default {
         mixins: [Element],
-        name: 'daemonSet',
+        name: 'deployment',
         components: {
             ImageElement,
             "property-panel": PropertyPanel
@@ -99,10 +119,10 @@
                 return {}
             },
             className() {
-                return 'DaemonSet'
+                return 'Deployment'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ds.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/deploy.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -120,34 +140,32 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "apps/v1",
-                        "kind": "DaemonSet",
+                       "apiVersion": "apps/v1",
+                        "kind": "Deployment",
                         "metadata": {
-                            "name": ""
+                            "name": "",
+                            "labels": {
+                                "app": ""
+                            }
                         },
                         "spec": {
                             "selector": {
                                 "matchLabels": {
-                                    "name": ""
+                                    "app": ""
                                 }
                             },
+                            "replicas": 1,
                             "template": {
                                 "metadata": {
                                     "labels": {
-                                        "name": ""
+                                        "app": ""
                                     }
                                 },
                                 "spec": {
                                     "containers": [
                                         {
                                             "name": "",
-                                            "image": ""
-                                        }
-                                    ],
-                                    "tolerations": [
-                                        {
-                                            "key": "",
-                                            "effect": "",
+                                            "image": "",
                                             "ports": [
                                                 {
                                                     "containerPort": 80
@@ -159,7 +177,11 @@
                             }
                         }
                     },
-                    status: null,                    
+                    outboundVolumes: [],
+                    connectableType: [ "PersistentVolumeClaim" ],
+                    status: null,
+                    replicasStatus: "",
+                    
                 }
             },
             namespace: {
@@ -176,9 +198,27 @@
                 }catch(e){
                     return "";
                 }
+                
             },
+
+            outboundVolumeNames(){
+                try{
+
+                    var names = "";
+                    
+                    this.value.outboundVolumes.forEach(element => {
+                        names += element.object.metadata.name +  ","
+                    });
+
+                    return names;
+
+                }catch(e){
+                    return "";
+                }
+            },
+
         },
-        data() {
+        data: function () {
             return {
                 menuList : [
                     { name: "View Terminal" },
@@ -186,28 +226,90 @@
                 ]
             };
         },
-        created() {
+        created: function () {
+        
         },
-        mounted() {
+
+        mounted(){
+
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement._type == "PersistentVolumeClaim"){
+
+                    me.value.outboundVolumes.push(obj.element.targetElement);
+                }
+
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement._type == "PersistentVolumeClaim"){
+
+                    me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
+                    // console.log(me.value.outboundVolumes)
+                }
+
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
                     me.value.status = obj.element.status
+                    me.setReplicasStatus()
                     me.refresh()
                 }
                 
             })
+
         },
+
         watch: {
-            name(appName) {
+            name(appName){
+                this.value.object.metadata.labels.app = appName;
                 this.value.object.spec.selector.matchLabels.app = appName;
                 this.value.object.spec.template.metadata.labels.app = appName;
                 this.value.object.spec.template.spec.containers[0].name = appName;
             },
 
+            outboundVolumeNames(names){
+
+                this.value.object.spec.volumes = [];
+                var me = this;
+                var i=0; 
+                this.value.outboundVolumes.forEach(element => {
+                        me.value.object.spec.volumes.push(
+                            {
+                                "name": "volume" + (++i),
+                                "persistentVolumeClaim": {
+                                    "claimName": element.object.metadata.name
+                                }
+                            }
+                        );
+                    }
+                );
+
+            },
+
         },
-        methods: {   
+
+        methods: {
+            setReplicasStatus() {
+                var me = this
+                var replicas = 0
+                var availableReplicas = 0
+
+                availableReplicas = me.value.status.availableReplicas ?
+                    me.value.status.availableReplicas : me.value.status.replicas - me.value.status.unavailableReplicas
+                replicas = me.value.status.replicas ? me.value.status.replicas : me.value.status.replicas
+                
+                me.value.replicasStatus = String(availableReplicas) + " / " + String(replicas)
+
+                if(availableReplicas == NaN || replicas == undefined) {
+                    me.value.replicasStatus = "Ready"
+                }
+                
+                if(replicas > 0 && availableReplicas > 0 && availableReplicas == replicas) {
+                    me.changeStatusColor('success')
+                } else {
+                    me.changeStatusColor('waiting')
+                }
+            },
+            
         }
     }
 </script>

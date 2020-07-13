@@ -34,19 +34,13 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#4caf50',
-                        fill: '#4caf50',
+                        'stroke': '#2196f3',
+                        fill: '#2196f3',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
                     }"
             ></geometry-rect>
-
-            <sub-controller
-                    v-if="value.status"
-                    :image="'subprocess.png'"
-                    @click.prevent.stop="handleClick($event)"
-            ></sub-controller>
 
             <sub-elements>
                 <!--title-->
@@ -55,7 +49,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'Ingress'">
+                        :text="'Service'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -66,6 +60,7 @@
                 </image-element>
             </sub-elements>
         </geometry-element>
+
 
         <property-panel
                 v-if="openPanel"
@@ -83,12 +78,12 @@
 </template>
 
 <script>
-    import Element from '../../modeling/Element'
-    import PropertyPanel from './IngressPropertyPanel'
+    import Element from '../Kube-Element'
+    import PropertyPanel from './ServicePropertyPanel'
 
     export default {
         mixins: [Element],
-        name: 'ingress',
+        name: 'service',
         components: {
             "property-panel": PropertyPanel
         },
@@ -98,16 +93,16 @@
                 return {}
             },
             className() {
-                return 'Ingress'
+                return 'Service'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ing.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/svc.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
                     _type: this.className(),
                     name: '',
-                    namespace:'',
+                    namespace: '',
                     elementView: {
                         '_type': this.className(),
                         'id': elementId,
@@ -119,32 +114,39 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "extensions/v1beta1",
-                        "kind": "Ingress",
+                        "apiVersion": "v1",
+                        "kind": "Service",
                         "metadata": {
                             "name": "",
+                            "labels": {
+                                "app": ""
+                            }
                         },
                         "spec": {
-                            "rules": [
+                            "ports": [
                                 {
-                                    "host": "insurance.infogra.io",
-                                    "http": {
-                                        "paths": [
-                                            {
-                                                "backend": {
-                                                    "serviceName": "",
-                                                    "servicePort": 80
-                                                }
-                                            }
-                                        ]
-                                    }
+                                    "port": 80,
+                                    "targetPort": 80
                                 }
-                            ]
+                            ],
+                            "selector": {
+                                "app": ""
+                            },
+                            "type": "ClusterIP"
                         }
                     },
-                    outboundServices: [],
-                    connectableType: ["Service"],
+                    outboundDeployment: null,
+                    outboundPod: null,
+                    outboundReplicaSet: null,
+                    connectableType: ["Deployment", "Pod", "ReplicaSet"],
                     status: null,
+                }
+            },
+            name() {
+                try {
+                    return this.value.object.metadata.name    
+                } catch(e) {
+                    return "Untitled";
                 }
             },
             namespace: {
@@ -155,30 +157,30 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-            name() {
+            outboundDeploymentName() {
                 try {
-                    return this.value.object.metadata.name;
+                    return this.value.outboundDeployment.object.metadata.name;
                 } catch(e) {
-                    return "Untitled";
+                    return "";
                 }
             },
-            outboundServiceNames() {
+
+            outboundPodName() {
                 try {
-                    var serviceNames = "";
-                    
-                    this.value.outboundServices.forEach(element => {
-                        serviceNames += element.object.metadata.name + ":" + element.object.spec.ports[0].port +  ","
-                    })
+                    return this.value.outboundPod.object.metadata.name;
+                } catch(e) {
+                    return "";
+                }
+            },
 
-                    return serviceNames;
-
+            outboundReplicaSetName() {
+                try {
+                    return this.value.outboundReplicaSet.object.metadata.name
                 } catch(e) {
                     return ""
                 }
-            },
-            paths() {
-                return this.value.object.spec.rules[0].http.paths
-            },
+            }
+
         },
         data: function () {
             return {
@@ -189,77 +191,60 @@
             };
         },
         created: function () {
+
         },
         mounted: function () {
+
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "Service"){
-                    
-                    obj.element.targetElement.relationId = obj.element.relationView.id
-                    me.value.outboundServices.push(obj.element.targetElement)
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
+                    me.value.outboundDeployment = obj.element.targetElement;
                 }
-                
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "Service"){
+                else if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
+                    me.value.outboundPod = obj.element.targetElement;
+                }
+                else if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
+                    me.value.outboundReplicaSet = obj.element.targetElement;
+                }
 
-                    me.value.outboundServices.splice(me.value.outboundServices.indexOf(obj.element.targetElement), 1);
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
+                    me.value.outboundDeployment = null;
+                }
+                else if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
+                    me.value.outboundPod = null;
+                }
+                else if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
+                    me.value.outboundReplicaSet = null;
                 }
 
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
                     me.value.status = obj.element.status
                 }
-
             })
             
         },
         watch: {
-            "outboundServiceNames": function(names){
-
-                this.value.object.spec.rules[0].http.paths = [];
-                var me = this;
-                this.value.outboundServices.forEach(element => {
-                        me.value.object.spec.rules[0].http.paths.push(
-                            {
-                                "backend": {
-                                    "serviceName": element.object.metadata.name,
-                                    "servicePort": element.object.spec.ports[0].port
-                                }
-                            }
-                        );
-                    }
-                );
+            name(appName){
+                this.value.object.metadata.labels.app = appName;
             },
-            paths: {
-                deep: true,
-                handler: function (newVal, oldVal) {
-                    var me = this
-                    if(newVal.length < oldVal.length) {
-                        var index = me.getIndex(newVal, oldVal)
 
-                        if (me.value.outboundServices[index]) {
-                            me.deleteRelation(me.value.outboundServices[index].relationId)
-                        }
-                    }
-                }
+            "outboundDeploymentName": function(val) {
+                this.value.object.spec.selector.app = val;
+            },
+
+            "outboundPodName": function(val) {
+                this.value.object.spec.selector.app = val;
+            },
+
+            "outboundReplicaSetName": function(val) {
+                this.value.object.spec.selector.app = val
             }
+
         },
+
         methods: {
-            getIndex(newArr, oldArr) {
-                var index
-                oldArr.some(function(item, idx) {
-                    if (newArr[idx] == undefined) {
-                        index = idx
-                        return true
-                    } else if (item.backend.serviceName != newArr[idx].backend.serviceName) {
-                        index = idx
-                        return true
-                    }
-                })
-                return index
-            },
-        }
+        },
     }
 </script>
 

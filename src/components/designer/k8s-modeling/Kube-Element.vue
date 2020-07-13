@@ -96,7 +96,7 @@
             var me = this
             $(document).keydown((evt) => {
                 if (evt.keyCode == 46 || evt.keyCode == 8) {
-                    var designer = me.getComponent('modeling-designer');
+                    var designer = me.getComponent('kube-modeling-designer');
 
                     if (me.selected && !me.openPanel) {
                         var obj = {
@@ -186,7 +186,7 @@
             },
             deleteActivity(obj) {
                 var me = this
-                var designer = this.getComponent('modeling-designer')
+                var designer = this.getComponent('kube-modeling-designer')
                 var opengraph = this.getComponent('opengraph')
                 // console.log(this.value._type)
                 // var type = this.value._type.split(".");
@@ -282,7 +282,7 @@
                 }
             },
             showProperty: function () {
-                var designer = this.getComponent('modeling-designer')
+                var designer = this.getComponent('kube-modeling-designer')
 
                 // this.openPanel = true
                 // console.log("showProperty", this.openPanel)
@@ -324,7 +324,7 @@
              */
             onAddedToGroup: function (groupElement, element, eventOffset) {
                 var me = this;
-                var designer = this.getComponent('modeling-designer')
+                var designer = this.getComponent('kube-modeling-designer')
 
                 if (groupElement.tagName) {
                     // Canvas로 나가는 경우
@@ -407,7 +407,7 @@
             },
             changeStatusColor(status) {
                 var me = this
-                var designer = me.getComponent('modeling-designer');
+                var designer = me.getComponent('kube-modeling-designer');
                 
                 if(status == 'success') {
                     me.deploySuccess = true
@@ -424,7 +424,7 @@
             },
             async optionClicked(event) {
                 var me = this
-                var designer = me.getComponent('modeling-designer')
+                var designer = me.getComponent('kube-modeling-designer')
                 
                 if(event.option.name == 'Delete') {
                     await designer.deleteObj(me.value)

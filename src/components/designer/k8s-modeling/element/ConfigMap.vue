@@ -27,15 +27,14 @@
                 v-on:contextmenu.prevent.stop="handleClick($event)"
         >
 
-            <!--v-on:dblclick="$refs['dialog'].open()"-->
             <geometry-rect
                     :_style="{
                         'fill-r': 1,
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#2dcbfb',
-                        fill: '#2dcbfb',
+                        'stroke': '#ff7050',
+                        fill: '#ff7050',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -55,7 +54,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'Job'">
+                        :text="'ConfigMap'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -83,13 +82,13 @@
 </template>
 
 <script>
-    import Element from '../../modeling/Element'
-    import PropertyPanel from './JobPropertyPanel'
+    import Element from '../Kube-Element'
+    import PropertyPanel from './ConfigMapPropertyPanel'
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
     export default {
         mixins: [Element],
-        name: 'job',
+        name: 'configMap',
         components: {
             ImageElement,
             "property-panel": PropertyPanel
@@ -100,10 +99,10 @@
                 return {}
             },
             className() {
-                return 'Job'
+                return 'ConfigMap'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/job.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/cm.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -121,25 +120,12 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "batch/v1",
-                        "kind": "Job",
+                        "apiVersion": "v1",
+                        "kind": "ConfigMap",
                         "metadata": {
                             "name": ""
                         },
-                        "spec": {
-                            "template": {
-                                "spec": {
-                                    "containers": [
-                                        {
-                                            "name": "",
-                                            "image": ""
-                                        }
-                                    ],
-                                    "restartPolicy": "Never"
-                                }
-                            },
-                            "backoffLimit": 6,
-                        },
+                        "data": {},
                     },
                     status: null,
                 }
@@ -177,18 +163,16 @@
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
 
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status
-                    me.refresh()
+                    me.value.status = "created"
+                    var designer = me.getComponent('kube-modeling-designer')
+                    clearInterval(designer.getStatus)
                 }
-
             })
+
         },
         watch: {
-            name(appName) {
-                this.value.object.spec.template.spec.containers[0].name = appName;
-            },
         },
-        methods: {            
+        methods: {
         }
     }
 </script>

@@ -82,7 +82,7 @@
 </template>
 
 <script>
-    import Element from '../../modeling/Element'
+    import Element from '../Kube-Element'
     import PropertyPanel from './RolePropertyPanel'
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
@@ -171,7 +171,7 @@
 
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
                     me.value.status = "created"
-                    var designer = me.getComponent('modeling-designer')
+                    var designer = me.getComponent('kube-modeling-designer')
                     clearInterval(designer.getStatus)
                 }
             })
