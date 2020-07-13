@@ -16,7 +16,7 @@
                     <component
                             v-if="index != null && element != null && element.elementView != undefined"
                             :is="getComponentByClassName(element._type)"
-                            :value.sync="value.definition[index]"
+                            :value.sync="element"
                             :ref="element.elementView.id"
                     ></component>
                 </div>
@@ -24,7 +24,7 @@
                     <component
                             v-if="element != null"
                             :is="getComponentByClassName(element._type)"
-                            :value.sync="value.relation[index]"
+                            :value.sync="element"
                             :ref="element.relationView.id"
                     ></component>
                 </div>
@@ -1027,7 +1027,7 @@
             getComponentByClassName: function (className) {
                 var componentByClassName;
 
-                $.each(window.Vue.classModelingComponents, function (i, component) {
+                $.each(window.Vue.KubeModelingComponents, function (i, component) {
                     if (component.default.computed && component.default.computed.className && component.default.computed.className() == className) {
                         componentByClassName = component.default;
                     }

@@ -1,23 +1,23 @@
-const K8sModeling = {
+const KubeModeling = {
     install (Vue, opts = {}) {
 
         const files = require.context('.', true, /\.vue$/);
-        const ModelingComponents = {}
+        const KubeModelingComponents = {}
         files.keys().forEach((key) => {
             if (key === './index.js') {
                 return;
             }
-            ModelingComponents[key.replace(/(\.\/|\.vue)/g, '')] = files(key);
+            KubeModelingComponents[key.replace(/(\.\/|\.vue)/g, '')] = files(key);
         });
 
         if(Vue._components==null) Vue._components = {};
 
-        for (var key in ModelingComponents) {
-            Vue.component(ModelingComponents[key].default.name, ModelingComponents[key].default);
-            // Vue._components[ModelingComponents[key].default.name] = ModelingComponents[key].default;
+        for (var key in KubeModelingComponents) {
+            Vue.component(KubeModelingComponents[key].default.name, KubeModelingComponents[key].default);
+            Vue._components[KubeModelingComponents[key].default.name] = KubeModelingComponents[key].default;
         }
 
-        Vue.modelingComponents = ModelingComponents;
+        Vue.KubeModelingComponents = KubeModelingComponents;
 
         if (window && !window.Vue) {
             window.Vue = Vue;
@@ -25,6 +25,6 @@ const K8sModeling = {
     }
 }
 
-export default K8sModeling
+export default KubeModeling
 
 
