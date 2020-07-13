@@ -12,7 +12,7 @@
                        :connectable="!isRead" v-if="value" v-on:canvasReady="bindEvents" :autoSliderUpdate="true"
                        v-on:connectShape="onConnectShape" :imageBase="imageBase">
                 <!--엘리먼트-->
-                <div v-for="(element, index) in value.definition">
+                <div v-for="(element, index) in value.definition" :key="index">
                     <component
                             v-if="index != null && element != null && element.elementView != undefined"
                             :is="getComponentByClassName(element._type)"
@@ -20,7 +20,7 @@
                             :ref="element.elementView.id"
                     ></component>
                 </div>
-                <div v-for="(element, index) in value.relation">
+                <div v-for="(element, index) in value.relation" :key="index">
                     <component
                             v-if="element != null"
                             :is="getComponentByClassName(element._type)"
@@ -106,13 +106,16 @@
                 </v-row>
             </v-flex>
 
-            <v-card class="tools" style="top:100px; text-align: center;">
+            <v-card class="tools" style="top:100px; text-align: center;" max-height="450">
                 <span class="bpmn-icon-hand-tool" v-bind:class="{ icons : !dragPageMovable, hands : dragPageMovable }"
-                      _width="30"
-                      _height="30" v-on:click="toggleGrip">
-                     <v-tooltip md-direction="right">Hands</v-tooltip>
+                        v-on:click="toggleGrip">
                 </span>
-                <v-tooltip v-if="!isRead" right v-for="(item, key) in elementTypes" :key="key">
+
+                <span class="tool-icon">
+                    <v-icon @click="onSearchBox($event)">search</v-icon>
+                </span>
+
+                <v-tooltip v-if="!isRead" right v-for="(item, key) in filterElementTypes" :key="key">
                     <template v-slot:activator="{ on }">
                         <span
                                 class="icons draggable"
@@ -128,6 +131,14 @@
             </v-card>
 
         </v-layout>
+
+        <v-card id="searchBox" width="200">
+            <v-text-field
+                    class="mx-3"
+                    label="Search"
+                    v-model="searchKeyword"
+            ></v-text-field>
+        </v-card>
 
         <modal name="codeModal" :height='"auto"' :width="'80%'" scrollable>
             <v-card flat>
@@ -286,6 +297,7 @@
         },
         data() {
             return {
+                searchKeyword: '',
                 types: 'deployment',
                 plainText: "",
                 dashOpen: false,
@@ -488,6 +500,16 @@
                     return this.projectName
                 }
             },
+            filterElementTypes () {
+                var me = this
+                var result = me.elementTypes.filter(function (el) {
+                    var name = el.label.toLowerCase()
+                    var keyword = me.searchKeyword.toLowerCase()
+                    return name.indexOf(keyword) != -1
+                })
+                return result
+            }
+
         },
         created: function () {
             var me = this
@@ -1089,47 +1111,23 @@
                     })
 
                 } else if (template == 'Single File') {                    
-                    if(!me.projectName) {
-                        var name = 'local'
-                    } else {
-                        var name = me.projectName
-                    }
+                    var yaml = ''
                     
-                    let yaml = ''
                     me.value.definition.forEach(function (item) {
                         yaml += json2yaml.stringify(item.object)
                     })
 
                     var codeValue = {
-                        'key': name,
-                        'name': name + '.yaml',
+                        'key': 'local',
+                        'name': 'local.yaml',
                         'code': yaml,
                         'file': me.fileType('.yaml')
                     }
 
                     me.treeList.push(codeValue)
-                
+
                 } else if (template == 'Separate File per kind') {
-
-                    me.value.definition.forEach(function (item) {
-                        var codeValue = {
-                            'key': item.elementView.id,
-                            'name': item.elementView._type + '.yaml',
-                            'code': json2yaml.stringify(item.object),
-                            'file': me.fileType('.yaml')
-                        }                        
-                        var index = me.treeList.findIndex(function (val) {
-                            if(val.name == codeValue.name) {
-                                val.code += codeValue.code
-                            }
-                            return val.name == codeValue.name
-                        })
-                        
-                        if (index == -1) {
-                            me.treeList.push(codeValue)
-                        }
-                    })
-
+                    me.setYamlPerKind(me.treeList)
                 } else if (template == 'Helm') {
                     me.getHelmChartSetting()
                 }
@@ -1197,15 +1195,41 @@
                 }
 
             },
+            setYamlPerKind(treeList) {
+                var me = this
+
+                me.value.definition.forEach(function (item) {
+                    var name = item._type
+                    var lastChar = name.charAt(name.length-1);
+
+                    if(lastChar == 's') {
+                        name += 'es'
+                    } else {
+                        name += 's'
+                    }
+
+                    var codeValue = {
+                        'key': item.elementView.id,
+                        'name': name + '.yaml',
+                        'code': json2yaml.stringify(item.object),
+                        'file': me.fileType('.yaml')
+                    }                        
+                    
+                    var index = me.treeList.findIndex(function (val) {
+                        if(val.name == codeValue.name) {
+                            val.code += codeValue.code
+                        }
+                        return val.name == codeValue.name
+                    })
+                        
+                    if (index == -1) {
+                        treeList.push(codeValue)
+                    }
+                })
+            },
             getHelmChartSetting() {
                 var me = this
                 var templates = []
-
-                if(me.projectName) {
-                    var name = me.projectName
-                } else {
-                    var name = 'kubernetes'
-                }
 
                 templates.push({
                     'key': 'notes',
@@ -1213,28 +1237,19 @@
                     'code': '',
                     'file': 'txt'
                 })
-
-                me.value.definition.forEach(function (item) {
-                    var codeValue = {
-                        'key': item.elementView.id,
-                        'name': item.object.metadata.name + '.yaml',
-                        'code': me.yamlFilter(json2yaml.stringify(item.object)),
-                        'file': me.fileType('.yaml')
-                    }
-                    templates.push(codeValue)
-                })
                 
+                me.setYamlPerKind(templates)
+
                 var chartJson = {
                     "apiVersion": "v1",
                     "name": name,
                     "version": "0.1.0",
                     "description": ""
                 }
-
                 var valuesJson = {}
 
                 var folder = {
-                    'name': name,
+                    'name': 'kubernetes',
                     'children': [
                         {
                             'key': 'chart',
@@ -1300,11 +1315,24 @@
 
                 me.deployDialog = false
             },
+            deleteObj(item) {
+                var me = this
+                var reqUrl = me.getReqUrl(item)
+                
+                clearInterval(me.getStatus)
+
+                me.$http.delete(reqUrl, item.object).then(function (res) {
+                    item.status = null
+                    console.log(res.status)
+                }).catch(function (err) {
+                    console.log(err)
+                })
+            },
             getReqUrl(item) {
                 var me = this
                 var reqUrl = ''
                 var type = (item._type).toLowerCase()
-                var lastChar = type.charAt(type.length-1);
+                var lastChar = type.charAt(type.length-1)
 
                 if(lastChar == 's') {
                     type += 'es'
@@ -1326,7 +1354,7 @@
 
                 reqUrl = `${API_HOST}` + '/' + apiVersion + '/namespaces/' + namespace + '/' + type + '/'
                 
-                if (type == 'persistentvolumes') {
+                if (type == 'persistentvolumes' || type == 'clusterroles' || type == 'clusterrolebindings') {
                     reqUrl = `${API_HOST}` + '/' + apiVersion + '/' + type + '/'
                 }
 
@@ -1366,7 +1394,18 @@
                     me.$EventBus.$emit('terminalOn', response.data.token)
                 })
             },
-            
+            onSearchBox(event) {
+                var search = document.getElementById('searchBox')
+                
+                if(search.style.display == 'none') {
+                    search.style.left = (event.pageX + 45) + 'px'
+                    search.style.top = (event.pageY - 100) + 'px'
+                    search.style.display = 'block'
+                } else {
+                    search.style.display = 'none'
+                }
+            },
+
         }
     }
 </script>
@@ -1374,7 +1413,6 @@
 <style scoped lang="scss" rel="stylesheet/scss">
     .input-name {
         background-color: #ffffff;
-        full-width: 10px;
     }
 
     .canvas-panel {
@@ -1406,11 +1444,18 @@
 
         .tools {
             position: absolute;
-            width: 48px;
+            width: 60px;
             left: 20px;
             top: 20px;
             padding: 4px;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
+
+            .tool-icon {
+                font-size: 30px;
+                margin-top: 5px;
+                margin-bottom: 5px;
+            }
 
             .icons {
                 margin-top: 5px;
@@ -1545,6 +1590,13 @@
     /*    letter-spacing: 1px;*/
     /*    background: white;*/
     /*}*/
+
+    #searchBox {
+        top: 0;
+        left: 0;
+        position: absolute;
+        display: none;
+    }
 
 
     .video-list {

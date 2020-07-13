@@ -8,18 +8,7 @@
                     <v-list-item-avatar>
                         <img :src="img">
                     </v-list-item-avatar>
-                    <v-tabs
-                            v-model="activeTab"
-                            v-if="value.status">
-                        <v-tab
-                            v-for="(tab, idx) in tabItems"
-                            :key="idx">
-                            <v-list-item-title>{{ tab }}</v-list-item-title>
-                        </v-tab>
-                    </v-tabs>
-                    <v-list-item-title
-                            v-else
-                            class="headline">
+                    <v-list-item-title class="headline">
                         {{ value._type }}
                     </v-list-item-title>
                     <v-tooltip top>
@@ -34,25 +23,7 @@
             </v-list>
 
             <v-list class="pt-0" dense flat>
-                <v-layout 
-                        v-if="value.status && activeTab == 0"
-                        wrap>
-                    <v-flex>
-                        <v-card flat>
-                            <v-card-text>
-                                <tree-view
-                                        :data="status"
-                                        :options="{
-                                                rootObjectKey: 'status'
-                                            }"
-                                ></tree-view>
-                            </v-card-text>
-                        </v-card>
-                    </v-flex>
-                </v-layout>
-                <v-layout
-                        v-else
-                        wrap>
+                <v-layout wrap>
                     <v-flex grow style="width: 500px;">
                         <v-card flat>
                             <v-card-text>
@@ -66,27 +37,19 @@
                     <v-flex shrink style="width: 300px;">
                         <v-card flat>
                             <v-card-text>
-                                <v-text-field                                
+                                <v-text-field
                                     label="Name"
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
-                                <v-select
-                                    label="AccessModes"
-                                    v-model="value.object.spec.accessModes"
-                                    :items="accessModeList"
-                                ></v-select>
-                                <v-text-field                                
-                                    label="Storage"
-                                    v-model="value.object.spec.capacity.storage"
-                                    type="number"
+                                <v-text-field
+                                    label="Resource"
+                                    v-model="resource"
+                                    @keyup.enter="setResources(resource)"
                                 ></v-text-field>
-                                <v-text-field                                
-                                    label="PersistentVolumeReclaimPolicy"
-                                    v-model="value.object.spec.persistentVolumeReclaimPolicy"
-                                ></v-text-field>
-                                <v-text-field                                
-                                    label="VolumeMode"
-                                    v-model="value.object.spec.volumeMode"
+                                <v-text-field
+                                    label="Verb"
+                                    v-model="verb"
+                                    @keyup.enter="setVerbs(verb)"
                                 ></v-text-field>
                             </v-card-text>
                         </v-card>
@@ -106,40 +69,36 @@
     import YamlEditor from "./YamlEditor";
 
     export default {
-        name: 'ingress-property-panel',
+        name: 'property-panel',
         props: {
             value: Object,
             img: String,
         },
         components: {
-            "yaml-editor": YamlEditor
+            "yaml-editor": YamlEditor,
         },
         computed: {
             descriptionText() {
-                return 'PersistentVolume'
+                return 'Role'
             },
-            status() {
-                return JSON.parse(JSON.stringify(this.value.status))
-            },
-
         },
         data: function () {
             return {
-                accessModeList: [ ['ReadWriteOnce'], ['ReadOnlyMany'], ['ReadWriteMany'] ],
-                activeTab: 0,
-                tabItems: [ "status", "property" ],
+                resource: "",
+                verb: "",
             }
         },
-
         watch: {
-            status: {
-                deep: true,
-                handler: function () {
-                }
-            },
         },
         methods: {
-           
+            setResources(val) {
+                this.value.object.rules[0].resources.push(val)
+                this.resource = ""
+            },
+            setVerbs(val) {
+                this.value.object.rules[0].verbs.push(val)
+                this.verb = ""
+            },
         }
     }
 </script>

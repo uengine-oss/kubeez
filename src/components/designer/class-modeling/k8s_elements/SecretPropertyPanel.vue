@@ -1,5 +1,4 @@
 <template>
-    <!-- width 390 -->
     <v-layout wrap>
         <v-navigation-drawer absolute permanent right v-bind:style="{width: 800}">
             <!--  상단 이미지 및 선택 타이틀 이름-->
@@ -8,18 +7,7 @@
                     <v-list-item-avatar>
                         <img :src="img">
                     </v-list-item-avatar>
-                    <v-tabs
-                            v-model="activeTab"
-                            v-if="value.status">
-                        <v-tab
-                            v-for="(tab, idx) in tabItems"
-                            :key="idx">
-                            <v-list-item-title>{{ tab }}</v-list-item-title>
-                        </v-tab>
-                    </v-tabs>
-                    <v-list-item-title 
-                            v-else
-                            class="headline">
+                    <v-list-item-title class="headline">
                         {{ value._type }}
                     </v-list-item-title>
                     <v-tooltip top>
@@ -34,25 +22,7 @@
             </v-list>
 
             <v-list class="pt-0" dense flat>
-                <v-layout 
-                        v-if="value.status && activeTab == 0"
-                        wrap>
-                    <v-flex>
-                        <v-card flat>
-                            <v-card-text>
-                                <tree-view
-                                        :data="status"
-                                        :options="{
-                                                rootObjectKey: 'status'
-                                            }"
-                                ></tree-view>
-                            </v-card-text>
-                        </v-card>
-                    </v-flex>
-                </v-layout>
-                <v-layout 
-                        v-else
-                        wrap>
+                <v-layout wrap>
                     <v-flex grow style="width: 500px;">
                         <v-card flat>
                             <v-card-text>
@@ -66,17 +36,39 @@
                     <v-flex shrink style="width: 300px;">
                         <v-card flat>
                             <v-card-text>
-                                <v-text-field                                
+                                <v-text-field
                                     label="Name"
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
-                                <number-field
-                                    :label="'Replicas'"
-                                    v-model="value.object.spec.replicas"
-                                ></number-field>
-                                <template-field
-                                    v-model="value.object"
-                                ></template-field>
+                                <v-text-field
+                                    label="Type"
+                                    v-model="value.object.type"
+                                ></v-text-field>
+                                <v-label>Data</v-label>
+                                <v-row>
+                                    <v-col cols="5" class="py-0">
+                                        <v-text-field
+                                                label="Key"
+                                                v-model="dataKey"
+                                        ></v-text-field>
+                                    </v-col>
+                                    <v-col class="py-0">
+                                        <v-text-field
+                                                label="Value"
+                                                v-model="dataValue"
+                                                hint="base64 encoding"
+                                                v-on:keyup.enter="addData(dataKey, encodingDataValue)"
+                                        ></v-text-field>
+                                    </v-col>
+                                </v-row>
+                                <v-row justify="end">
+                                    <v-btn 
+                                            class="mx-5"
+                                            color="primary"
+                                            rounded dark
+                                            @click="addData(dataKey, encodingDataValue)"
+                                    >Add Data</v-btn>
+                                </v-row>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -91,13 +83,13 @@
 
 <script>
     import yaml from "js-yaml";
+    var Base64 = require('js-base64').Base64;
 
     import YamlEditor from "./YamlEditor";
     import NumberField from "./NumberField";
-    import TemplateField from "./TemplateField";
 
     export default {
-        name: 'service-property-panel',
+        name: 'property-panel',
         props: {
             value: Object,
             img: String,
@@ -105,31 +97,34 @@
         components: {
             "yaml-editor": YamlEditor,
             "number-field": NumberField,
-            "template-field": TemplateField,
         },
         computed: {
             descriptionText() {
-                return 'Deployment'
+                return 'Secret'
             },
-            status() {
-                return JSON.parse(JSON.stringify(this.value.status))
-            },            
+            encodingDataValue() {
+                return Base64.encode(this.dataValue)
+            }
         },
         data: function () {
             return {
-                activeTab: 0,
-                tabItems: [ "status", "property" ],
+                dataObj: JSON.parse(JSON.stringify(this.value.object.data)),
+                dataKey: "",
+                dataValue: "",
             }
         },
         watch: {
-            status: {
-                deep: true,
-                handler: function () {
-                    // console.log(this.status)
-                }
-            }
         },
         methods: {
+            addData(key, value) {
+                var me = this
+                if(key != "" && value != "") {
+                    me.dataObj[key] = value
+                    me.value.object.data = me.dataObj
+                }
+                me.dataKey = ""
+                me.dataValue = ""
+            }
         }
     }
 </script>

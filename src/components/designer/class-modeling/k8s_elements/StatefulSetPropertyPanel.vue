@@ -109,11 +109,12 @@
         },
         computed: {
             descriptionText() {
-                return 'Deployment'
+                return 'StatefulSet'
             },
             status() {
                 return JSON.parse(JSON.stringify(this.value.status))
-            },            
+            }
+            
         },
         data: function () {
             return {
@@ -125,7 +126,6 @@
             status: {
                 deep: true,
                 handler: function () {
-                    // console.log(this.status)
                 }
             }
         },

@@ -17,7 +17,7 @@
                             <v-list-item-title>{{ tab }}</v-list-item-title>
                         </v-tab>
                     </v-tabs>
-                    <v-list-item-title 
+                    <v-list-item-title
                             v-else
                             class="headline">
                         {{ value._type }}
@@ -50,7 +50,7 @@
                         </v-card>
                     </v-flex>
                 </v-layout>
-                <v-layout 
+                <v-layout
                         v-else
                         wrap>
                     <v-flex grow style="width: 500px;">
@@ -66,17 +66,25 @@
                     <v-flex shrink style="width: 300px;">
                         <v-card flat>
                             <v-card-text>
-                                <v-text-field                                
+                                <v-text-field
                                     label="Name"
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
-                                <number-field
-                                    :label="'Replicas'"
-                                    v-model="value.object.spec.replicas"
-                                ></number-field>
-                                <template-field
-                                    v-model="value.object"
-                                ></template-field>
+                                <v-select
+                                    label="AccessModes"
+                                    v-model="value.object.spec.accessModes"
+                                    :items="accessModeList"
+                                ></v-select>
+                                <v-text-field
+                                    label="Storage"
+                                    v-model="storage"
+                                    type="number"
+                                ></v-text-field>
+                                <v-select
+                                    label="VolumeMode"
+                                    v-model="value.object.spec.volumeMode"
+                                    :items="volumeModeList"
+                                ></v-select>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -93,43 +101,53 @@
     import yaml from "js-yaml";
 
     import YamlEditor from "./YamlEditor";
-    import NumberField from "./NumberField";
-    import TemplateField from "./TemplateField";
 
     export default {
-        name: 'service-property-panel',
+        name: 'property-panel',
         props: {
             value: Object,
             img: String,
         },
         components: {
-            "yaml-editor": YamlEditor,
-            "number-field": NumberField,
-            "template-field": TemplateField,
+            "yaml-editor": YamlEditor
         },
         computed: {
             descriptionText() {
-                return 'Deployment'
+                return 'PersistentVolumeClaim'
             },
             status() {
                 return JSON.parse(JSON.stringify(this.value.status))
-            },            
+            },
+            storage: {
+                get() {
+                    var val = this.value.object.spec.resources.requests.storage
+                    val = val.replace('Gi', '')
+                    return val
+                },
+                set(val) {
+                    var me = this
+                    me.value.object.spec.resources.requests.storage = val + "Gi"
+                }
+            }
         },
         data: function () {
             return {
+                accessModeList: [ ['ReadWriteOnce'], ['ReadOnlyMany'], ['ReadWriteMany'] ],
+                volumeModeList: [ "Filesystem", "Block" ],
                 activeTab: 0,
                 tabItems: [ "status", "property" ],
             }
         },
+
         watch: {
             status: {
                 deep: true,
                 handler: function () {
-                    // console.log(this.status)
                 }
-            }
+            },
         },
         methods: {
+           
         }
     }
 </script>

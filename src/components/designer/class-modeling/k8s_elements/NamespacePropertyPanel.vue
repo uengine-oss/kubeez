@@ -68,7 +68,7 @@
         },
         computed: {
             descriptionText() {
-                return 'PersistenceVolumeClaim'
+                return 'Namespace'
             },
 
         },

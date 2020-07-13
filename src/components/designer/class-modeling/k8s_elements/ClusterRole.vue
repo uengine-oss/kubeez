@@ -27,20 +27,25 @@
                 v-on:contextmenu.prevent.stop="handleClick($event)"
         >
 
-            <!--v-on:dblclick="$refs['dialog'].open()"-->
             <geometry-rect
                     :_style="{
                         'fill-r': 1,
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#2196f3',
-                        fill: '#2196f3',
+                        'stroke': '#326ce5',
+                        fill: '#326ce5',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
                     }"
             ></geometry-rect>
+
+            <sub-controller
+                    v-if="value.status"
+                    :image="'subprocess.png'"
+                    @click.prevent.stop="handleClick($event)"
+            ></sub-controller>
 
             <sub-elements>
                 <!--title-->
@@ -49,7 +54,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'Service'">
+                        :text="'ClusterRole'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -61,11 +66,10 @@
             </sub-elements>
         </geometry-element>
 
-
-        <property-panel
-                v-if="openPanel"
-                v-model="value"
-                :img="imgSrc">
+         <property-panel
+            v-if="openPanel"
+            v-model="value"
+            :img="imgSrc">
         </property-panel>
 
         <vue-context-menu
@@ -79,12 +83,14 @@
 
 <script>
     import Element from '../../modeling/Element'
-    import PropertyPanel from './ServicePropertyPanel'
+    import PropertyPanel from './ClusterRolePropertyPanel'
+    import ImageElement from "../../../opengraph/shape/ImageElement";
 
     export default {
         mixins: [Element],
-        name: 'service',
+        name: 'cluster-role',
         components: {
+            ImageElement,
             "property-panel": PropertyPanel
         },
         props: {},
@@ -93,10 +99,10 @@
                 return {}
             },
             className() {
-                return 'Service'
+                return 'ClusterRole'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/svc.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/c-role.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -114,38 +120,26 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "v1",
-                        "kind": "Service",
+                        "apiVersion": "rbac.authorization.k8s.io/v1",
+                        "kind": "ClusterRole",
                         "metadata": {
                             "name": "",
-                            "labels": {
-                                "app": ""
-                            }
                         },
-                        "spec": {
-                            "ports": [
-                                {
-                                    "port": 80,
-                                    "targetPort": 80
-                                }
-                            ],
-                            "selector": {
-                                "app": ""
-                            },
-                            "type": "ClusterIP"
-                        }
+                        "rules": [
+                            {
+                                "apiGroups": [ "" ],
+                                "resources": [],
+                                "verbs": []
+                            }
+                        ]
                     },
-                    outboundDeployment: null,
-                    outboundPod: null,
-                    outboundReplicaSet: null,
-                    connectableType: ["Deployment", "Pod", "ReplicaSet"],
                     status: null,
                 }
             },
             name() {
                 try {
-                    return this.value.object.metadata.name    
-                } catch(e) {
+                    return this.value.object.metadata.name;
+                } catch (e) {
                     return "Untitled";
                 }
             },
@@ -157,29 +151,6 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-            outboundDeploymentName() {
-                try {
-                    return this.value.outboundDeployment.object.metadata.name;
-                } catch(e) {
-                    return "";
-                }
-            },
-
-            outboundPodName() {
-                try {
-                    return this.value.outboundPod.object.metadata.name;
-                } catch(e) {
-                    return "";
-                }
-            },
-
-            outboundReplicaSetName() {
-                try {
-                    return this.value.outboundReplicaSet.object.metadata.name
-                } catch(e) {
-                    return ""
-                }
-            }
 
         },
         data: function () {
@@ -191,63 +162,27 @@
             };
         },
         created: function () {
-
         },
-        mounted: function () {
-
+        mounted(){
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
-                    me.value.outboundDeployment = obj.element.targetElement;
-                }
-                else if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
-                    me.value.outboundPod = obj.element.targetElement;
-                }
-                else if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
-                    me.value.outboundReplicaSet = obj.element.targetElement;
-                }
-
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
-                    me.value.outboundDeployment = null;
-                }
-                else if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
-                    me.value.outboundPod = null;
-                }
-                else if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
-                    me.value.outboundReplicaSet = null;
-                }
 
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status
+                    me.value.status = "created"
+                    var designer = me.getComponent('modeling-designer')
+                    clearInterval(designer.getStatus)
                 }
             })
-            
+
         },
         watch: {
-            name(appName){
-                this.value.object.metadata.labels.app = appName;
-            },
-
-            "outboundDeploymentName": function(val) {
-                this.value.object.spec.selector.app = val;
-            },
-
-            "outboundPodName": function(val) {
-                this.value.object.spec.selector.app = val;
-            },
-
-            "outboundReplicaSetName": function(val) {
-                this.value.object.spec.selector.app = val
-            }
-
         },
-
         methods: {
-        },
+        }
     }
 </script>
-
+  
 <style>
 
 </style>

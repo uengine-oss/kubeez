@@ -24,6 +24,7 @@
                 'label-angle':value.elementView.angle,
                 'font-weight': 'bold','font-size': '16'
                 }"
+                v-on:contextmenu.prevent.stop="handleClick($event)"
         >
 
             <!--v-on:dblclick="$refs['dialog'].open()"-->
@@ -40,6 +41,12 @@
                         'z-index': '998'
                     }"
             ></geometry-rect>
+
+            <sub-controller
+                    v-if="value.status"
+                    :image="'subprocess.png'"
+                    @click.prevent.stop="handleClick($event)"
+            ></sub-controller>
 
             <sub-elements>
                 <!--title-->
@@ -77,13 +84,18 @@
             </sub-elements>
         </geometry-element>
 
-
         <property-panel
                 v-if="openPanel"
                 v-model="value"
                 :img="imgSrc">
         </property-panel>
 
+        <vue-context-menu
+            :elementId="value._type"
+            :options="menuList"
+            :ref="'vueSimpleContextMenu'"
+            @option-clicked="optionClicked">
+        </vue-context-menu>
     </div>
 </template>
 
@@ -148,8 +160,8 @@
                         }
                     },
                     outboundVolumes: [],
+                    connectableType: [ "PersistentVolumeClaim" ],
                     status: null,
-
                 }
             },
             name() {
@@ -183,7 +195,12 @@
             }
         },
         data: function () {
-            return {};
+            return {
+                menuList : [
+                    { name: "View Terminal" },
+                    { name: "Delete" }
+                ]
+            };
         },
         created: function () {
 
@@ -194,13 +211,13 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 if (obj.state == "addRelation" && obj.element && obj.element.targetElement
-                    && obj.element.targetElement._type == "PersistenceVolumeClaim") {
+                    && obj.element.targetElement._type == "PersistentVolumeClaim") {
                     console.log("inner")
                     me.value.outboundVolumes.push(obj.element.targetElement);
                 }
 
                 if (obj.state == "deleteRelation" && obj.element && obj.element.targetElement
-                    && obj.element.targetElement._type == "PersistenceVolumeClaim") {
+                    && obj.element.targetElement._type == "PersistentVolumeClaim") {
 
                     me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
                 }
@@ -238,7 +255,7 @@
                         me.value.object.spec.volumes.push(
                             {
                                 "name": "volume" + (++i),
-                                "persistenceVolumeClaim": {
+                                "persistentVolumeClaim": {
                                     "claimName": element.object.metadata.name
                                 }
                             }

@@ -21,25 +21,31 @@
                 v-on:removeShape="onRemoveShape(value)"
                 :label.sync="name"
                 :_style="{
-                'label-angle':value.elementView.angle,
-                'font-weight': 'bold','font-size': '16'
+                    'label-angle':value.elementView.angle,
+                    'font-weight': 'bold','font-size': '16'
                 }"
+                v-on:contextmenu.prevent.stop="handleClick($event)"
         >
 
-            <!--v-on:dblclick="$refs['dialog'].open()"-->
             <geometry-rect
                     :_style="{
                         'fill-r': 1,
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#aaaaaa',
-                        fill: '#aaaaaa',
+                        'stroke': '#ff7050',
+                        fill: '#ff7050',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
                     }"
             ></geometry-rect>
+
+            <sub-controller
+                    v-if="value.status"
+                    :image="'subprocess.png'"
+                    @click.prevent.stop="handleClick($event)"
+            ></sub-controller>
 
             <sub-elements>
                 <!--title-->
@@ -48,7 +54,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'PV'">
+                        :text="'ConfigMap'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -58,40 +64,33 @@
                         :sub-height="30">
                 </image-element>
             </sub-elements>
-            
-            <sub-elements>
-                <circle-element
-                        v-if="value.status"
-                        :sub-bottom="-15"
-                        :sub-width="30"
-                        :sub-height="30"
-                        :sub-align="'center'"
-                        :sub-style="{
-                            'stroke': statusColor,
-                            fill: statusColor,
-                            'fill-opacity': 1,
-                        }">
-                </circle-element>
-            </sub-elements>
         </geometry-element>
 
-
-        <property-panel
-                v-if="openPanel"
-                v-model="value"
-                :img="imgSrc">
+         <property-panel
+            v-if="openPanel"
+            v-model="value"
+            :img="imgSrc">
         </property-panel>
+
+        <vue-context-menu
+            :elementId="value._type"
+            :options="menuList"
+            :ref="'vueSimpleContextMenu'"
+            @option-clicked="optionClicked">
+        </vue-context-menu>
     </div>
 </template>
 
 <script>
     import Element from '../../modeling/Element'
-    import PropertyPanel from './PersistenceVolumePropertyPanel'
+    import PropertyPanel from './ConfigMapPropertyPanel'
+    import ImageElement from "../../../opengraph/shape/ImageElement";
 
     export default {
         mixins: [Element],
-        name: 'persistence-volume',
+        name: 'configMap',
         components: {
+            ImageElement,
             "property-panel": PropertyPanel
         },
         props: {},
@@ -100,10 +99,10 @@
                 return {}
             },
             className() {
-                return 'PersistentVolume'
+                return 'ConfigMap'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pv.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/cm.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -122,26 +121,20 @@
                     },
                     object: {
                         "apiVersion": "v1",
-                        "kind": "PersistentVolume",
+                        "kind": "ConfigMap",
                         "metadata": {
-                            "name": "",
+                            "name": ""
                         },
-                        "spec": {
-                            "accessModes": [
-                                ""
-                            ],
-                            "capacity": {
-                                "storage": "1Gi"
-                            },
-                            "persistentVolumeReclaimPolicy": "Retain",
-                            "volumeMode": "Filesystem",
-                            "hostPath": {
-                                "path": "/tmp"
-                            }
-                        },
+                        "data": {},
                     },
                     status: null,
-                    
+                }
+            },
+            name() {
+                try {
+                    return this.value.object.metadata.name;
+                } catch (e) {
+                    return "Untitled";
                 }
             },
             namespace: {
@@ -152,52 +145,38 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-            name(){
-                try{
-                    return this.value.object.metadata.name;
-                }catch(e){
-                    return "Untitled";
-                }
-            }
+
         },
         data: function () {
             return {
-                                
+                menuList : [
+                    { name: "View Terminal" },
+                    { name: "Delete" }
+                ]
             };
         },
         created: function () {
-            
         },
-        mounted: function () {
+        mounted(){
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                
+
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status
-                    me.setStatus()
-                    me.refresh()
+                    me.value.status = "created"
+                    var designer = me.getComponent('modeling-designer')
+                    clearInterval(designer.getStatus)
                 }
             })
+
         },
         watch: {
-           
         },
-
         methods: {
-            setStatus() {
-                var me = this
-
-                if(me.value.status.phase == 'Bound') {
-                    me.changeStatusColor('success')
-                } else {
-                    me.changeStatusColor('waiting')
-                }
-            },
         }
     }
 </script>
-
+  
 <style>
 
 </style>

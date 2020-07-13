@@ -1,5 +1,4 @@
 <template>
-    <!-- width 390 -->
     <v-layout wrap>
         <v-navigation-drawer absolute permanent right v-bind:style="{width: 800}">
             <!--  상단 이미지 및 선택 타이틀 이름-->
@@ -8,18 +7,7 @@
                     <v-list-item-avatar>
                         <img :src="img">
                     </v-list-item-avatar>
-                    <v-tabs
-                            v-model="activeTab"
-                            v-if="value.status">
-                        <v-tab
-                            v-for="(tab, idx) in tabItems"
-                            :key="idx">
-                            <v-list-item-title>{{ tab }}</v-list-item-title>
-                        </v-tab>
-                    </v-tabs>
-                    <v-list-item-title
-                            v-else
-                            class="headline">
+                    <v-list-item-title class="headline">
                         {{ value._type }}
                     </v-list-item-title>
                     <v-tooltip top>
@@ -34,26 +22,8 @@
             </v-list>
 
             <v-list class="pt-0" dense flat>
-                <v-layout 
-                        v-if="value.status && activeTab == 0"
-                        wrap>
-                    <v-flex>
-                        <v-card flat>
-                            <v-card-text>
-                                <tree-view
-                                        :data="status"
-                                        :options="{
-                                                rootObjectKey: 'status'
-                                            }"
-                                ></tree-view>
-                            </v-card-text>
-                        </v-card>
-                    </v-flex>
-                </v-layout>
-                <v-layout
-                        v-else
-                        wrap>
-                    <v-flex grow style="width: 500px;">
+                <v-layout wrap>
+                    <v-flex grow style="width: 480px;">
                         <v-card flat>
                             <v-card-text>
                                 <yaml-editor
@@ -63,27 +33,37 @@
                             </v-card-text>
                         </v-card>
                     </v-flex>
-                    <v-flex shrink style="width: 300px;">
+                    <v-flex shrink style="width: 320px;">
                         <v-card flat>
                             <v-card-text>
                                 <v-text-field
                                     label="Name"
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
-                                <v-select
-                                    label="AccessModes"
-                                    v-model="value.object.spec.accessModes"
-                                    :items="accessModeList"
-                                ></v-select>
-                                <v-text-field
-                                    label="Storage"
-                                    v-model="value.object.spec.resources.requests.storage"
-                                    type="number"
-                                ></v-text-field>
-                                <v-text-field
-                                    label="VolumeMode"
-                                    v-model="value.object.spec.volumeMode"
-                                ></v-text-field>
+                                <v-label>Data</v-label>
+                                <v-row>
+                                    <v-col cols="5" class="py-0">
+                                        <v-text-field
+                                                label="Key"
+                                                v-model="dataKey"
+                                        ></v-text-field>
+                                    </v-col>
+                                    <v-col class="py-0">
+                                        <v-text-field
+                                                label="Value"
+                                                v-model="dataValue"
+                                                v-on:keyup.enter="addData(dataKey, dataValue)"
+                                        ></v-text-field>
+                                    </v-col>
+                                </v-row>
+                                <v-row justify="end">
+                                    <v-btn 
+                                            class="mx-5"
+                                            color="primary"
+                                            rounded dark
+                                            @click="addData(dataKey, dataValue)"
+                                    >Add Data</v-btn>
+                                </v-row>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -100,6 +80,7 @@
     import yaml from "js-yaml";
 
     import YamlEditor from "./YamlEditor";
+    import NumberField from "./NumberField";
 
     export default {
         name: 'property-panel',
@@ -108,34 +89,32 @@
             img: String,
         },
         components: {
-            "yaml-editor": YamlEditor
+            "yaml-editor": YamlEditor,
+            "number-field": NumberField,
         },
         computed: {
             descriptionText() {
-                return 'PersistentVolumeClaim'
+                return 'ConfigMap'
             },
-            status() {
-                return JSON.parse(JSON.stringify(this.value.status))
-            },
-
         },
         data: function () {
             return {
-                accessModeList: [ ['ReadWriteOnce'], ['ReadOnlyMany'], ['ReadWriteMany'] ],
-                activeTab: 0,
-                tabItems: [ "status", "property" ],
+                dataObj: JSON.parse(JSON.stringify(this.value.object.data)),
+                dataKey: "",
+                dataValue: "",
             }
         },
-
-        watch: {
-            status: {
-                deep: true,
-                handler: function () {
-                }
-            },
-        },
+        watch: {},
         methods: {
-           
+            addData(key, value) {
+                var me = this
+                if(key != "" && value != "") {
+                    me.dataObj[key] = value
+                    me.value.object.data = me.dataObj
+                }
+                me.dataKey = ""
+                me.dataValue = ""
+            }
         }
     }
 </script>

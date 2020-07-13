@@ -21,10 +21,9 @@
                 v-on:removeShape="onRemoveShape(value)"
                 :label.sync="name"
                 :_style="{
-                    'label-angle':value.elementView.angle,
-                    'font-weight': 'bold','font-size': '16'
+                'label-angle':value.elementView.angle,
+                'font-weight': 'bold','font-size': '16'
                 }"
-                v-on:contextmenu.prevent.stop="handleClick($event)"
         >
 
             <!--v-on:dblclick="$refs['dialog'].open()"-->
@@ -34,8 +33,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#2196f3',
-                        fill: '#2196f3',
+                        'stroke': '#cccccc',
+                        fill: '#cccccc',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -49,7 +48,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'Service'">
+                        :text="'PVC'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -59,6 +58,21 @@
                         :sub-height="30">
                 </image-element>
             </sub-elements>
+
+            <sub-elements>
+                <circle-element
+                        v-if="value.status"
+                        :sub-bottom="-15"
+                        :sub-width="30"
+                        :sub-height="30"
+                        :sub-align="'center'"
+                        :sub-style="{
+                            'stroke': statusColor,
+                            fill: statusColor,
+                            'fill-opacity': 1,
+                        }">
+                </circle-element>
+            </sub-elements>
         </geometry-element>
 
 
@@ -67,23 +81,16 @@
                 v-model="value"
                 :img="imgSrc">
         </property-panel>
-
-        <vue-context-menu
-            :elementId="value._type"
-            :options="menuList"
-            :ref="'vueSimpleContextMenu'"
-            @option-clicked="optionClicked">
-        </vue-context-menu>
     </div>
 </template>
 
 <script>
     import Element from '../../modeling/Element'
-    import PropertyPanel from './ServicePropertyPanel'
+    import PropertyPanel from './PersistentVolumeClaimPropertyPanel'
 
     export default {
         mixins: [Element],
-        name: 'service',
+        name: 'persistent-volume-claim',
         components: {
             "property-panel": PropertyPanel
         },
@@ -93,10 +100,10 @@
                 return {}
             },
             className() {
-                return 'Service'
+                return 'PersistentVolumeClaim'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/svc.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pvc.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -115,37 +122,33 @@
                     },
                     object: {
                         "apiVersion": "v1",
-                        "kind": "Service",
+                        "kind": "PersistentVolumeClaim",
                         "metadata": {
                             "name": "",
-                            "labels": {
-                                "app": ""
-                            }
                         },
                         "spec": {
-                            "ports": [
-                                {
-                                    "port": 80,
-                                    "targetPort": 80
+                            "accessModes": [ "" ],
+                            "resources": {
+                                "requests": {
+                                    "storage": "1Gi"
                                 }
-                            ],
-                            "selector": {
-                                "app": ""
                             },
-                            "type": "ClusterIP"
+                            "storageClassName": "",
+                            "volumeMode": "Filesystem",
+                            "volumeName": ""
                         }
                     },
-                    outboundDeployment: null,
-                    outboundPod: null,
-                    outboundReplicaSet: null,
-                    connectableType: ["Deployment", "Pod", "ReplicaSet"],
+                    connectableType: ["PersistentVolume"],
+                    outboundVolume: null,
                     status: null,
+                    
                 }
             },
-            name() {
-                try {
-                    return this.value.object.metadata.name    
-                } catch(e) {
+
+            name(){
+                try{
+                    return this.value.object.metadata.name;
+                }catch(e){
                     return "Untitled";
                 }
             },
@@ -157,94 +160,65 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-            outboundDeploymentName() {
-                try {
-                    return this.value.outboundDeployment.object.metadata.name;
-                } catch(e) {
+            outboundVolumeName(){
+                try{
+                    return this.value.outboundVolume.object.metadata.name;
+                }catch(e){
                     return "";
-                }
-            },
-
-            outboundPodName() {
-                try {
-                    return this.value.outboundPod.object.metadata.name;
-                } catch(e) {
-                    return "";
-                }
-            },
-
-            outboundReplicaSetName() {
-                try {
-                    return this.value.outboundReplicaSet.object.metadata.name
-                } catch(e) {
-                    return ""
                 }
             }
 
         },
         data: function () {
             return {
-                menuList : [
-                    { name: "View Terminal" },
-                    { name: "Delete" }
-                ]
+                                
             };
         },
         created: function () {
-
+            
         },
         mounted: function () {
 
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
-                    me.value.outboundDeployment = obj.element.targetElement;
-                }
-                else if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
-                    me.value.outboundPod = obj.element.targetElement;
-                }
-                else if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
-                    me.value.outboundReplicaSet = obj.element.targetElement;
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement._type == "PersistentVolume"){
+
+                    me.value.outboundVolume = obj.element.targetElement;
                 }
 
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
-                    me.value.outboundDeployment = null;
-                }
-                else if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
-                    me.value.outboundPod = null;
-                }
-                else if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
-                    me.value.outboundReplicaSet = null;
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement._type == "PersistentVolume"){
+
+                    me.value.outboundVolume = null;
                 }
 
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
                     me.value.status = obj.element.status
+                    me.setStatus()
+                    me.refresh()
                 }
             })
             
         },
         watch: {
-            name(appName){
-                this.value.object.metadata.labels.app = appName;
-            },
-
-            "outboundDeploymentName": function(val) {
-                this.value.object.spec.selector.app = val;
-            },
-
-            "outboundPodName": function(val) {
-                this.value.object.spec.selector.app = val;
-            },
-
-            "outboundReplicaSetName": function(val) {
-                this.value.object.spec.selector.app = val
+            "outboundVolumeName": function(volumeName){
+                this.value.object.spec.volumeName = volumeName;
             }
-
         },
 
         methods: {
-        },
+            setStatus() {
+                var me = this
+                
+                if(me.value.status.phase == 'Bound') {
+                    me.changeStatusColor('success')
+                } else {
+                    me.changeStatusColor('waiting')
+                }
+            },
+        }
     }
 </script>
 

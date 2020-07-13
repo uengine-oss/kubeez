@@ -93,8 +93,8 @@
         </property-panel>
 
         <vue-context-menu
-            :elementId="'deplpoyment'"
-            :options="menus"
+            :elementId="value._type"
+            :options="menuList"
             :ref="'vueSimpleContextMenu'"
             @option-clicked="optionClicked">
         </vue-context-menu>
@@ -139,7 +139,6 @@
                         'style': JSON.stringify({}),
                         'angle': 0,
                     },
-                    outboundVolumes: [],
                     object: {
                        "apiVersion": "apps/v1",
                         "kind": "Deployment",
@@ -178,7 +177,8 @@
                             }
                         }
                     },
-                    connectableType: ["ReplicaSet"],
+                    outboundVolumes: [],
+                    connectableType: [ "PersistentVolumeClaim" ],
                     status: null,
                     replicasStatus: "",
                     
@@ -220,8 +220,9 @@
         },
         data: function () {
             return {
-                menus : [
-                    { name: "Get Pods" }, { name: "Delete" },
+                menuList : [
+                    { name: "View Terminal" },
+                    { name: "Delete" }
                 ]
             };
         },

@@ -71,14 +71,13 @@
                                     label="Name"
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
-                                <v-text-field                                
-                                    label="Image"
-                                    v-model="value.object.spec.template.spec.containers[0].image"
-                                ></v-text-field>
                                 <number-field
                                     :label="'Replicas'"
                                     v-model="value.object.spec.replicas"
                                 ></number-field>
+                                <template-field
+                                    v-model="value.object"
+                                ></template-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -96,6 +95,7 @@
 
     import YamlEditor from "./YamlEditor";
     import NumberField from "./NumberField";
+    import TemplateField from "./TemplateField";
 
     export default {
         name: 'property-panel',
@@ -106,6 +106,7 @@
         components: {
             "yaml-editor": YamlEditor,
             "number-field": NumberField,
+            "template-field": TemplateField,
         },
         computed: {
             descriptionText() {

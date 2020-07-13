@@ -70,13 +70,18 @@
                                     label="Name"
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
-                                <number-field
-                                    :label="'Replicas'"
-                                    v-model="value.object.spec.replicas"
-                                ></number-field>
                                 <template-field
                                     v-model="value.object"
                                 ></template-field>
+                                <v-text-field
+                                    label="Toleration Key"
+                                    v-model="value.object.spec.template.spec.tolerations[0].key"
+                                ></v-text-field>
+                                <v-select
+                                    label="Toleration Effect"
+                                    v-model="value.object.spec.template.spec.tolerations[0].effect"
+                                    :items="effectList"
+                                ></v-select>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -113,10 +118,12 @@
             },
             status() {
                 return JSON.parse(JSON.stringify(this.value.status))
-            },            
+            }
+            
         },
         data: function () {
             return {
+                effectList: [ "NoSchedule", "PreferNoSchedule", "NoExecute" ],
                 activeTab: 0,
                 tabItems: [ "status", "property" ],
             }

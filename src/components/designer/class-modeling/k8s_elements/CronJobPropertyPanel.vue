@@ -17,7 +17,7 @@
                             <v-list-item-title>{{ tab }}</v-list-item-title>
                         </v-tab>
                     </v-tabs>
-                    <v-list-item-title 
+                    <v-list-item-title
                             v-else
                             class="headline">
                         {{ value._type }}
@@ -50,7 +50,7 @@
                         </v-card>
                     </v-flex>
                 </v-layout>
-                <v-layout 
+                <v-layout
                         v-else
                         wrap>
                     <v-flex grow style="width: 500px;">
@@ -66,17 +66,23 @@
                     <v-flex shrink style="width: 300px;">
                         <v-card flat>
                             <v-card-text>
-                                <v-text-field                                
+                                <v-text-field
                                     label="Name"
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
-                                <number-field
-                                    :label="'Replicas'"
-                                    v-model="value.object.spec.replicas"
-                                ></number-field>
-                                <template-field
-                                    v-model="value.object"
-                                ></template-field>
+                                <v-text-field
+                                    label="Image"
+                                    v-model="value.object.spec.jobTemplate.spec.template.spec.containers[0].image"
+                                ></v-text-field>
+                                <v-select                                
+                                    label="restartPolicy"
+                                    v-model="value.object.spec.jobTemplate.spec.template.spec.restartPolicy"
+                                    :items="restartPolicyList"
+                                ></v-select>
+                                <v-label>Schedule</v-label>
+                                <v-cron-field
+                                    v-model="value.object.spec.schedule"
+                                ></v-cron-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -93,30 +99,30 @@
     import yaml from "js-yaml";
 
     import YamlEditor from "./YamlEditor";
-    import NumberField from "./NumberField";
-    import TemplateField from "./TemplateField";
+    import CronField from './CronField.vue';
 
     export default {
-        name: 'service-property-panel',
+        name: 'property-panel',
         props: {
             value: Object,
             img: String,
         },
         components: {
             "yaml-editor": YamlEditor,
-            "number-field": NumberField,
-            "template-field": TemplateField,
+            CronField,
         },
         computed: {
             descriptionText() {
-                return 'Deployment'
+                return 'CronJob'
             },
             status() {
                 return JSON.parse(JSON.stringify(this.value.status))
-            },            
+            },
+
         },
         data: function () {
             return {
+                restartPolicyList: [ 'Always', 'OnFailure', 'Never' ],
                 activeTab: 0,
                 tabItems: [ "status", "property" ],
             }
@@ -125,9 +131,8 @@
             status: {
                 deep: true,
                 handler: function () {
-                    // console.log(this.status)
                 }
-            }
+            },
         },
         methods: {
         }

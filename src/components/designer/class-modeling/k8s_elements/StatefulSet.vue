@@ -26,16 +26,14 @@
                 }"
                 v-on:contextmenu.prevent.stop="handleClick($event)"
         >
-
-            <!--v-on:dblclick="$refs['dialog'].open()"-->
             <geometry-rect
                     :_style="{
                         'fill-r': 1,
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#4caf50',
-                        fill: '#4caf50',
+                        'stroke': '#ffdd2c',
+                        fill: '#ffdd2c',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -55,7 +53,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'Ingress'">
+                        :text="'StatefulSet'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -67,10 +65,10 @@
             </sub-elements>
         </geometry-element>
 
-        <property-panel
-                v-if="openPanel"
-                v-model="value"
-                :img="imgSrc">
+         <property-panel
+            v-if="openPanel"
+            v-model="value"
+            :img="imgSrc">
         </property-panel>
 
         <vue-context-menu
@@ -84,12 +82,14 @@
 
 <script>
     import Element from '../../modeling/Element'
-    import PropertyPanel from './IngressPropertyPanel'
+    import PropertyPanel from './StatefulSetPropertyPanel'
+    import ImageElement from "../../../opengraph/shape/ImageElement";
 
     export default {
         mixins: [Element],
-        name: 'ingress',
+        name: 'statefulSet',
         components: {
+            ImageElement,
             "property-panel": PropertyPanel
         },
         props: {},
@@ -98,16 +98,16 @@
                 return {}
             },
             className() {
-                return 'Ingress'
+                return 'StatefulSet'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ing.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sts.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
                     _type: this.className(),
                     name: '',
-                    namespace:'',
+                    namespace: '',
                     elementView: {
                         '_type': this.className(),
                         'id': elementId,
@@ -119,31 +119,43 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "extensions/v1beta1",
-                        "kind": "Ingress",
+                        "apiVersion": "apps/v1",
+                        "kind": "StatefulSet",
                         "metadata": {
-                            "name": "",
+                            "name": ""
                         },
                         "spec": {
-                            "rules": [
-                                {
-                                    "host": "insurance.infogra.io",
-                                    "http": {
-                                        "paths": [
-                                            {
-                                                "backend": {
-                                                    "serviceName": "",
-                                                    "servicePort": 80
-                                                }
-                                            }
-                                        ]
-                                    }
+                            "selector": {
+                                "matchLabels": {
+                                    "app": ""
                                 }
-                            ]
+                            },
+                            "serviceName": "",
+                            "replicas": 1,
+                            "template": {
+                                "metadata": {
+                                    "labels": {
+                                        "app": ""
+                                    }
+                                },
+                                "spec": {
+                                    "containers": [
+                                        {
+                                            "name": "",
+                                            "image": "",
+                                            "ports": [
+                                                {
+                                                    "containerPort": 80
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
                         }
                     },
-                    outboundServices: [],
-                    connectableType: ["Service"],
+                    outboundVolumes: [],
+                    connectableType: ["PersistentVolumeClaim"],
                     status: null,
                 }
             },
@@ -155,32 +167,28 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-            name() {
-                try {
-                    return this.value.object.metadata.name;
-                } catch(e) {
-                    return "Untitled";
+            name(){
+                try{
+                    return this.value.object.metadata.name; 
+                }catch(e){
+                    return "";
+                }
+                
+            },
+            outboundVolumeNames(){
+                try{
+                    var names = "";
+                    this.value.outboundVolumes.forEach(element => {
+                        names += element.object.metadata.name +  ","
+                    });
+                    return names;
+                }catch(e){
+                    return "";
                 }
             },
-            outboundServiceNames() {
-                try {
-                    var serviceNames = "";
-                    
-                    this.value.outboundServices.forEach(element => {
-                        serviceNames += element.object.metadata.name + ":" + element.object.spec.ports[0].port +  ","
-                    })
 
-                    return serviceNames;
-
-                } catch(e) {
-                    return ""
-                }
-            },
-            paths() {
-                return this.value.object.spec.rules[0].http.paths
-            },
         },
-        data: function () {
+        data() {
             return {
                 menuList : [
                     { name: "View Terminal" },
@@ -188,81 +196,74 @@
                 ]
             };
         },
-        created: function () {
+        created() {
         },
-        mounted: function () {
+        mounted() {
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "Service"){
-                    
-                    obj.element.targetElement.relationId = obj.element.relationView.id
-                    me.value.outboundServices.push(obj.element.targetElement)
-                }
-                
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "Service"){
+                    && obj.element.targetElement._type == "PersistentVolumeClaim"){
 
-                    me.value.outboundServices.splice(me.value.outboundServices.indexOf(obj.element.targetElement), 1);
+                    me.value.outboundVolumes.push(obj.element.targetElement);
+                }
+
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement._type == "PersistentVolumeClaim"){
+
+                    me.value.object.spec.template.spec.containers[0].volumeMounts[0].name = ""
+                    me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
                 }
 
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
                     me.value.status = obj.element.status
+                    me.refresh()
                 }
-
+                
             })
-            
-        },
-        watch: {
-            "outboundServiceNames": function(names){
 
-                this.value.object.spec.rules[0].http.paths = [];
+        },
+
+        watch: {
+            name(appName) {
+                this.value.object.spec.serviceName = appName;
+                this.value.object.spec.selector.matchLabels.app = appName;
+                this.value.object.spec.template.metadata.labels.app = appName;
+                this.value.object.spec.template.spec.containers[0].name = appName;
+                this.value.object.spec.template.spec.containers[0].ports[0].name = appName;
+            },
+            outboundVolumeNames(names){
                 var me = this;
-                this.value.outboundServices.forEach(element => {
-                        me.value.object.spec.rules[0].http.paths.push(
+                var i=0;
+                me.value.object.spec.volumeClaimTemplates = [];
+                me.value.outboundVolumes.forEach(element => {
+                        me.value.object.spec.volumeClaimTemplates.push(
                             {
-                                "backend": {
-                                    "serviceName": element.object.metadata.name,
-                                    "servicePort": element.object.spec.ports[0].port
+                                "metadata": {
+                                    "name": element.object.metadata.name
+                                },
+                                "spec": {
+                                    "accessModes": element.object.spec.accessModes,
+                                    "storageClassName": element.object.spec.storageClassName,
+                                    "resources": {
+                                        "requests": {
+                                            "storage": element.object.spec.resources.requests.storage
+                                        }
+                                    }
                                 }
                             }
                         );
                     }
                 );
             },
-            paths: {
-                deep: true,
-                handler: function (newVal, oldVal) {
-                    var me = this
-                    if(newVal.length < oldVal.length) {
-                        var index = me.getIndex(newVal, oldVal)
 
-                        if (me.value.outboundServices[index]) {
-                            me.deleteRelation(me.value.outboundServices[index].relationId)
-                        }
-                    }
-                }
-            }
         },
+
         methods: {
-            getIndex(newArr, oldArr) {
-                var index
-                oldArr.some(function(item, idx) {
-                    if (newArr[idx] == undefined) {
-                        index = idx
-                        return true
-                    } else if (item.backend.serviceName != newArr[idx].backend.serviceName) {
-                        index = idx
-                        return true
-                    }
-                })
-                return index
-            },
         }
     }
 </script>
-
+  
 <style>
 
 </style>
