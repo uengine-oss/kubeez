@@ -22,9 +22,9 @@
                             class="headline">
                         {{ value._type }}
                     </v-list-item-title>
-                    <v-tooltip top>
+                    <v-tooltip left>
                         <template v-slot:activator="{ on }">
-                            <v-btn icon v-on="on">
+                            <v-btn icon v-on="on" @click="desDocOpen()">
                                 <v-icon color="grey lighten-1">mdi-information</v-icon>
                             </v-btn>
                         </template>
@@ -71,9 +71,11 @@
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
                                 <number-field
+                                    :desDoc="'#replicas'"
+                                    @openDesDoc="desDocOpen"
                                     :label="'Replicas'"
-                                    v-model="value.object.spec.replicas"
-                                ></number-field>
+                                    v-model="value.object.spec.replicas">
+                                </number-field>
                                 <template-field
                                     v-model="value.object"
                                 ></template-field>
@@ -91,6 +93,7 @@
 
 <script>
     import yaml from "js-yaml";
+    import json2yaml from 'json2yaml';
 
     import YamlEditor from "./YamlEditor";
     import NumberField from "./NumberField";
@@ -129,7 +132,24 @@
                 }
             }
         },
+        beforeDestroy() {
+            var me = this
+            var name = me.value.object.metadata.name
+            if(name != '') {
+                var obj = {}
+                obj[name + '_replicaCount'] = me.value.object.spec.replicas
+                obj[name + '_image'] = me.value.object.spec.template.spec.containers[0].image
+                me.$EventBus.$emit('setValuesYaml', obj)
+            }
+        },
         methods: {
+            desDocOpen(property) {
+                var url = 'https://kubernetes.io/docs/concepts/workloads/controllers/deployment/'
+                if(property) {
+                    url += property
+                }
+                window.open(url)
+            },
         }
     }
 </script>

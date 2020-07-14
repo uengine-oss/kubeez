@@ -22,9 +22,9 @@
                             class="headline">
                         {{ value._type }}
                     </v-list-item-title>
-                    <v-tooltip top>
+                    <v-tooltip left>
                         <template v-slot:activator="{ on }">
-                            <v-btn icon v-on="on">
+                            <v-btn icon v-on="on" @click="desDocOpen()">
                                 <v-icon color="grey lighten-1">mdi-information</v-icon>
                             </v-btn>
                         </template>
@@ -75,14 +75,16 @@
                                     v-model="value.object.spec.template.spec.containers[0].image"
                                 ></v-text-field>
                                 <v-select                                
-                                    label="restartPolicy"
+                                    label="restart Policy"
                                     v-model="value.object.spec.template.spec.restartPolicy"
-                                    :items="restartPolicyList"
-                                ></v-select>
+                                    :items="restartPolicyList">
+                                </v-select>
                                 <number-field
+                                    :desDoc="'#pod-backoff-failure-policy'"
+                                    @openDesDoc="desDocOpen"
                                     :label="'backoffLimit'"
-                                    v-model="value.object.spec.backoffLimit"
-                                ></number-field>
+                                    v-model="value.object.spec.backoffLimit">
+                                </number-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -134,7 +136,13 @@
             },
         },
         methods: {
-           
+            desDocOpen(property) {
+                var url = 'https://kubernetes.io/docs/concepts/workloads/controllers/job/'
+                if(property) {
+                    url += property
+                }
+                window.open(url)
+            },
         }
     }
 </script>

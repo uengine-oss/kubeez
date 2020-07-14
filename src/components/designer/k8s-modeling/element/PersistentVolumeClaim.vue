@@ -134,7 +134,7 @@
                                 }
                             },
                             "storageClassName": "",
-                            "volumeMode": "Filesystem",
+                            "volumeMode": "",
                             "volumeName": ""
                         }
                     },

@@ -22,9 +22,9 @@
                             class="headline">
                         {{ value._type }}
                     </v-list-item-title>
-                    <v-tooltip top>
+                    <v-tooltip left>
                         <template v-slot:activator="{ on }">
-                            <v-btn icon v-on="on">
+                            <v-btn icon v-on="on" @click="desDocOpen()">
                                 <v-icon color="grey lighten-1">mdi-information</v-icon>
                             </v-btn>
                         </template>
@@ -84,10 +84,13 @@
                                     v-model="value.object.spec.ports[0].targetPort"
                                 ></number-field>
                                 <v-select
-                                    label="Type"
-                                    v-model="value.object.spec.type"
-                                    :items="typeList"
-                                ></v-select>
+                                        label="Type"
+                                        v-model="value.object.spec.type"
+                                        :items="typeList">
+                                    <template v-slot:append-outer>
+                                        <v-icon small @click="desDocOpen('#publishing-services-service-types')">mdi-help-circle-outline</v-icon>
+                                    </template>
+                                </v-select>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -141,7 +144,13 @@
             },
         },
         methods: {
-           
+            desDocOpen(property) {
+                var url = 'https://kubernetes.io/docs/concepts/services-networking/service/'
+                if(property) {
+                    url += property
+                }
+                window.open(url)
+            },
         }
     }
 </script>

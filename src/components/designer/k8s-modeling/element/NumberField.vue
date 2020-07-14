@@ -1,9 +1,12 @@
 <template>
     <v-text-field
-        :label="label"
-        v-model="numberVal"
-        type="number"
-    ></v-text-field>
+            :label="label"
+            v-model="numberVal"
+            type="number">
+        <template v-slot:append-outer>
+            <v-icon v-if="desDoc" small @click="openDoc(desDoc)">mdi-help-circle-outline</v-icon>
+        </template>
+    </v-text-field>
 </template>
 
 <script>
@@ -13,6 +16,7 @@
         props: {
             value: Number,
             label: String,
+            desDoc: String,
         },
         data: function () {
             return {
@@ -30,6 +34,11 @@
                 this.$emit("input", num)
             }
         },
+        methods: {
+            openDoc(desDoc) {
+                this.$emit('openDesDoc', desDoc)
+            }
+        }
     }
 </script>
 

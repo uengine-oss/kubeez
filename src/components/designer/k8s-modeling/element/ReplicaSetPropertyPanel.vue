@@ -22,9 +22,9 @@
                             class="headline">
                         {{ value._type }}
                     </v-list-item-title>
-                    <v-tooltip top>
+                    <v-tooltip left>
                         <template v-slot:activator="{ on }">
-                            <v-btn icon v-on="on">
+                            <v-btn icon v-on="on" @click="desDocOpen()">
                                 <v-icon color="grey lighten-1">mdi-information</v-icon>
                             </v-btn>
                         </template>
@@ -72,6 +72,8 @@
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
                                 <number-field
+                                    :desDoc="'#replicas'"
+                                    @openDesDoc="desDocOpen"
                                     :label="'Replicas'"
                                     v-model="value.object.spec.replicas"
                                 ></number-field>
@@ -131,7 +133,13 @@
             }
         },
         methods: {
-           
+            desDocOpen(property) {
+                var url = 'https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/'
+                if(property) {
+                    url += property
+                }
+                window.open(url)
+            },
         }
     }
 </script>

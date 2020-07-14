@@ -11,9 +11,9 @@
                     <v-list-item-title class="headline">
                         {{ value._type }}
                     </v-list-item-title>
-                    <v-tooltip top>
+                    <v-tooltip left>
                         <template v-slot:activator="{ on }">
-                            <v-btn icon v-on="on">
+                            <v-btn icon v-on="on" @click="desDocOpen()">
                                 <v-icon color="grey lighten-1">mdi-information</v-icon>
                             </v-btn>
                         </template>
@@ -42,10 +42,13 @@
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
                                 <v-select
-                                    label="Subjects Kind"
-                                    v-model="value.object.subjects[0].kind"
-                                    :items="kindList"
-                                ></v-select>
+                                        label="Subjects Kind"
+                                        v-model="value.object.subjects[0].kind"
+                                        :items="kindList">
+                                    <template v-slot:append-outer>
+                                        <v-icon small @click="desDocOpen('#referring-to-subjects')">mdi-help-circle-outline</v-icon>
+                                    </template>
+                                </v-select>
                                 <v-text-field
                                     label="Subjects Name"
                                     v-model="value.object.subjects[0].name"
@@ -93,6 +96,13 @@
         watch: {
         },
         methods: { 
+            desDocOpen(property) {
+                var url = 'https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding'
+                if(property) {
+                    url += property
+                }
+                window.open(url)
+            },
         }
     }
 </script>

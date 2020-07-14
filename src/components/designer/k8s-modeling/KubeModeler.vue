@@ -3,7 +3,7 @@
             :elementTypes="elementTypes"
             elementListBeanPath="classDefinitions"
             relationListBeanPath="relations"
-            relationVueComponentName="class-relation"
+            relationVueComponentName="kube-relation"
             ref="kuberDesigner"
     >
     </kube-modeling-designer>

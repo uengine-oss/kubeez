@@ -11,9 +11,9 @@
                     <v-list-item-title class="headline">
                         {{ value._type }}
                     </v-list-item-title>
-                    <v-tooltip top>
+                    <v-tooltip left>
                         <template v-slot:activator="{ on }">
-                            <v-btn icon v-on="on">
+                            <v-btn icon v-on="on" @click="desDocOpen()">
                                 <v-icon color="grey lighten-1">mdi-information</v-icon>
                             </v-btn>
                         </template>
@@ -42,18 +42,27 @@
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
                                 <v-text-field
-                                    label="Provisioner"
-                                    v-model="value.object.provisioner"
-                                ></v-text-field>
+                                        label="Provisioner"
+                                        v-model="value.object.provisioner">
+                                    <template v-slot:append-outer>
+                                        <v-icon small @click="desDocOpen('#provisioner')">mdi-help-circle-outline</v-icon>
+                                    </template>
+                                </v-text-field>
                                 <v-text-field
                                     label="Parameter Type"
-                                    v-model="value.object.parameters.type"
-                                ></v-text-field>
+                                    v-model="value.object.parameters.type">
+                                    <template v-slot:append-outer>
+                                        <v-icon small @click="desDocOpen('#parameters')">mdi-help-circle-outline</v-icon>
+                                    </template>
+                                </v-text-field>
                                 <v-select
-                                    label="ReclaimPolicy"
+                                    label="Reclaim Policy"
                                     v-model="value.object.reclaimPolicy"
-                                    :items="policyList"
-                                ></v-select>
+                                    :items="policyList">
+                                    <template v-slot:append-outer>
+                                        <v-icon small @click="desDocOpen('#reclaim-policy')">mdi-help-circle-outline</v-icon>
+                                    </template>
+                                </v-select>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -93,6 +102,13 @@
         watch: {
         },
         methods: { 
+            desDocOpen(property) {
+                var url = 'https://kubernetes.io/docs/concepts/storage/storage-classes/'
+                if(property) {
+                    url += property
+                }
+                window.open(url)
+            },
         }
     }
 </script>

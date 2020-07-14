@@ -22,9 +22,9 @@
                             class="headline">
                         {{ value._type }}
                     </v-list-item-title>
-                    <v-tooltip top>
+                    <v-tooltip left>
                         <template v-slot:activator="{ on }">
-                            <v-btn icon v-on="on">
+                            <v-btn icon v-on="on" @click="desDocOpen()">
                                 <v-icon color="grey lighten-1">mdi-information</v-icon>
                             </v-btn>
                         </template>
@@ -119,7 +119,9 @@
             },
         },
         methods: {
-           
+            desDocOpen() {
+                window.open('https://kubernetes.io/docs/concepts/services-networking/ingress/')
+            },
         }
     }
 </script>

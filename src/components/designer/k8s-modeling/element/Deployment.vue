@@ -200,10 +200,8 @@
                 }
                 
             },
-
             outboundVolumeNames(){
-                try{
-
+                try {
                     var names = "";
                     
                     this.value.outboundVolumes.forEach(element => {
@@ -211,27 +209,22 @@
                     });
 
                     return names;
-
                 }catch(e){
                     return "";
                 }
             },
-
         },
         data: function () {
             return {
                 menuList : [
                     { name: "View Terminal" },
                     { name: "Delete" }
-                ]
+                ],
             };
         },
         created: function () {
-        
         },
-
         mounted(){
-
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
@@ -255,23 +248,21 @@
                 }
                 
             })
-
         },
 
         watch: {
-            name(appName){
+            name(appName) {
+                this.value.name = appName
                 this.value.object.metadata.labels.app = appName;
                 this.value.object.spec.selector.matchLabels.app = appName;
                 this.value.object.spec.template.metadata.labels.app = appName;
                 this.value.object.spec.template.spec.containers[0].name = appName;
             },
-
-            outboundVolumeNames(names){
-
-                this.value.object.spec.volumes = [];
+            outboundVolumeNames(names) {
                 var me = this;
                 var i=0; 
-                this.value.outboundVolumes.forEach(element => {
+                me.value.object.spec.volumes = [];
+                me.value.outboundVolumes.forEach(element => {
                         me.value.object.spec.volumes.push(
                             {
                                 "name": "volume" + (++i),
@@ -282,7 +273,6 @@
                         );
                     }
                 );
-
             },
 
         },

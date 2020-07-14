@@ -10,9 +10,9 @@
                     </v-list-item-avatar>
                     <v-list-item-title class="headline">{{ value._type }}
                     </v-list-item-title>
-                    <v-tooltip top>
+                    <v-tooltip left>
                         <template v-slot:activator="{ on }">
-                            <v-btn icon v-on="on">
+                            <v-btn icon v-on="on" @click="desDocOpen()">
                                 <v-icon color="grey lighten-1">mdi-information</v-icon>
                             </v-btn>
                         </template>
@@ -70,20 +70,18 @@
             descriptionText() {
                 return 'Namespace'
             },
-
         },
         data: function () {
             return {
                 accessModeList: [],
             }
         },
-
         watch: {
-
-
         },
         methods: {
-
+            desDocOpen() {
+                window.open('https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/')
+            },
         }
     }
 </script>

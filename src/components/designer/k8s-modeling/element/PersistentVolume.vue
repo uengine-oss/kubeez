@@ -133,7 +133,7 @@
                             "capacity": {
                                 "storage": "1Gi"
                             },
-                            "persistentVolumeReclaimPolicy": "Retain",
+                            "persistentVolumeReclaimPolicy": "",
                             "volumeMode": "Filesystem",
                             "hostPath": {
                                 "path": "/tmp"

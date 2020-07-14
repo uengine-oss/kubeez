@@ -22,9 +22,9 @@
                             class="headline">
                         {{ value._type }}
                     </v-list-item-title>
-                    <v-tooltip top>
+                    <v-tooltip left>
                         <template v-slot:activator="{ on }">
-                            <v-btn icon v-on="on">
+                            <v-btn icon v-on="on" @click="desDocOpen()">
                                 <v-icon color="grey lighten-1">mdi-information</v-icon>
                             </v-btn>
                         </template>
@@ -71,20 +71,26 @@
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
                                 <v-select
-                                    label="AccessModes"
-                                    v-model="value.object.spec.accessModes"
-                                    :items="accessModeList"
-                                ></v-select>
+                                        label="Access Modes"
+                                        v-model="value.object.spec.accessModes"
+                                        :items="accessModeList">
+                                    <template v-slot:append-outer>
+                                        <v-icon small @click="desDocOpen('#access-modes-1')">mdi-help-circle-outline</v-icon>
+                                    </template>
+                                </v-select>
                                 <v-text-field
                                     label="Storage"
                                     v-model="storage"
                                     type="number"
                                 ></v-text-field>
                                 <v-select
-                                    label="VolumeMode"
-                                    v-model="value.object.spec.volumeMode"
-                                    :items="volumeModeList"
-                                ></v-select>
+                                        label="Volume Mode"
+                                        v-model="value.object.spec.volumeMode"
+                                        :items="volumeModeList">
+                                    <template v-slot:append-outer>
+                                        <v-icon small @click="desDocOpen('#volume-modes')">mdi-help-circle-outline</v-icon>
+                                    </template>
+                                </v-select>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -147,7 +153,13 @@
             },
         },
         methods: {
-           
+            desDocOpen(property) {
+                var url = 'https://kubernetes.io/docs/concepts/storage/persistent-volumes/'
+                if(property) {
+                    url += property
+                }
+                window.open(url)
+            },
         }
     }
 </script>

@@ -458,7 +458,12 @@
 
                 isSelfEdit: true,
                 isLoad: false,
-                sharedCount: 0
+                sharedCount: 0,
+
+                //helm chart
+                chartJson: {},
+                valuesJson: {},
+                elementIdList: [],
 
             }
         },
@@ -502,12 +507,11 @@
             },
             filterElementTypes () {
                 var me = this
-                var result = me.elementTypes.filter(function (el) {
+                return me.elementTypes.filter(function (el) {
                     var name = el.label.toLowerCase()
                     var keyword = me.searchKeyword.toLowerCase()
                     return name.indexOf(keyword) != -1
                 })
-                return result
             }
 
         },
@@ -638,6 +642,10 @@
                 // }
 
             });
+
+            me.$EventBus.$on('setValuesYaml', function(obj) {
+                me.valuesJson = {...me.valuesJson, ...obj}
+            })
 
         },
         watch: {
@@ -901,7 +909,7 @@
                 if (edgeElement && from && to) {
                     var vertices = '[' + edgeElement.shape.geom.vertices.toString() + ']';
                     var componentInfo = {
-                        component: 'class-relation',
+                        component: 'kube-relation',
                         sourceElement: from.$parent,
                         targetElement: to.$parent,
                         vertices: vertices,
@@ -948,7 +956,7 @@
                 var vueComponent = me.getComponentByName(componentInfo.component);
                 var element;
 
-                if (componentInfo.component == 'class-relation') {
+                if (componentInfo.component == 'kube-relation') {
                     //relation info setting before make
                     element = vueComponent.computed.createNew(
                         this.uuid(),
@@ -1200,14 +1208,7 @@
 
                 me.value.definition.forEach(function (item) {
                     var name = item._type
-                    var lastChar = name.charAt(name.length-1);
-
-                    if(lastChar == 's') {
-                        name += 'es'
-                    } else {
-                        name += 's'
-                    }
-
+                    
                     var codeValue = {
                         'key': item.elementView.id,
                         'name': name + '.yaml',
@@ -1215,7 +1216,7 @@
                         'file': me.fileType('.yaml')
                     }                        
                     
-                    var index = me.treeList.findIndex(function (val) {
+                    var index = treeList.findIndex(function (val) {
                         if(val.name == codeValue.name) {
                             val.code += codeValue.code
                         }
@@ -1230,23 +1231,22 @@
             getHelmChartSetting() {
                 var me = this
                 var templates = []
-
-                templates.push({
+                var notes = {
                     'key': 'notes',
                     'name': 'NOTES.txt',
                     'code': '',
                     'file': 'txt'
-                })
-                
+                }
+
+                templates.push(notes)
                 me.setYamlPerKind(templates)
 
-                var chartJson = {
+                me.chartJson = {
                     "apiVersion": "v1",
-                    "name": name,
+                    "name": "local-test",
                     "version": "0.1.0",
-                    "description": ""
+                    "description": "A Helm chart for Kubernetes"
                 }
-                var valuesJson = {}
 
                 var folder = {
                     'name': 'kubernetes',
@@ -1254,7 +1254,7 @@
                         {
                             'key': 'chart',
                             'name': 'Chart.yaml',
-                            'code': me.yamlFilter(json2yaml.stringify(chartJson)),
+                            'code': me.yamlFilter(json2yaml.stringify(me.chartJson)),
                             'file': me.fileType('.yaml')
                         },
                         {
@@ -1264,7 +1264,7 @@
                         {
                             'key': 'values',
                             'name': 'values.yaml',
-                            'code': me.yamlFilter(json2yaml.stringify(valuesJson)),
+                            'code': me.yamlFilter(json2yaml.stringify(me.valuesJson)),
                             'file': me.fileType('.yaml')
                         }
                     ]
@@ -1405,7 +1405,6 @@
                     search.style.display = 'none'
                 }
             },
-
         }
     }
 </script>
