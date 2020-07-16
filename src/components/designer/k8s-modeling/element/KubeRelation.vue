@@ -23,24 +23,27 @@
         <!--            :titleName="'uml-Relation'"-->
         <!--        ></uml-property-panel>-->
 
-        <!--        <modeling-property-panel-->
-        <!--                v-if="value.sourceElement._type != 'org.uengine.modeling.model.Policy'"-->
-        <!--                v-model="value"-->
-        <!--                :titleName="'Relation'"-->
-        <!--        ></modeling-property-panel>-->
+        <relation-panel
+                v-if="openPanel && isOpen"
+                v-model="value"
+                :titleName="'Relation'"
+        ></relation-panel>
     </div>
 </template>
 
 <script>
     import Element from '../Kube-Element'
+    import Panel from './KubeRelationPanel'
 
     export default {
         mixins: [Element],
         name: 'kube-relation',
+        components: {
+            "relation-panel": Panel
+        },
         props: {
             value: Object
         },
-
         created: function () {
             var me = this
             if (this.value && this.value.relationView) {
@@ -58,19 +61,6 @@
             },
             style_() {
                 var style = {}
-                if (this.value.targetElement._type == 'org.uengine.modeling.model.Policy') {
-                    style = {
-                        "arrow-end": "block",
-                        'stroke-width': '1.3',
-                        'stroke-dasharray': '- ',
-                        'font-size': 20,
-                    }
-                } else if (this.value.targetElement._type == 'org.uengine.modeling.model.Command') {
-                    style = {
-                        "arrow-end": "block",
-                        'font-size': 20,
-                    }
-                }
                 return style
             },
             createNew(elementId, from, to, vertices) {
@@ -121,45 +111,34 @@
                 } else {
                     return false
                 }
+            },
+            isOpen() {
+                var me = this
+                if (me.value.sourceElement._type == 'VirtualService' && me.value.targetElement._type == 'DestinationRule') {
+                    return true
+                }
+                return false
             }
         },
         data: function () {
             return {}
         },
         watch: {
-
         },
         mounted: function () {
             var me = this
-            this.$EventBus.$on(`${me.value.relationView.id}`, function (obj) {
-                /* Todo: Element가 삭제 되었을 때, 선도 삭제되는 로직 넣는 부분  */
-                // if (obj.state == 'deleteEvent') {
-                //     me.deleteRelation()
-                // }
-                // if (obj.state == 'deletePolicy') {
-                //     me.deleteRelation()
-                // }
-                // if (obj.state == 'deleteCommand') {
-                //     me.deleteRelation()
-                // }
-                // if (obj.state == 'delete' && obj.element._type == 'org.uengine.modeling.model.Relation') {
-                //     me.deleteRelation()
-                // }
+            console.log(me.value)
+            me.$EventBus.$on(`${me.value.relationView.id}`, function (obj) {
+                if (obj.state == 'delete' && obj.element._type == 'org.uengine.modeling.model.Relation') {
+                    me.deleteRelation()
+                }
 
-                me.deleteRelation()
             })
-            console.log(me.value.sourceElement)
-            console.log(me.value.targetElement)
-            if(me.value.sourceElement._type == 'Ingress') {
-                /* Todo: Element Type 별 연결 체크 부분 */
-            }
-
 
             var obj = {
                 state: "addRelation",
                 element: me.value
             }
-
             me.$EventBus.$emit(me.value.sourceElement.elementView.id, obj)
             me.$EventBus.$emit(me.value.targetElement.elementView.id, obj)
 
@@ -169,8 +148,6 @@
                 var me = this
 
                 return new Promise(function (resolve) {
-                    // console.log("deleteRelation")
-                    //evnet, policy 쪽 정보 업데이트
                     me.$EventBus.$off(`${me.value.relationView.id}`);
 
                     var obj = {
