@@ -5,11 +5,9 @@ import Router from 'vue-router'
 
 Vue.use(Router)
 
-import EventModeler from './components/designer/class-modeling/EventModeler'
-import ClassModeler from './components/designer/class-modeling/ClassModeler'
+import KubeModeler from './components/designer/k8s-modeling/KubeModeler'
 
-Vue.component('event-modeler', EventModeler)
-Vue.component('class-modeler', ClassModeler)
+Vue.component('kube-modeler', KubeModeler)
 
 
 
@@ -25,12 +23,12 @@ export default new Router({
         {
             path: '/',
             name: 'EventStormingCanvas',
-            component: EventModeler
+            component: KubeModeler
         },
         {
             path: '/dash',
             name: 'EventStormingCanvas',
-            component: EventModeler
+            component: KubeModeler
         },
         // {
         //     path: '/view',

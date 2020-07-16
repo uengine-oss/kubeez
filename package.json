@@ -1,12 +1,12 @@
 {
   "name": "kuber-ez",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "main": "dist/kuberEz.common.js",
   "homepage": "http://theopencloudengine.github.io/event-storming-tool",
   "scripts": {
     "serve": "vue-cli-service serve --host 0.0.0.0 --disableHostCheck true",
-    "build": "vue-cli-service build --target lib --name kuberEz src/index.js",
+    "build": "vue-cli-service build --target lib --name kuberEz",
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {

@@ -10,8 +10,7 @@ import VModal from 'vue-js-modal'
 import EditYaml from './components/edityamlpage.vue'
 import textReader from './components/yaml.vue'
 import Opengraph from './components/opengraph'
-import ClassModeling from './components/designer/class-modeling'
-import Modeling from './components/designer/modeling'
+import KubeModeling from './components/designer/k8s-modeling'
 import Mustache from 'mustache'
 import VueFriendlyIframe from 'vue-friendly-iframe';
 import CodeMirror from 'vue-codemirror'
@@ -33,8 +32,7 @@ Vue.use(VueWindow)
 Vue.use(Mustache)
 Vue.use(CodeMirror)
 Vue.use(Opengraph);
-Vue.use(ClassModeling);
-Vue.use(Modeling);
+Vue.use(KubeModeling);
 // Vue.use(i18n);
 Vue.use(VModal)
 Vue.use(TreeView)
