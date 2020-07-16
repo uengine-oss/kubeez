@@ -153,6 +153,20 @@
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/crb-palette.svg`
                     },
+                    {
+                        'component': 'virtual-service',
+                        'label': 'VirtualService',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/event/command.png`
+                    },
+                    {
+                        'component': 'destination-rule',
+                        'label': 'DestinationRule',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/event/event.png`
+                    },
                 ],
             }
         },
