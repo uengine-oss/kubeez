@@ -14,26 +14,26 @@
                 v-on:selectShape="selectedActivity"
                 v-on:deSelectShape="deSelectedActivity"
                 v-on:removeShape="onRemoveShape(value)"
-        >
-        </edge-element>
+        ></edge-element>
+
+        <relation-panel
+                v-if="openPanel"
+                v-model="value"
+                :titleName="'VirtualService To DestinationRule'"
+        ></relation-panel>
     </div>
 </template>
 
 <script>
-    import Element from './RelationAbstract'
+    import Element from '../element/RelationAbstract'
+    import Panel from './VirtualSeviceToDestinationRulePanel'
 
     export default {
         mixins: [Element],
-        name: 'kube-relation',
-        props: {
-            value: Object
-        },
-        created: function () {
-            var me = this
-            if (this.value && this.value.relationView) {
-                this.value.from = this.value.relationView.from;
-                this.value.to = this.value.relationView.to;
-            }
+        name: 'virtualservice-to-destinationrule',
+        props: {},
+        components: {
+            'relation-panel': Panel,
         },
         computed: {
             className() {
@@ -47,14 +47,10 @@
                 return {
                     _type: this.className(),
                     name: '',
-                    // relationKey: '',
-                    // relationValue: '',
                     sourceElement: from,
                     targetElement: to,
                     from: from.elementView.id,
                     to: to.elementView.id,
-                    // checkValue: false,
-                    // selected: false,
                     relationView: {
                         id: elementId,
                         style: JSON.stringify({
@@ -68,16 +64,18 @@
                     },
                     sourceMultiplicity: 3,
                     targetMultiplicity: 3,
-                    // drawer: false
+                    routeType: 'weight',
+                    weight: 0,
                 }
             },
         },
-        data: function () {
+        data() {
             return {}
         },
         watch: {
         },
-        mounted: function () {
+        mounted() {
+            
         },
         methods: {
         }
@@ -85,6 +83,6 @@
 </script>
 
 
-<style scoped lang="scss" rel="stylesheet/scss">
+<style>
 
 </style>

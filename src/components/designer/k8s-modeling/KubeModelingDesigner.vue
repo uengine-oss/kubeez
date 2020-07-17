@@ -12,7 +12,7 @@
                        :connectable="!isRead" v-if="value" v-on:canvasReady="bindEvents" :autoSliderUpdate="true"
                        v-on:connectShape="onConnectShape" :imageBase="imageBase">
                 <!--엘리먼트-->
-                <div v-for="(element, index) in value.definition" :key="index">
+                <div v-for="(element, index) in value.definition" :key="'definition'+index">
                     <component
                             v-if="index != null && element != null && element.elementView != undefined"
                             :is="getComponentByClassName(element._type)"
@@ -20,7 +20,7 @@
                             :ref="element.elementView.id"
                     ></component>
                 </div>
-                <div v-for="(element, index) in value.relation" :key="index">
+                <div v-for="(element, index) in value.relation" :key="'relation'+index">
                     <component
                             v-if="element != null"
                             :is="getComponentByClassName(element._type)"
@@ -908,6 +908,7 @@
 
                 if (edgeElement && from && to) {
                     var vertices = '[' + edgeElement.shape.geom.vertices.toString() + ']';
+
                     var componentInfo = {
                         component: 'kube-relation',
                         sourceElement: from.$parent,
@@ -918,6 +919,11 @@
                             style: JSON.stringify({}),
                             value: vertices,
                         }
+                    }
+
+                    // relation component
+                    if (from.$parent.value.relationComponent) {
+                        componentInfo.component = from.$parent.value.relationComponent
                     }
 
                     from.$parent.value.elementView.id = from.id;
@@ -935,10 +941,9 @@
                     }
                     // this.syncOthers();
                 }
-            }
-            ,
+            },
             modifyRelation(element) {
-                console.log(element)
+                // console.log(element)
                 if(element.sourceElement.connectableType != undefined) {
                     if(element.sourceElement.connectableType.indexOf(element.targetElement._type) != -1) {
                         return element
@@ -956,7 +961,7 @@
                 var vueComponent = me.getComponentByName(componentInfo.component);
                 var element;
 
-                if (componentInfo.component == 'kube-relation') {
+                if (componentInfo.relationView) {
                     //relation info setting before make
                     element = vueComponent.computed.createNew(
                         this.uuid(),
@@ -997,7 +1002,7 @@
                     } else {
                         me.value['relation'].push(element);
                         console.log("============== Storage Location Search Test 5-1 (Add Relation) ============= ")
-                        this.$EventBus.$emit('storage')
+                        // this.$EventBus.$emit('storage')
                     }
                 } else {
                     if (bounded != undefined) {

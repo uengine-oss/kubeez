@@ -93,7 +93,7 @@
 <script>
     import yaml from "js-yaml";
 
-    import YamlEditor from "./YamlEditor";
+    import YamlEditor from "../KubeYamlEditor";
     import NumberField from "./NumberField";
 
     export default {

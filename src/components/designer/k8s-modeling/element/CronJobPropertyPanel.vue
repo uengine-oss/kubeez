@@ -98,7 +98,7 @@
 <script>
     import yaml from "js-yaml";
 
-    import YamlEditor from "./YamlEditor";
+    import YamlEditor from "../KubeYamlEditor";
     import CronField from './CronField.vue';
 
     export default {

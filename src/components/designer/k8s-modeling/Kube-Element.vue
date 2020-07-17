@@ -105,7 +105,7 @@
                         }
 
                         if (me.value._type == 'org.uengine.modeling.model.Relation') {
-                            console.log(me.value.relationView.id)
+                            // console.log(me.value.relationView.id)
                             me.$EventBus.$emit(`${me.value.relationView.id}`, obj)
                         } else {
                             if (me.value.boundedContext == undefined) {
@@ -136,7 +136,6 @@
                     if (obj.state == "delete") {
                         me.deleteActivity(obj)
                     }
-
                 })
             } else if (me.value._type == 'org.uengine.modeling.model.Relation') {
                 me.$EventBus.$on(`${me.value.relationView.id}`, function (obj) {
@@ -407,7 +406,6 @@
             },
             changeStatusColor(status) {
                 var me = this
-                var designer = me.getComponent('kube-modeling-designer');
                 
                 if(status == 'success') {
                     me.deploySuccess = true
@@ -432,10 +430,8 @@
                 } else {
                     await designer.terminal()
                 }
-
-                // var code = 'kubectl get pods \n'
-                // me.$EventBus.$emit('sendCode', code)
             },
+
         }
     }
 </script>

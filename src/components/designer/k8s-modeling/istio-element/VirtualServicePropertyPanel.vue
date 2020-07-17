@@ -39,10 +39,6 @@
                                     label="Name"
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
-                                <v-text-field
-                                    label="Host"
-                                    v-model="value.object.spec.hosts[0]"
-                                ></v-text-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -58,7 +54,7 @@
 <script>
     import yaml from "js-yaml";
 
-    import YamlEditor from "./YamlEditor";
+    import YamlEditor from "../KubeYamlEditor";
 
     export default {
         name: 'property-panel',

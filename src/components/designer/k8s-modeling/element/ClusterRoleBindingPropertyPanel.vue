@@ -72,7 +72,7 @@
 <script>
     import yaml from "js-yaml";
 
-    import YamlEditor from "./YamlEditor";
+    import YamlEditor from "../KubeYamlEditor";
 
     export default {
         name: 'property-panel',

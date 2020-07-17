@@ -3,7 +3,7 @@
             :elementTypes="elementTypes"
             elementListBeanPath="classDefinitions"
             relationListBeanPath="relations"
-            relationVueComponentName="kube-relation"
+            relationVueComponentName="relation-abstract"
             ref="kuberDesigner"
     >
     </kube-modeling-designer>
@@ -12,9 +12,7 @@
 <script>
     export default {
         name: 'kube-designer',
-        props: {
-
-        },
+        props: {},
         data() {
             return {
                 value: {},

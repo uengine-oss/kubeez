@@ -119,7 +119,7 @@
                     },
                     outboundDestinationRules: [],
                     connectableType: [ "DestinationRule" ],
-                    routeType: "weight",
+                    relationComponent: "virtualservice-to-destinationrule",
                 }
             },
             name() {
@@ -147,7 +147,7 @@
                 } catch (e) {
                     return ""
                 }
-            }
+            },
         },
         data: function () {
             return {
@@ -169,7 +169,15 @@
                 }
 
                 if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement) {
-                    me.value.outboundDestinationRules.splice(me.value.outboundDestinationRules.indexOf(obj.element.targetElement), 1);
+                    me.value.outboundDestinationRules.splice(me.value.outboundDestinationRules.indexOf(obj.element.targetElement), 1)
+                }
+
+                if(obj.state=="updateRouteType" && obj.value) {
+                    me.setRouteType(obj)
+                }
+
+                if(obj.state=="updateWeight" && obj.value) {
+                    me.setWeight(obj)
                 }
             })
 
@@ -177,26 +185,63 @@
         watch: {
             outboundDestinationRuleNames() {
                 var me = this
-                me.value.object.spec.http = []
-                
                 var route = []
+                me.value.object.spec.http = []
                 me.value.object.spec.http.push({route})
                 
                 me.value.outboundDestinationRules.forEach(element => {
-                    var destination = [
-                        {
-                            "host": element.object.spec.host,
-                            "subset": element.object.spec.subsets[0].name
-                        }
-                    ]
                     me.value.object.spec.http[0].route.push({
-                        destination,
-                        weight: 0
+                        'destination': [
+                            {
+                                'host': element.object.spec.host,
+                                'subset': element.object.spec.subsets[0].name
+                            }
+                        ],
+                        'weight': 0
                     })
                 })
             },
         },
         methods: {
+            setRouteType(obj) {
+                var me = this
+                var index = me.value.outboundDestinationRules.findIndex(function(val) {
+                    return val == obj.value.targetElement
+                })
+                if(obj.value.routeType == 'mirror') {
+                    me.value.outboundDestinationRules.splice(index, 1)
+                    me.value.outboundDestinationRules.push(obj.value.targetElement)
+                    me.value.object.spec.http[0].route.splice(index, 1)
+                    me.value.object.spec.http[0].route.push({
+                        'mirror': [
+                            {
+                                'host': obj.value.targetElement.object.spec.host,
+                                'subset': obj.value.targetElement.object.spec.subsets[0].name
+                            }
+                        ]
+                    })
+                } else if(obj.value.routeType == 'weight') {
+                    me.value.outboundDestinationRules.splice(index, 1)
+                    me.value.outboundDestinationRules.push(obj.value.targetElement)
+                    me.value.object.spec.http[0].route.splice(index, 1)
+                    me.value.object.spec.http[0].route.push({
+                        'destination': [
+                            {
+                                'host': obj.value.targetElement.object.spec.host,
+                                'subset': obj.value.targetElement.object.spec.subsets[0].name
+                            }
+                        ],
+                        'weight': 0
+                    })
+                }
+            },
+            setWeight(obj) {
+                var me = this
+                var index = me.value.outboundDestinationRules.findIndex(function(val) {
+                    return val == obj.value.targetElement
+                })
+                me.value.object.spec.http[0].route[index].weight = Number(obj.value.weight)
+            }
         },
     }
 </script>
