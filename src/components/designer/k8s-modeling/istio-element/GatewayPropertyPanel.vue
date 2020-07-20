@@ -39,10 +39,19 @@
                                     label="Name"
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
+                                <number-field                                
+                                    :label="'Port'"
+                                    v-model="value.object.spec.servers[0].port.number"
+                                ></number-field>
                                 <v-text-field
-                                    label="Host"
-                                    v-model="value.object.spec.hosts[0]"
+                                    label="Server Name"
+                                    v-model="value.object.spec.servers[0].name"
                                 ></v-text-field>
+                                <v-select
+                                    label="Protocol"
+                                    :items="protocolList"
+                                    v-model="value.object.spec.servers[0].port.protocol"
+                                ></v-select>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -59,6 +68,7 @@
     import yaml from "js-yaml";
 
     import YamlEditor from "../KubeYamlEditor";
+    import NumberField from "../element/NumberField";
 
     export default {
         name: 'property-panel',
@@ -67,14 +77,16 @@
         },
         components: {
             "yaml-editor": YamlEditor,
+            "number-field": NumberField,
         },
         computed: {
             descriptionText() {
-                return 'VirtualService'
+                return 'DestinationRule'
             },
         },
         data: function () {
             return {
+                protocolList: [ "HTTP", "HTTPS", "HTTP2", "GRPC", "MONGO", "TCP", "TLS" ],
             }
         },
         watch: {

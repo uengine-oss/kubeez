@@ -21,23 +21,23 @@
                 v-on:removeShape="onRemoveShape(value)"
                 :label.sync="name"
                 :_style="{
-                    'label-angle':value.elementView.angle,
-                    'font-weight': 'bold','font-size': '16'
+                'label-angle':value.elementView.angle,
+                'font-weight': 'bold','font-size': '16'
                 }"
                 v-on:contextmenu.prevent.stop="handleClick($event)"
         >
 
+            <!--v-on:dblclick="$refs['dialog'].open()"-->
             <geometry-rect
                     :_style="{
                         'fill-r': 1,
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#326ce5',
-                        fill: '#326ce5',
+                        'stroke': '#ED73B6',
+                        fill: '#ED73B6',
                         'fill-opacity': 1,
-                        r: '1',
-                        'z-index': '998'
+                        r: '1'
                     }"
             ></geometry-rect>
 
@@ -54,22 +54,14 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'ClusterRoleBinding'">
+                        :text="'Gateway'">
                 </text-element>
-                <image-element
-                        :image="imgSrc"
-                        :sub-top="5"
-                        :sub-left="5"
-                        :sub-width="30"
-                        :sub-height="30">
-                </image-element>
             </sub-elements>
         </geometry-element>
 
-         <property-panel
-            v-if="openPanel"
-            v-model="value"
-            :img="imgSrc">
+        <property-panel
+                v-if="openPanel"
+                v-model="value">
         </property-panel>
 
         <vue-context-menu
@@ -83,14 +75,12 @@
 
 <script>
     import Element from '../Kube-Element'
-    import PropertyPanel from './ClusterRoleBindingPropertyPanel'
-    import ImageElement from "../../../opengraph/shape/ImageElement";
+    import PropertyPanel from './GatewayPropertyPanel'
 
     export default {
         mixins: [Element],
-        name: 'cluster-role-binding',
+        name: 'gateway',
         components: {
-            ImageElement,
             "property-panel": PropertyPanel
         },
         props: {},
@@ -99,16 +89,14 @@
                 return {}
             },
             className() {
-                return 'ClusterRoleBinding'
-            },
-            imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/crb.svg`
+                return 'Gateway'
             },
             createNew(elementId, x, y, width, height) {
                 return {
                     _type: this.className(),
                     name: '',
                     namespace: '',
+                    namespaceId: '',
                     elementView: {
                         '_type': this.className(),
                         'id': elementId,
@@ -120,27 +108,30 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "rbac.authorization.k8s.io/v1",
-                        "kind": "ClusterRoleBinding",
+                        "apiVersion": "networking.istio.io/v1alpha3",
+                        "kind": "Gateway",
                         "metadata": {
-                            "name": "",
+                            "name": ""
                         },
-                        "subjects": [
-                            {
-                                "kind": "",
-                                "name": "",
-                                "apiGroup": ""
-                            }
-                        ],
-                        "roleRef": {
-                            "kind": "ClusterRole",
-                            "name": "",
-                            "apiGroup": "rbac.authorization.k8s.io"
+                        "spec": {
+                            "selector": {
+                                "app": ""
+                            },
+                            "servers": [
+                                {
+                                    "port": {
+                                        "number": 80,
+                                        "name": "",
+                                        "protocol": ""
+                                    },
+                                    "hosts": []
+                                }
+                            ]
                         }
                     },
-                    status: null,
-                    connectableType: ["ClusterRole"],
-                    outboundRole: null,
+                    connectableType: [ "VirtualService" ],
+                    outboundVirtualServices: [],
+                    relationComponent: "kube-relation",
                 }
             },
             name() {
@@ -151,27 +142,24 @@
                 }
             },
             namespace: {
-                get: function() {
+                get: function () {
                     return this.value.object.metadata.namespace
                 },
-                set: function (newVal){
+                set: function (newVal) {
                     this.value.object.metadata.namespace = newVal
                 }
             },
-            outboundRoleName() {
+            outboundVirtualServiceNames() {
                 try {
-                    return this.value.outboundRole.object.metadata.name;
+                    var svcNames = ""
+                    this.value.outboundVirtualServices.forEach(element => {
+                        svcNames += element.object.metadata.name +  ","
+                    })
+                    return svcNames
                 } catch(e) {
-                    return "";
+                    return ""
                 }
-            },
-            subjectKind() {
-                try {
-                    return this.value.object.subjects[0].kind;
-                } catch(e) {
-                    return "";
-                }
-            },
+            }
         },
         data: function () {
             return {
@@ -183,49 +171,42 @@
         },
         created: function () {
         },
-        mounted(){
+        mounted: function () {
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
 
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement == "ClusterRole"){
-                    me.value.outboundRole = obj.element.targetElement;
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement
+                    && obj.element.targetElement._type == "VirtualService") {                    
+                    me.value.outboundVirtualServices.push(obj.element.targetElement)
                 }
 
                 if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement
-                    && obj.element.targetElement == "ClusterRole"){
-                    me.value.outboundRole = null;
+                    && obj.element.targetElement._type == "VirtualService") {
+                    me.value.outboundVirtualServices.splice(me.value.outboundVirtualServices.indexOf(obj.element.targetElement), 1)
                 }
 
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = "created"
-                    var designer = me.getComponent('kube-modeling-designer')
-                    clearInterval(designer.getStatus)
-                }
             })
 
         },
         watch: {
-            outboundRoleName(val) {
-                var me = this
-                me.value.object.roleRef.name = val
-                me.value.object.roleRef.kind = me.value.outboundRole.object.kind
+            name(appName) {
+                this.value.name = appName
             },
-            subjectKind(val) {
+            outboundVirtualServiceNames() {
                 var me = this
-                if(val == "User" || val == "ServiceAccount") {
-                    me.value.object.subjects[0].namespace = "default"
-                } else {
-                    delete me.value.object.subjects[0]["namespace"]
-                }
-            }
+                me.value.object.spec.servers[0].hosts = []
+
+                me.value.outboundVirtualServices.forEach(function(element) {
+                    me.value.object.spec.servers[0].hosts.push(element.object.spec.hosts[0])
+                })
+            },
         },
         methods: {
-        }
+        },
     }
 </script>
-  
+
 <style>
 
 </style>

@@ -125,7 +125,8 @@
                             ]
                         }
                     },
-                    connectableType: [],
+                    connectableType: [ "Service" ],
+                    outboundService: "",
                 }
             },
             name() {
@@ -141,6 +142,13 @@
                 },
                 set: function (newVal) {
                     this.value.object.metadata.namespace = newVal
+                }
+            },
+            outboundServiceName() {
+                try{
+                    return this.value.outboundService.object.metadata.name
+                } catch(e) {
+                    return ""
                 }
             }
         },
@@ -158,12 +166,27 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
+
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement
+                    && obj.element.targetElement._type == "Service") {                    
+                    me.value.outboundService = obj.element.targetElement
+                }
+
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement
+                    && obj.element.targetElement._type == "Service") {
+                    me.value.outboundService = ""
+                }
+
             })
 
         },
         watch: {
             name(appName) {
+                this.value.name = appName
             },
+            outboundServiceName(val) {
+                this.value.object.spec.host = val
+            }
         },
         methods: {
         },

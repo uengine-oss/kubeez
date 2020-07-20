@@ -17,7 +17,7 @@
         ></edge-element>
 
         <relation-panel
-                v-if="openPanel"
+                v-if="openPanel && isOpen"
                 v-model="value"
                 :titleName="'VirtualService To DestinationRule'"
         ></relation-panel>
@@ -64,20 +64,38 @@
                     },
                     sourceMultiplicity: 3,
                     targetMultiplicity: 3,
-                    routeType: 'weight',
+                    routeType: '',
                     weight: 0,
+                }
+            },
+            isOpen() {
+                if (this.value.sourceElement._type == 'VirtualService') {
+                    return true
+                }
+                return false
+            },
+            name() {
+                if(this.value.routeType == 'weight') {
+                    return this.value.routeType + "\n" + this.value.weight;
+                } else if(this.value.routeType == 'mirror') {
+                    return this.value.routeType
                 }
             },
         },
         data() {
-            return {}
+            return {
+            }
         },
         watch: {
+            name(value) {
+                this.value.name = value
+            }
         },
         mounted() {
             
         },
         methods: {
+
         }
     }
 </script>

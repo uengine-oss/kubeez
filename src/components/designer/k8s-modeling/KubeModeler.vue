@@ -152,6 +152,13 @@
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/crb-palette.svg`
                     },
                     {
+                        'component': 'gateway',
+                        'label': 'Gateway',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/event/external.png`
+                    },
+                    {
                         'component': 'virtual-service',
                         'label': 'VirtualService',
                         'width': '100',

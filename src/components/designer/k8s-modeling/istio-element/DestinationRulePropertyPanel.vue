@@ -43,6 +43,10 @@
                                     label="Host"
                                     v-model="value.object.spec.host"
                                 ></v-text-field>
+                                <v-text-field
+                                    label="Version Name"
+                                    v-model="value.object.spec.subsets[0].name"
+                                ></v-text-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>
