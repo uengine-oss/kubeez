@@ -156,35 +156,35 @@
                         'label': 'Gateway',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio.svg`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-gateway.svg`
                     },
                     {
                         'component': 'virtual-service',
                         'label': 'VirtualService',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio.svg`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-vsvc.svg`
                     },
                     {
                         'component': 'destination-rule',
                         'label': 'DestinationRule',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio.svg`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-drule.svg`
                     },
                     {
                         'component': 'service-entry',
                         'label': 'ServiceEntry',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio.svg`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-svcentry.svg`
                     },
                     {
                         'component': 'sidecar',
                         'label': 'Sidecar',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio.svg`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-sidecar.svg`
                     },
                 ],
             }

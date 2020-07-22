@@ -20,10 +20,10 @@
 </template>
 
 <script>
-    import Element from './RelationAbstract'
+    import Relation from '../RelationAbstract'
 
     export default {
-        mixins: [Element],
+        mixins: [Relation],
         name: 'kube-relation',
         props: {
             value: Object

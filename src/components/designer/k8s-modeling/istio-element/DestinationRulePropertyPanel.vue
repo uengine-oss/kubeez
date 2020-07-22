@@ -5,11 +5,15 @@
             <v-list class="pa-1">
                 <v-list-item>
                     <v-list-item-avatar>
-                        <!-- <img :src="img"> -->
+                        <img :src="img">
                     </v-list-item-avatar>
-                    <v-list-item-title class="headline">
-                        {{ value._type }}
-                    </v-list-item-title>
+                    <v-tabs v-model="activeTab">
+                        <v-tab
+                            v-for="(tab, idx) in tabs"
+                            :key="idx">
+                            <v-list-item-title>{{ tab }}</v-list-item-title>
+                        </v-tab>
+                    </v-tabs>
                     <v-tooltip left>
                         <template v-slot:activator="{ on }">
                             <v-btn icon v-on="on">
@@ -22,12 +26,12 @@
             </v-list>
 
             <v-list class="pt-0" dense flat>
-                <v-layout wrap>
+                <v-layout wrap v-if="activeTab == 0">
                     <v-flex grow style="width: 500px;">
                         <v-card flat>
                             <v-card-text>
                                 <yaml-editor
-                                    v-model="value.object">
+                                    v-model="propertyData">
                                 </yaml-editor>
                             </v-card-text>
                         </v-card>
@@ -51,6 +55,59 @@
                         </v-card>
                     </v-flex>
                 </v-layout>
+                <v-layout wrap v-else>
+                    <v-flex grow style="width: 500px;">
+                        <v-card flat>
+                            <v-card-text>
+                                <yaml-editor
+                                    v-model="trafficPolicy">
+                                </yaml-editor>
+                            </v-card-text>
+                        </v-card>
+                    </v-flex>
+                    <v-flex shrink style="width: 300px;">
+                        <v-card flat>
+                            <v-card-text>
+                                <number-field
+                                    :label="'Http1 Max Pending Requests'"
+                                    v-model="value.object.spec.trafficPolicy.connectionPool.http.http1MaxPendingRequests">
+                                </number-field>
+                                <v-radio-group 
+                                        label="Max Requests Per Connection"
+                                        v-model="maxRequestsPerConnection"
+                                        row dense>
+                                    <v-radio label="0" value="0" />
+                                    <v-radio label="1" value="1" />
+                                </v-radio-group>
+                                <number-field
+                                    :label="'Max Connections'"
+                                    v-model="value.object.spec.trafficPolicy.connectionPool.tcp.maxConnections">
+                                </number-field>
+
+                                <v-text-field
+                                    label="Base Ejection Time"
+                                    v-model="baseEjectionTime"
+                                    type="number"
+                                    suffix="s">
+                                </v-text-field>
+                                <number-field
+                                    :label="'Consecutive Errors'"
+                                    v-model="value.object.spec.trafficPolicy.outlierDetection.consecutiveErrors">
+                                </number-field>
+                                <v-text-field
+                                    label="Interval"
+                                    v-model="interval"
+                                    type="number"
+                                    suffix="s">
+                                </v-text-field>
+                                <number-field
+                                    :label="'Max Ejection Percent'"
+                                    v-model="value.object.spec.trafficPolicy.outlierDetection.maxEjectionPercent">
+                                </number-field>
+                            </v-card-text>
+                        </v-card>
+                    </v-flex>
+                </v-layout>
             </v-list>
 
         </v-navigation-drawer>
@@ -63,22 +120,75 @@
     import yaml from "js-yaml";
 
     import YamlEditor from "../KubeYamlEditor";
+    import NumberField from "../element/NumberField";
 
     export default {
         name: 'property-panel',
         props: {
             value: Object,
+            img: String,
         },
         components: {
             "yaml-editor": YamlEditor,
+            "number-field": NumberField,
         },
         computed: {
             descriptionText() {
                 return 'DestinationRule'
             },
+            propertyData: {
+                get() {
+                    var data = JSON.parse(JSON.stringify(this.value.object))
+                    delete data.spec.trafficPolicy
+                    return data
+                },
+                set() {
+                }
+            },
+            trafficPolicy: {
+                get() {
+                    var data = {}
+                    data.trafficPolicy = this.value.object.spec.trafficPolicy
+                    return data
+                },
+                set() {
+                }
+            },
+            maxRequestsPerConnection: {
+                get() {
+                    return String(this.value.object.spec.trafficPolicy.connectionPool.http.maxRequestsPerConnection)
+                },
+                set(val) {
+                    this.value.object.spec.trafficPolicy.connectionPool.http.maxRequestsPerConnection = Number(val)
+                }
+            },
+            baseEjectionTime: {
+                get() {
+                    var val = this.value.object.spec.trafficPolicy.outlierDetection.baseEjectionTime
+                    val = val.split('s')[0]
+                    return val
+                },
+                set(val) {
+                    var me = this
+                    me.value.object.spec.trafficPolicy.outlierDetection.baseEjectionTime = val + 's'
+                }
+            },
+            interval: {
+                get() {
+                    var val = this.value.object.spec.trafficPolicy.outlierDetection.interval
+                    val = val.split('s')[0]
+                    return val
+                },
+                set(val) {
+                    var me = this
+                    me.value.object.spec.trafficPolicy.outlierDetection.interval = val + 's'
+                }
+            },
         },
         data: function () {
             return {
+                activeTab: 0,
+                tabs: [ "DestinationRule Property", "TrafficPolicy(circuit breaker)" ],
             }
         },
         watch: {

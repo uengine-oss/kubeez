@@ -2,7 +2,7 @@
 </template>
 
 <script>
-    import Element from '../Kube-Element'
+    import Element from './Kube-Element'
 
     export default {
         mixins: [Element],

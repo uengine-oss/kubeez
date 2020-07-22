@@ -61,7 +61,8 @@
 
         <property-panel
                 v-if="openPanel"
-                v-model="value">
+                v-model="value"
+                :img="imgSrc">
         </property-panel>
 
         <vue-context-menu
@@ -85,6 +86,9 @@
         },
         props: {},
         computed: {
+            imgSrc() {
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+            },
             defaultStyle() {
                 return {}
             },
@@ -117,12 +121,29 @@
                             "host": "",
                             "subsets": [
                                 {
-                                    "name": "",
+                                    "name": "version1",
                                     "labels": {
                                         "version": "v1"
                                     }
                                 }
-                            ]
+                            ],
+                            "trafficPolicy": {
+                                "connectionPool": {
+                                    "http": {
+                                        "http1MaxPendingRequests": 1,
+                                        "maxRequestsPerConnection": 1
+                                    },
+                                    "tcp": {
+                                        "maxConnections": 1
+                                    }
+                                },
+                                "outlierDetection": {
+                                    "baseEjectionTime": "30s",
+                                    "consecutiveErrors": 5,
+                                    "interval": "10s",
+                                    "maxEjectionPercent": 10
+                                }
+                            }
                         }
                     },
                     connectableType: [ "Service" ],

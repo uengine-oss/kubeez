@@ -127,7 +127,7 @@
             storage: {
                 get() {
                     var val = this.value.object.spec.resources.requests.storage
-                    val = val.replace('Gi', '')
+                    val = val.replace(/Gi/gi, '')
                     return val
                 },
                 set(val) {
