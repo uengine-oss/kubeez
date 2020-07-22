@@ -34,8 +34,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#ED73B6',
-                        fill: '#ED73B6',
+                        'stroke': '#5FC08B',
+                        fill: '#5FC08B',
                         'fill-opacity': 1,
                         r: '1'
                     }"
@@ -54,7 +54,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'Gateway'">
+                        :text="'Sidecar'">
                 </text-element>
             </sub-elements>
         </geometry-element>
@@ -75,11 +75,11 @@
 
 <script>
     import Element from '../Kube-Element'
-    import PropertyPanel from './GatewayPropertyPanel'
+    import PropertyPanel from './SidecarPropertyPanel'
 
     export default {
         mixins: [Element],
-        name: 'gateway',
+        name: 'sidecar',
         components: {
             "property-panel": PropertyPanel
         },
@@ -89,7 +89,7 @@
                 return {}
             },
             className() {
-                return 'Gateway'
+                return 'Sidecar'
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -109,28 +109,18 @@
                     },
                     object: {
                         "apiVersion": "networking.istio.io/v1alpha3",
-                        "kind": "Gateway",
+                        "kind": "Sidecar",
                         "metadata": {
-                            "name": ""
+                            "name": "",
+                            "namespace": "istio-config"
                         },
                         "spec": {
-                            "selector": {
-                                "app": ""
-                            },
-                            "servers": [
-                                {
-                                    "port": {
-                                        "number": 80,
-                                        "name": "",
-                                        "protocol": ""
-                                    },
-                                    "hosts": []
-                                }
-                            ]
+                            "workloadSelector": {},
+                            "ingress": [],
+                            "egress": []
                         }
                     },
-                    connectableType: [ "VirtualService" ],
-                    outboundVirtualServices: [],
+                    connectableType: [],
                 }
             },
             name() {
@@ -148,17 +138,6 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-            outboundVirtualServiceNames() {
-                try {
-                    var svcNames = ""
-                    this.value.outboundVirtualServices.forEach(element => {
-                        svcNames += element.object.metadata.name +  ","
-                    })
-                    return svcNames
-                } catch(e) {
-                    return ""
-                }
-            }
         },
         data: function () {
             return {
@@ -174,31 +153,12 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement
-                    && obj.element.targetElement._type == "VirtualService") {                    
-                    me.value.outboundVirtualServices.push(obj.element.targetElement)
-                }
-
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement
-                    && obj.element.targetElement._type == "VirtualService") {
-                    me.value.outboundVirtualServices.splice(me.value.outboundVirtualServices.indexOf(obj.element.targetElement), 1)
-                }
-
             })
 
         },
         watch: {
             name(appName) {
                 this.value.name = appName
-            },
-            outboundVirtualServiceNames() {
-                var me = this
-                me.value.object.spec.servers[0].hosts = []
-
-                me.value.outboundVirtualServices.forEach(function(element) {
-                    me.value.object.spec.servers[0].hosts.push(element.object.spec.hosts[0])
-                })
             },
         },
         methods: {
@@ -207,5 +167,4 @@
 </script>
 
 <style>
-
 </style>

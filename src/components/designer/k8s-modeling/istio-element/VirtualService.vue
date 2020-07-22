@@ -120,6 +120,7 @@
                     outboundDestinationRules: [],
                     connectableType: [ "DestinationRule" ],
                     relationComponent: "virtualservice-to-destinationrule",
+                    inboundGateway: null,
                 }
             },
             name() {
@@ -145,6 +146,13 @@
                     })
                     return ruleNames
                 } catch (e) {
+                    return ""
+                }
+            },
+            gatewayName() {
+                try {
+                    return this.value.inboundGateway.object.metadata.name + ","
+                } catch(e) {
                     return ""
                 }
             },
@@ -182,12 +190,11 @@
 
                 if(obj.state=="addRelation" && obj.element && obj.element.sourceElement
                     && obj.element.sourceElement._type == "Gateway") {                    
-                    me.value.object.spec.gateways = []
-                    me.value.object.spec.gateways.push(obj.element.sourceElement.object.metadata.name)
+                    me.value.inboundGateway = obj.element.sourceElement
                 }
                 if(obj.state=="deleteRelation" && obj.element && obj.element.sourceElement
                     && obj.element.sourceElement._type == "Gateway") {
-                    me.value.object.spec.gateways = []
+                     me.value.inboundGateway = null
                 }
             })
 
@@ -210,6 +217,11 @@
                     })
                 })
             },
+            gatewayName() {
+                var me = this
+                me.value.object.spec.gateways = []
+                me.value.object.spec.gateways.push(me.value.inboundGateway.object.metadata.name)
+            }
         },
         methods: {
             setRouteType(obj) {

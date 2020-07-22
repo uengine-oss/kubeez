@@ -156,21 +156,35 @@
                         'label': 'Gateway',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/event/external.png`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio.svg`
                     },
                     {
                         'component': 'virtual-service',
                         'label': 'VirtualService',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/event/command.png`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio.svg`
                     },
                     {
                         'component': 'destination-rule',
                         'label': 'DestinationRule',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/event/event.png`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio.svg`
+                    },
+                    {
+                        'component': 'service-entry',
+                        'label': 'ServiceEntry',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio.svg`
+                    },
+                    {
+                        'component': 'sidecar',
+                        'label': 'Sidecar',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio.svg`
                     },
                 ],
             }

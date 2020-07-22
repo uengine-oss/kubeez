@@ -106,13 +106,15 @@
                 </v-row>
             </v-flex>
 
-            <v-card class="tools" style="top:100px; text-align: center;" max-height="450">
+            <v-card class="search-tool" max-height="45">
+                <span class="search-tool-icon">
+                    <v-icon @click="onSearchBox()" large>search</v-icon>
+                </span>
+            </v-card>
+            
+            <v-card class="tools" style="top:150px; text-align: center;" max-height="400">
                 <span class="bpmn-icon-hand-tool" v-bind:class="{ icons : !dragPageMovable, hands : dragPageMovable }"
                         v-on:click="toggleGrip">
-                </span>
-
-                <span class="tool-icon">
-                    <v-icon @click="onSearchBox($event)">search</v-icon>
                 </span>
 
                 <v-tooltip v-if="!isRead" right v-for="(item, key) in filterElementTypes" :key="key">
@@ -132,11 +134,12 @@
 
         </v-layout>
 
-        <v-card id="searchBox" width="200">
+        <v-card v-if="isSearch" class="searchBox" width="200" max-height="50">
             <v-text-field
                     class="mx-3"
-                    label="Search"
+                    label="Search Object"
                     v-model="searchKeyword"
+                    dense
             ></v-text-field>
         </v-card>
 
@@ -297,6 +300,7 @@
         },
         data() {
             return {
+                isSearch: false,
                 searchKeyword: '',
                 types: 'deployment',
                 plainText: "",
@@ -1304,6 +1308,7 @@
                             me.getStatusData(reqUrl, item)
                         }).catch(function (err) {
                             console.log(err)
+                            alert("Update failed")
                         })
                     } else {
                         me.$http.post(reqUrl, item.object).then(function (res) {
@@ -1313,6 +1318,7 @@
                             me.getStatusData(reqUrl, item)
                         }).catch(function (err) {
                             console.log(err)
+                            alert("Deploy failed")
                         })
                     }
                     
@@ -1399,16 +1405,9 @@
                     me.$EventBus.$emit('terminalOn', response.data.token)
                 })
             },
-            onSearchBox(event) {
-                var search = document.getElementById('searchBox')
-                
-                if(search.style.display == 'none') {
-                    search.style.left = (event.pageX + 45) + 'px'
-                    search.style.top = (event.pageY - 100) + 'px'
-                    search.style.display = 'block'
-                } else {
-                    search.style.display = 'none'
-                }
+            onSearchBox() {
+                var me = this
+                me.isSearch = !me.isSearch
             },
         }
     }
@@ -1455,12 +1454,6 @@
             overflow-x: hidden;
             overflow-y: auto;
 
-            .tool-icon {
-                font-size: 30px;
-                margin-top: 5px;
-                margin-bottom: 5px;
-            }
-
             .icons {
                 margin-top: 5px;
                 margin-bottom: 5px;
@@ -1469,6 +1462,22 @@
             .hands {
                 margin-top: 5px;
                 margin-bottom: 5px;
+            }
+        }
+
+        .search-tool {
+            position: absolute;
+            width: 50px;
+            height: 45px;
+            top: 90px;
+            left: 20px;
+            text-align: center;
+            overflow-x: hidden;
+            overflow-y: hidden;
+
+            .search-tool-icon > .v-icon {
+                font-size: 32px;
+                margin-top: 5px;
             }
         }
 
@@ -1537,6 +1546,12 @@
         }
     }
 
+    .searchBox {
+        top: 90px;
+        left: 80px;
+        position: absolute;
+    }
+
     .text-reader input[type="file"] { /* 파일 필드 숨기기 */
         position: absolute;
         width: 1px;
@@ -1594,14 +1609,6 @@
     /*    letter-spacing: 1px;*/
     /*    background: white;*/
     /*}*/
-
-    #searchBox {
-        top: 0;
-        left: 0;
-        position: absolute;
-        display: none;
-    }
-
 
     .video-list {
         height: 160px;
