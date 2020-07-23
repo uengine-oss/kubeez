@@ -135,9 +135,9 @@
             },
             name() {
                 try {
-                    return this.value.object.metadata.name;
+                    return this.value.object.metadata.name
                 } catch (e) {
-                    return "Untitled";
+                    return ""
                 }
             },
             namespace: {
