@@ -5,24 +5,59 @@
             <!--  상단 이미지 및 선택 타이틀 이름-->
             <v-list class="pa-1">
                 <v-list-item>
-                    <v-list-item-title class="headline">{{ titleName }}</v-list-item-title>
+                    <v-tabs v-model="activeTab">
+                        <v-tab
+                            v-for="(tab, idx) in tabs"
+                            :key="idx">
+                            <v-list-item-title>{{ tab }}</v-list-item-title>
+                        </v-tab>
+                    </v-tabs>
                 </v-list-item>
             </v-list>
 
             <v-list class="pt-0" dense flat>
-                <v-layout>
+                <v-layout wrap v-if="activeTab == 0">
                     <v-card-text>
-                        <v-radio-group v-model="routeType" row>
-                            <v-radio label="weight" value="weight"></v-radio>
-                            <v-radio label="mirror" value="mirror"></v-radio>
-                        </v-radio-group>
+                        <v-checkbox
+                            label="Mirror Traffic"
+                            v-model="isMirror"
+                        ></v-checkbox>
                         <v-text-field
-                            v-if="routeType == 'weight'"
+                            v-if="!isMirror"
                             label="weight"
-                            type="number"
                             v-model="weight"
+                            type="number"
+                            suffix="%"
                         ></v-text-field>
                     </v-card-text>
+                </v-layout>
+                <v-layout wrap v-else>
+                    <v-flex grow style="width: 350px;">
+                        <v-card flat>
+                            <v-card-text>
+                                <yaml-editor
+                                    v-model="value.sourceElement.object.spec.http[0]">
+                                </yaml-editor>
+                            </v-card-text>
+                        </v-card>
+                    </v-flex>
+                    <v-flex shrink style="width: 250px;">
+                        <v-card flat>
+                            <v-card-text>
+                                <number-field
+                                    :label="'Attempts'"
+                                    v-model="attempts"
+                                >
+                                </number-field>
+                                <v-text-field
+                                    label="PerTryTimeout"
+                                    v-model="perTryTimeout"
+                                    type="number"
+                                    suffix="s">
+                                </v-text-field>
+                            </v-card-text>
+                        </v-card>
+                    </v-flex>
                 </v-layout>
             </v-list>
 
@@ -35,55 +70,96 @@
 <script>
     import yaml from "js-yaml";
 
+    import NumberField from "../element/NumberField";
+
     export default {
         name: 'relation-panel',
         props: {
             value: Object,
             titleName: String,
         },
+        components: {
+            "number-field": NumberField,
+        },
         computed: {
-            routeType: {
+            isMirror: {
                 get() {
-                    return this.value.routeType
-                },
-                set(newVal) {
-                    var me = this
-                    var obj = {
-                        state: 'updateRouteType',
-                        value: {
-                            routeType: newVal,
-                            targetElement: me.value.targetElement
-                        }
+                    if(this.value.routeType == 'weight') {
+                        return false
+                    } else {
+                        return true
                     }
-                    me.value.routeType = newVal
-                    me.$EventBus.$emit(`${me.value.sourceElement.elementView.id}`, obj)
+                },
+                set(val) {
+                    var me = this
+                    if(val) {
+                        me.value.routeType = "mirror"
+                    } else {
+                        me.value.routeType = "weight"
+                    }
+                    var obj = {
+                        "routeType": me.value.routeType
+                    }
+                    me.updateSourceElement('updateRouteType', obj)
                 }
             },
             weight: {
                 get() {
                     return this.value.weight
                 },
-                set(newVal) {
-                    var me = this
+                set(val) {
+                    this.value.weight = val
                     var obj = {
-                        state: 'updateWeight',
-                        value: {
-                            weight: newVal,
-                            targetElement: me.value.targetElement
-                        }
+                        "weight": val
                     }
-                    me.value.weight = newVal
-                    me.$EventBus.$emit(`${me.value.sourceElement.elementView.id}`, obj)
+                    this.updateSourceElement('updateWeight', obj)
                 }
-            }
+            },
+            attempts: {
+                get() {
+                    return this.value.sourceElement.object.spec.http[0].retries.attempts
+                },
+                set(val) {
+                    this.value.sourceElement.object.spec.http[0].retries.attempts = val
+                    var obj = {
+                        "attempts": val
+                    }
+                    this.updateSourceElement('updateAttempts', obj)
+                }
+            },
+            perTryTimeout: {
+                get() {
+                    var val = this.value.sourceElement.object.spec.http[0].retries.perTryTimeout
+                    val = val.split('s')[0]
+                    return val
+                },
+                set(val) {
+                    this.value.sourceElement.object.spec.http[0].retries.perTryTimeout = val + 's'
+                    var obj = {
+                        "perTryTimeout": val
+                    }
+                    this.updateSourceElement('updatePerTryTimeout', obj)
+                }
+            },
         },
         data() {
             return {
+                activeTab: 0,
+                tabs: [ "Weight", "Retry" ],
             }
         },
         watch: {
         },
         methods: {
+            updateSourceElement(state, value) {
+                var me = this
+                var obj = {
+                    state: state,
+                    value: value
+                }
+                obj.value.targetElement = me.value.targetElement
+                me.$EventBus.$emit(`${me.value.sourceElement.elementView.id}`, obj)
+            }
         }
     }
 </script>

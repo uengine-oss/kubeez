@@ -25,15 +25,22 @@
 </template>
 
 <script>
-    import Element from '../element/RelationAbstract'
+    import Relation from '../RelationAbstract'
     import Panel from './VirtualSeviceToDestinationRulePanel'
 
     export default {
-        mixins: [Element],
+        mixins: [Relation],
         name: 'virtualservice-to-destinationrule',
         props: {},
         components: {
             'relation-panel': Panel,
+        },
+        created: function () {
+            var me = this
+            if (this.value && this.value.relationView) {
+                this.value.from = this.value.relationView.from;
+                this.value.to = this.value.relationView.to;
+            }
         },
         computed: {
             className() {
@@ -64,7 +71,7 @@
                     },
                     sourceMultiplicity: 3,
                     targetMultiplicity: 3,
-                    routeType: '',
+                    routeType: 'weight',
                     weight: 0,
                 }
             },
@@ -76,7 +83,7 @@
             },
             name() {
                 if(this.value.routeType == 'weight') {
-                    return this.value.routeType + "\n" + this.value.weight;
+                    return this.value.routeType + "\n" + this.value.weight + "%";
                 } else if(this.value.routeType == 'mirror') {
                     return this.value.routeType
                 }
@@ -89,10 +96,16 @@
         watch: {
             name(value) {
                 this.value.name = value
+            },
+            routeType() {
+                try {
+                    return this.value.weight
+                } catch(e) {
+                    return ""
+                }
             }
         },
         mounted() {
-            
         },
         methods: {
 

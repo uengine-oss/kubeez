@@ -85,6 +85,9 @@
         },
         props: {},
         computed: {
+            imgSrc() {
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+            },
             defaultStyle() {
                 return {}
             },
@@ -115,6 +118,14 @@
                         },
                         "spec": {
                             "hosts": [ "" ],
+                            "http": [
+                                {
+                                    "retries": {
+                                        "attempts": 1,
+                                        "perTryTimeout": "1s"
+                                    }
+                                }
+                            ],
                         },
                     },
                     outboundDestinationRules: [],
@@ -171,13 +182,11 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement
-                    && obj.element.targetElement._type == "DestinationRule") {                    
+                console.log(obj)
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRule") {                    
                     me.value.outboundDestinationRules.push(obj.element.targetElement)
                 }
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement
-                    && obj.element.targetElement._type == "DestinationRule") {
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRule") {
                     me.value.outboundDestinationRules.splice(me.value.outboundDestinationRules.indexOf(obj.element.targetElement), 1)
                 }
 
@@ -188,13 +197,11 @@
                     me.setWeight(obj)
                 }
 
-                if(obj.state=="addRelation" && obj.element && obj.element.sourceElement
-                    && obj.element.sourceElement._type == "Gateway") {                    
+                if(obj.state=="addRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "Gateway") {  
                     me.value.inboundGateway = obj.element.sourceElement
                 }
-                if(obj.state=="deleteRelation" && obj.element && obj.element.sourceElement
-                    && obj.element.sourceElement._type == "Gateway") {
-                     me.value.inboundGateway = null
+                if(obj.state=="deleteRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "Gateway") {
+                    me.value.inboundGateway = null
                 }
             })
 
@@ -202,12 +209,13 @@
         watch: {
             outboundDestinationRuleNames() {
                 var me = this
-                var route = []
-                me.value.object.spec.http = []
-                me.value.object.spec.http.push({route})
-                
+                if(!me.value.object.spec.http[1]) {
+                    var route = []
+                    me.value.object.spec.http.push({route})
+                }
+                me.value.object.spec.http[1].route = []
                 me.value.outboundDestinationRules.forEach(element => {
-                    me.value.object.spec.http[0].route.push({
+                    me.value.object.spec.http[1].route.push({
                         'destination': [
                             {
                                 'host': element.object.spec.host,
@@ -220,7 +228,9 @@
             gatewayName() {
                 var me = this
                 me.value.object.spec.gateways = []
-                me.value.object.spec.gateways.push(me.value.inboundGateway.object.metadata.name)
+                if(me.value.inboundGateway) {
+                    me.value.object.spec.gateways.push(me.value.inboundGateway.object.metadata.name)
+                }
             }
         },
         methods: {
@@ -231,9 +241,9 @@
                 })
                 if(obj.value.routeType == 'mirror') {
                     me.value.outboundDestinationRules.splice(index, 1)
-                    me.value.object.spec.http[0].route.splice(index, 1)
+                    me.value.object.spec.http[1].route.splice(index, 1)
                     me.value.outboundDestinationRules.push(obj.value.targetElement)
-                    me.value.object.spec.http[0].route.push({
+                    me.value.object.spec.http[1].route.push({
                         'mirror': [
                             {
                                 'host': obj.value.targetElement.object.spec.host,
@@ -243,16 +253,15 @@
                     })
                 } else if(obj.value.routeType == 'weight') {
                     me.value.outboundDestinationRules.splice(index, 1)
-                    me.value.object.spec.http[0].route.splice(index, 1)
+                    me.value.object.spec.http[1].route.splice(index, 1)
                     me.value.outboundDestinationRules.push(obj.value.targetElement)
-                    me.value.object.spec.http[0].route.push({
+                    me.value.object.spec.http[1].route.push({
                         'destination': [
                             {
                                 'host': obj.value.targetElement.object.spec.host,
                                 'subset': obj.value.targetElement.object.spec.subsets[0].name
                             }
-                        ],
-                        'weight': 0
+                        ]
                     })
                 }
             },
@@ -261,7 +270,7 @@
                 var index = me.value.outboundDestinationRules.findIndex(function(val) {
                     return val == obj.value.targetElement
                 })
-                me.value.object.spec.http[0].route[index].weight = Number(obj.value.weight)
+                me.value.object.spec.http[1].route[index].weight = Number(obj.value.weight)
             }
         },
     }

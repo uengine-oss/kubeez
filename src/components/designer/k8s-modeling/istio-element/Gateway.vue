@@ -152,7 +152,7 @@
                 try {
                     var svcNames = ""
                     this.value.outboundVirtualServices.forEach(element => {
-                        svcNames += element.object.metadata.name +  ","
+                        svcNames += element.object.spec.hosts[0] +  ","
                     })
                     return svcNames
                 } catch(e) {
