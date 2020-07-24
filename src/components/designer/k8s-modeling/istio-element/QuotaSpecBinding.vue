@@ -54,7 +54,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'Rule'">
+                        :text="'QuotaSpecBinding'">
                 </text-element>
             </sub-elements>
         </geometry-element>
@@ -76,11 +76,11 @@
 
 <script>
     import Element from '../Kube-Element'
-    import PropertyPanel from './RulePropertyPanel'
+    import PropertyPanel from './QuotaSpecBindingPropertyPanel'
 
     export default {
         mixins: [Element],
-        name: 'rule',
+        name: 'quota-spec-binding',
         components: {
             "property-panel": PropertyPanel
         },
@@ -90,7 +90,7 @@
                 return {}
             },
             className() {
-                return 'Rule'
+                return 'QuotaSpecBinding'
             },
             imgSrc() {
                 return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
@@ -112,23 +112,20 @@
                     },
                     object: {
                         "apiVersion": "config.istio.io/v1alpha2",
-                        "kind": "rule",
+                        "kind": "QuotaSpecBinding",
                         "metadata": {
-                            "name": "quota",
+                            "creationTimestamp": null,
+                            "name": "",
                             "namespace": "istio-system"
                         },
                         "spec": {
-                            "actions": [
-                                {
-                                    "handler": "handler.memquota",
-                                    "instances": [
-                                        "requestcount.quota"
-                                    ]
-                                }
-                            ]
+                            "quotaSpec": {},
+                            "services": []
                         }
                     },
-                    connectableType: [],
+                    connectableType: [ "QuotaSpec", "Service" ],
+                    outboundQuotaSpec: null1,
+                    outboundServices: [],
                 }
             },
             name() {
@@ -165,9 +162,6 @@
             })
         },
         watch: {
-            name(appName) {
-                this.value.name = appName
-            },
         },
         methods: {            
         }

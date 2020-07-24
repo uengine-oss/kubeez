@@ -117,7 +117,7 @@
                         v-on:click="toggleGrip">
                 </span>
 
-                <v-tooltip v-if="!isRead" right v-for="(item, key) in filterElementTypes" :key="key">
+                <v-tooltip right v-for="(item, key) in filterElementTypes" :key="key">
                     <template v-slot:activator="{ on }">
                         <span
                                 class="icons draggable"
@@ -125,7 +125,7 @@
                                 :_component="item.component"
                                 :_width="item.width"
                                 :_height="item.height">
-                        <img height="30px" width="30px" :src="item.src" v-on="on">
+                            <img height="30px" width="30px" :src="item.src" v-on="on">
                         </span>
                     </template>
                     <span>{{item.label}}</span>
@@ -511,11 +511,15 @@
             },
             filterElementTypes () {
                 var me = this
-                return me.elementTypes.filter(function (el) {
+                var result = me.elementTypes.filter(function (el) {
                     var name = el.label.toLowerCase()
                     var keyword = me.searchKeyword.toLowerCase()
                     return name.indexOf(keyword) != -1
                 })
+                if(result.length == 0) {
+                    result = me.elementTypes
+                }
+                return result
             }
 
         },

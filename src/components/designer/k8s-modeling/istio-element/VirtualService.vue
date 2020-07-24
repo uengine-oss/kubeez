@@ -182,7 +182,7 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                console.log(obj)
+                // console.log(obj)
                 if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRule") {                    
                     me.value.outboundDestinationRules.push(obj.element.targetElement)
                 }

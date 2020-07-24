@@ -163,6 +163,9 @@
             })
         },
         watch: {
+            name(appName) {
+                this.value.name = appName
+            },
         },
         methods: {            
         }

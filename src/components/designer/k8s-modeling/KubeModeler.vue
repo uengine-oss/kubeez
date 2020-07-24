@@ -200,6 +200,20 @@
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
                     },
+                    {
+                        'component': 'quota-spec',
+                        'label': 'QuotaSpec',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+                    },
+                    {
+                        'component': 'quota-spec-binding',
+                        'label': 'QuotaSpecBinding',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+                    },
                 ],
             }
         },

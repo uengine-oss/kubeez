@@ -121,10 +121,6 @@
                 },
                 set(val) {
                     this.value.sourceElement.object.spec.http[0].retries.attempts = val
-                    var obj = {
-                        "attempts": val
-                    }
-                    this.updateSourceElement('updateAttempts', obj)
                 }
             },
             perTryTimeout: {
@@ -135,10 +131,6 @@
                 },
                 set(val) {
                     this.value.sourceElement.object.spec.http[0].retries.perTryTimeout = val + 's'
-                    var obj = {
-                        "perTryTimeout": val
-                    }
-                    this.updateSourceElement('updatePerTryTimeout', obj)
                 }
             },
         },

@@ -54,7 +54,7 @@
                         :sub-height="30"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'Rule'">
+                        :text="'QuotaSpec'">
                 </text-element>
             </sub-elements>
         </geometry-element>
@@ -76,11 +76,11 @@
 
 <script>
     import Element from '../Kube-Element'
-    import PropertyPanel from './RulePropertyPanel'
+    import PropertyPanel from './QuotaSpecPropertyPanel'
 
     export default {
         mixins: [Element],
-        name: 'rule',
+        name: 'quota-spec',
         components: {
             "property-panel": PropertyPanel
         },
@@ -90,7 +90,7 @@
                 return {}
             },
             className() {
-                return 'Rule'
+                return 'QuotaSpec'
             },
             imgSrc() {
                 return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
@@ -112,23 +112,24 @@
                     },
                     object: {
                         "apiVersion": "config.istio.io/v1alpha2",
-                        "kind": "rule",
+                        "kind": "QuotaSpec",
                         "metadata": {
-                            "name": "quota",
+                            "creationTimestamp": null,
+                            "name": "request-count",
                             "namespace": "istio-system"
                         },
                         "spec": {
-                            "actions": [
-                                {
-                                    "handler": "handler.memquota",
-                                    "instances": [
-                                        "requestcount.quota"
-                                    ]
-                                }
-                            ]
+                            "spec": {
+                                "rules": [
+                                    {
+                                        "quotas": []
+                                    }
+                                ]
+                            }
                         }
                     },
-                    connectableType: [],
+                    connectableType: [ "Quota" ],
+                    outboundQuotas: [],
                 }
             },
             name() {
@@ -146,7 +147,17 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-
+            outboundQuotaNames() {
+                try {
+                    var quotaNames = ""
+                    this.value.outboundQuotas.forEach(element => {
+                        quotaNames += element.object.metadata.name +  ","
+                    })
+                    return quotaNames
+                } catch(e) {
+                    return ""
+                }
+            }
         },
         data: function () {
             return {
@@ -162,11 +173,29 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Quota") {                    
+                    me.value.outboundQuotas.push(obj.element.targetElement)
+                }
+
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Quota") {
+                    me.value.outboundQuotas.splice(me.value.outboundQuotas.indexOf(obj.element.targetElement), 1)
+                }
             })
         },
         watch: {
             name(appName) {
                 this.value.name = appName
+            },
+            outboundQuotaNames() {
+                var me = this
+                me.value.object.spec.spec.rules[0].quotas = []
+
+                me.value.outboundQuotas.forEach(function(element) {
+                    me.value.object.spec.spec.rules[0].quotas.push({
+                        "charge": 1,
+                        "quota": element.object.metadata.name
+                    })
+                })
             },
         },
         methods: {            
