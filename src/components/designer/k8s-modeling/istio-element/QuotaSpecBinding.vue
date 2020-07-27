@@ -119,12 +119,12 @@
                             "namespace": "istio-system"
                         },
                         "spec": {
-                            "quotaSpec": {},
+                            "quotaSpecs": [],
                             "services": []
                         }
                     },
                     connectableType: [ "QuotaSpec", "Service" ],
-                    outboundQuotaSpec: null1,
+                    outboundQuotaSpecs: [],
                     outboundServices: [],
                 }
             },
@@ -143,7 +143,28 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-
+            outboundQuotaSpecNames() {
+                try {
+                    var quotaSpecNames = ''
+                    this.value.outboundQuotaSpecs.forEach(element => {
+                        quotaSpecNames += element.object.metadata.name +  ","
+                    })
+                    return quotaSpecNames
+                } catch(e) {
+                    return ''
+                }
+            },
+            outboundServiceNames() {
+                try {
+                    var svcNames = ''
+                    this.value.outboundServices.forEach(element => {
+                        svcNames += element.object.metadata.name +  ","
+                    })
+                    return svcNames
+                } catch(e) {
+                    return ''
+                }
+            },
         },
         data: function () {
             return {
@@ -159,9 +180,49 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "QuotaSpec") {                    
+                    me.value.outboundQuotaSpecs.push(obj.element.targetElement)
+                }
+
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "QuotaSpec") {
+                    me.value.outboundQuotaSpecs.splice(me.value.outboundQuotaSpecs.indexOf(obj.element.targetElement), 1)
+                }
+
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {                    
+                    me.value.outboundServices.push(obj.element.targetElement)
+                }
+
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
+                    me.value.outboundServices.splice(me.value.outboundServices.indexOf(obj.element.targetElement), 1)
+                }
             })
         },
         watch: {
+            name(appName) {
+                this.value.name = appName
+            },
+            outboundQuotaSpecNames() {
+                var me = this
+                me.value.object.spec.quotaSpecs = []
+
+                me.value.outboundQuotaSpecs.forEach(function(element) {
+                    me.value.object.spec.quotaSpecs.push({
+                        "name": element.object.metadata.name,
+                        "namespace": element.object.metadata.namespace
+                    })
+                })
+            },
+            outboundServiceNames() {
+                var me = this
+                me.value.object.spec.services = []
+                
+                me.value.outboundServices.forEach(function(element) {
+                    me.value.object.spec.services.push({
+                        "name": element.object.metadata.name,
+                        "namespace": element.object.metadata.namespace
+                    })
+                })
+            }
         },
         methods: {            
         }
