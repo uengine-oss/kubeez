@@ -214,6 +214,13 @@
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
                     },
+                    {
+                        'component': 'memquota',
+                        'label': 'MemQuota',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+                    },
                 ],
             }
         },
