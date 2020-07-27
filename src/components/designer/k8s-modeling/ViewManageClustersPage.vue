@@ -14,6 +14,7 @@
                     <v-card-title>
                         {{ item.name }}
                         <v-spacer></v-spacer>
+                        <v-icon @click="deleteCluster(item)">delete</v-icon>
                     </v-card-title>
                     <v-card-text>
                         API Server : {{ item.apiServer }}
@@ -93,6 +94,7 @@
                             var clusterIds = Object.keys(snapshot.val())
                             clusterIds.forEach(function (clusterId, index) {
                                 var cluster = snapshot.val()[clusterId]
+                                cluster.clusterId = clusterId
                                 list.push(cluster)
                             })
                         }
@@ -123,6 +125,28 @@
                 
                 me.close()
             },
+            deleteCluster(val) {
+                if(!confirm('해당 클러스터를 삭제하시겠습니까?')) {
+                    return
+                }
+                
+                var me = this
+                var userId = localStorage.getItem('uid')
+                var clusterId = val.clusterId
+
+                if(localStorage.getItem('clusterName') == val.name) {
+                    localStorage.removeItem('clusterName')
+                    localStorage.removeItem('clusterAddress')
+                    localStorage.removeItem('kuberToken')
+                }
+
+                firebase.database().ref('userLists/').child(userId + '/clusters/' + clusterId).update({
+                    "name": null,
+                    "apiServer": null,
+                    "token": null
+                })
+                me.getClusterData()
+            },
             selectCluster(val) {
                 var me = this
 
@@ -140,7 +164,7 @@
                 me.clusterAddress = ''
                 me.kuberToken = ''
                 me.tokenDialog = false
-            }
+            },
         },
     }
 </script>
