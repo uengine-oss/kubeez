@@ -34,75 +34,48 @@
             <v-flex style="justify:end; align:start;">
                 <v-row justify="end" align="start" style="margin-right: 10px;">
                     
-                    <v-menu
-                            v-if="!isDeploy"
-                            class="pa-2"
-                            style="margin-right: 3px"
-                            open-on-hover
-                            offset-y
-                    >
+                    <v-text-field
+                            style="margin-right: 10px; margin-top: 20px; max-width: 180px"
+                            label="Cluster Name"
+                            v-model="clusterName"
+                            dense readonly
+                    ></v-text-field>
+                    <v-btn
+                            style="margin-right: 5px; margin-top: 15px;"
+                            color="cyan" dark
+                            @click="clusterDialog = true">
+                        <v-icon>settings</v-icon>
+                        Clusters
+                    </v-btn>
+                    
+                    <v-btn
+                            style="margin-right: 5px; margin-top: 15px;"
+                            color="primary" dark
+                            @click="deployDialog = true">
+                        <v-icon>{{ files.version }}</v-icon>
+                        {{ isDeploy ? 'Update' : 'Deploy' }}
+                    </v-btn>
+                
+                    <v-menu class="pa-2" style="margin-right: 3px" open-on-hover offset-y>
                         <template v-slot:activator="{ on }">
                             <v-btn
                                     style="margin-right: 5px;margin-top: 15px;"
-                                    color="primary"
-                                    dark
-                                    @click="deployDialogReady()"
-                                    v-on="on"
-                            >
-                                <v-icon>{{ files.version }}</v-icon>
-                                Deploy
-                            </v-btn>
-                        </template>
-                    </v-menu>
-                    <v-menu
-                            v-if="isDeploy"
-                            class="pa-2"
-                            style="margin-right: 3px"
-                            open-on-hover
-                            offset-y
-                    >
-                        <template v-slot:activator="{ on }">
-                            <v-btn
-                                    style="margin-right: 5px;margin-top: 15px;"
-                                    color="green"
-                                    dark
-                                    @click="deployDialogReady()"
-                                    v-on="on"
-                            >
-                                <v-icon>{{ files.version }}</v-icon>
-                                Update
-                            </v-btn>
-                        </template>
-                    </v-menu>
-
-                    <v-menu
-                            class="pa-2"
-                            style="margin-right: 3px"
-                            open-on-hover
-                            offset-y
-                    >
-                        <template v-slot:activator="{ on }">
-                            <v-btn
-                                    style="margin-right: 5px;margin-top: 15px;"
-                                    color="orange"
-                                    dark
+                                    color="orange" dark
                                     @click="codeModalShow()"
-                                    v-on="on"
-                            >
+                                    v-on="on">
                                 <v-icon> {{ files.code }}</v-icon>
                                 CODE
                             </v-btn>
                         </template>
                         <v-list>
                             <v-list-item
-                                    v-for="(item, index) in codeItems"
-                                    :key="index"
-                                    @click="functionSelect(item.title)"
-                            >
+                                    v-for="(item, index) in codeItems" :key="index"
+                                    @click="functionSelect(item.title)">
                                 <v-list-item-title>{{ item.title }}</v-list-item-title>
                             </v-list-item>
                         </v-list>
                     </v-menu>
+                    
                 </v-row>
             </v-flex>
 
@@ -151,7 +124,7 @@
                     </v-col>
                     <v-col :col="4">
                         <v-select
-                                :items="templateList"
+                                :items="templateTypes"
                                 v-model="template"
                                 label="Select Template"
                                 hide-details
@@ -191,7 +164,7 @@
                         </v-col>
                         <v-col>
                             <code-viewer
-                                    v-if="codeViewing"
+                                    v-if="codeView"
                                     v-model="openCode"
                             ></code-viewer>
                         </v-col>
@@ -213,7 +186,7 @@
                 <v-card-title class="headline">Generate Zip Archive</v-card-title>
                 <v-card-text>
                     <v-select
-                            :items="templateList"
+                            :items="templateTypes"
                             v-model="template"
                             label="Select Template"
                             hide-details
@@ -250,104 +223,74 @@
 
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="green darken-1" text @click="deploy()">Deploy</v-btn>
+                    <v-btn color="green darken-1" text @click="deployReady()">Deploy</v-btn>
                     <v-btn color="red darken-1" text @click="deployDialog = false">Cancel</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
 
+        <v-dialog v-model="clusterDialog" fullscreen hide-overlay transition="dialog-bottom-transition">
+            <v-card>
+                <v-toolbar dark color="primary">
+                    <v-toolbar-title>Manage Clusters</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items>
+                        <v-btn icon dark @click="clusterDialog = false">
+                            <v-icon>mdi-close</v-icon>
+                        </v-btn>
+                    </v-toolbar-items>
+                </v-toolbar>
+                <v-list three-line subheader>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <clusters @close="clusterDialog = false" v-model="clusterName" />
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+        </v-dialog>
 
     </div>
 
 </template>
 
 <script>
-    import TextReader from "@/components/yaml.vue";
-    import {
-        saveAs
-    } from 'file-saver';
-    import firebase from 'firebase'
+    import { saveAs } from 'file-saver'
     import * as io from 'socket.io-client'
-    import {codemirror} from 'vue-codemirror'
     import yaml from 'js-yaml'
     import json2yaml from 'json2yaml'
-    import 'codemirror/lib/codemirror.css'
-    import 'codemirror/theme/darcula.css'
-    import 'codemirror/mode/yaml/yaml.js'
-    import axios from 'axios'
 
     var fs = require('fs');
     var _ = require('lodash');
-    var Minio = require('minio');
-    var Base64 = require('js-base64').Base64;
-    var yamlpaser = require('js-yaml');
     var FileSaver = require('file-saver');
-    var changeCase = require('change-case');
-    var pluralize = require('pluralize');
     var JSZip = require('jszip')
 
 
     export default {
         name: 'kube-modeling-designer',
         components: {
-            TextReader,
             saveAs,
-            io,
-            codemirror
+            io
         },
         props: {
             elementTypes: Array
         },
         data() {
             return {
+                // clusters
+                clusterName: '',
+                clusterAddress: '',
+                kuberToken: '',
+                clusterDialog: false,
+                // search object
                 isSearch: false,
                 searchKeyword: '',
-                types: 'deployment',
-                plainText: "",
-                dashOpen: false,
-                //db permmsion
-                isMultiShare: false,
-                isMultiShareType: 'ReadOnly',
-                isMultiShareTypeList: ['ReadOnly', 'Write'],
-                shareDialog: false,
-                participantsUid: '',
-                participantsEmail: '',
-                participantsLists: [],
-                shareEveryOne: false,
-
-                isMyEdit: false,
-                isOtherEdit: false,
-
-                isShareSave: false,
-                loadingDialog: true,
-                codeViewing: false,
-                versionItems: [
-                    {title: 'Versions'},
-                ],
-                shareItems: [
-                    {title: 'Share'},
-                ],
-                saveItems: [
-                    {title: 'Save to Server'},
-                    {title: 'Download model File'}
-                ],
-                openItems: [
-                    {title: 'Open from Files'},
-                    // {title: 'open from Local'},
-                ],
+                // code view
+                codeView: false,
                 codeItems: [
                     {title: 'Code Preview'},
                     {title: 'Download Archive'},
                 ],
-                onlineSaveDialog: false,
-                onlineSaveComfirmDialog: false,
-                isLoadVersion: false,
-                //server
-                author: '', //uid
-                serverComment: '',
-                shareComment: '',
-                serverDate: '',
-                editing: true,
                 files: {
                     version: 'mdi-server',
                     code: 'mdi-code-array',
@@ -371,18 +314,8 @@
                     'definition': [],
                     'relation': []
                 },
-                previewValue: {
-                    'definition': [],
-                    'relation': []
-                },
                 projectName: '',
-                duplicateprojectName: false,
                 generateZipDialog: false,
-                //undo Redo
-                undoRedoStorage: 100,
-                undoRedoArray: [],
-                undoRedoIndex: 0,
-                undoRedoLastIndex: 0,
                 imageBase: 'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/symbol/',
                 //스낵바 옵션
                 snackbar: false,
@@ -390,80 +323,24 @@
                 mode: 'multi-line',
                 timeout: 6000,
                 text: '수정중입니다.',
-                //Zip
-                pathTmp: [],
-                gitCodeUrl: {},
-                //data structure
-                model: [],
-                fullPathList: [],
+                // data structure
                 treeList: [],
-                getCodeList: [],
                 openCode: [],
                 template: '',
-                templateList: ['Separate File', 'Single File', 'Separate File per kind', 'Helm'],
+                templateTypes: [ 'Separate File', 'Single File', 'Separate File per kind', 'Helm' ],
                 treeOpen: true,
-                gitUrl: '',
-                gitPath: [],
-                gitCode: [],
-                checkName: true,
                 // Children
                 drawer: false,
-                chatUid: '',
-                messageRef: {},
-                //version
-                versionList: [],
-                version: '',
-                revisionInfo: {},
-                showVersionsDialog: false,
-                //cluster
-                clusterName: '',
-                clusterAddress: '',
-                kuberToken: '',
                 //deploy
                 isDeploy: false,
-                getStatus: null,
                 deployDialog: false,
-                projectAuthor: '',
-                parmVersion: '',
+                getStatus: null,
+                // 
                 parmType: '',
                 parmProjectId: '',
                 parmUid: '',
-
-                //save projectId
-                newProjectId: '',
-                //view
-                viewSelect: {},
-                viewOpenId: '',
-                // viewRowAddDialog: false,
-                viewSelectType: 'cqrs',
-                entityActionList: ['create', 'update', 'delete'],
-                entityAction: '',
-                //view create
-                viewColumnTypeList: ['String', 'Integer', 'Double'],
-                selectEvent: [],
-                viewColumnType: '',
-                viewColumn: '',
-                sourceEventColumn: '',
-                defaultValue: '',
                 //edit
                 isRead: false,
-                //fork
-                forkDialog: false,
-                isUndoRedo: false,
-                connetServer: '',
-                roomId: "masez",
-                // img: null,
-                rtcLogin: false,
-                webrtcDialog: false,
-
-                //multi Edit
-                // isYourValueChange: true,
-                database: null,
-
-                isSelfEdit: true,
-                isLoad: false,
-                sharedCount: 0,
-
                 //helm chart
                 chartJson: {},
                 valuesJson: {},
@@ -474,36 +351,14 @@
         beforeDestroy: function () {
             var me = this
 
-            //rtc
-            // me.onLeave()
-
-            // me.database
-            //     .ref("/saver/sharedMulti/" + me.parmProjectId + "/" + me.parmVersion + '/participants')
-            //     .child(localStorage.getItem('uid'))
-            //     .remove()
-
-            //recevie off
-            //me.database.ref('value').off()
-
             //일정 시간 마다 가져오는 함수 멈추기
             clearInterval(me.connetServer);
 
             localStorage.removeItem('projectId')
             localStorage.removeItem('sharedMultiTimeStamp')
             // me.$EventBus.$emit('showSave')
-
         },
         computed: {
-
-            shareIconTypes() {
-                var me = this
-                if (me.isMultiShareType == 'ReadOnly') {
-                    return 'mdi-eye'
-                } else {
-                    return 'mdi-pencil'
-                }
-
-            },
             id: {
                 get: function () {
                     return this.projectName
@@ -525,19 +380,10 @@
         },
         created: function () {
             var me = this
-
-            //database db setting
-            me.database = firebase.database()
             window.io = io
 
-
-            me.roomId = 'msaez_' + me.parmProjectId
-
-
             var valueInit = {"definition": [], "relation": []}
-
             var userUid = localStorage.getItem('uid')
-
 
             if (me.parmType == 'local') {
                 localStorage.setItem('projectId', me.parmProjectId)
@@ -549,8 +395,6 @@
 
                 } else {
                     me.value = valueInit
-
-
                 }
             }
 
@@ -558,17 +402,11 @@
         mounted: function () {
             var me = this
 
-            me.$EventBus.$on('saveDialog', function () {
-                me.uploadServerDialog()
-            })
-
-            me.$EventBus.$on('login', function (newVal) {
-                if (newVal != null) {
-                    me.parmUid = localStorage.getItem('uid')
-                }
-
-
-            })
+            if (localStorage.getItem('kuberToken')) {
+                me.clusterName = localStorage.getItem('clusterName')
+                me.clusterAddress = localStorage.getItem('clusterAddress')
+                me.kuberToken = localStorage.getItem('kuberToken')
+            }
 
             //중간저장
             me.$EventBus.$on('storage', function (newVal) {
@@ -657,55 +495,12 @@
 
         },
         watch: {
-
-            checkValueRelation: {
-                deep: true,
-                handler: function (newVal, oldVal) {
-                    var me = this
-                    var delta
-
-
-                    if (me.isLoad == false) {
-                        if (me.isUndoRedo == false) {
-                            delta = jsondiffpatch.diff(oldVal, newVal);
-                            if (delta != undefined) {
-                                console.log("UndoRedo>>", delta)
-
-                                if (me.parmType != 'local') {
-                                    me.$EventBus.$emit('undoRedo', delta)
-
-                                } else {
-                                    me.$EventBus.$emit('undoRedo', delta)
-                                    me.$EventBus.$emit('storage')
-                                }
-                            }
-                        }
-                        me.isUndoRedo = false
-                    } else {
-                        me.isLoad = false
-                    }
-
-                }
-            },
             "projectName":
                 _.debounce(
                     function (newVal) {
                         this.$EventBus.$emit('storage')
                     }, 200
                 ),
-            messageRef:
-
-                function (newVal) {
-                    // var me = this
-                    // newVal.on('child_added', function (value) {
-                    //     // console.log(value.val())
-                    //     if (value.val().uid != localStorage.getItem('uid')) {
-                    //         var element = JSON.parse(value.val().value)
-                    //         me.editing = false;
-                    //         me.$EventBus.$emit(`${element.elementView.id}`, element)
-                    //     }
-                    // });
-                },
             async template() {
                 var me = this
                 me.getListSetting();
@@ -723,7 +518,7 @@
                 } else if (title == 'Download Archive') {
                     me.generateZipDialog = true
                 } else if (title == 'Deploy to Server') {
-                    me.deployDialogReady()
+                    me.deployDialog = true
                 }
             },
             async codeModalShow() {
@@ -732,10 +527,10 @@
                 await me.getListSetting()
 
                 me.$modal.show('codeModal');
-                me.codeViewing = true;
+                me.codeView = true;
             },
             codeModalhide() {
-                this.codeViewing = false;
+                this.codeView = false;
                 this.$modal.hide('code-modal');
             },
             copy: function () {
@@ -803,25 +598,6 @@
                         //초기화
                     }
                 }
-            },
-            download: function () {
-                var me = this;
-                // var text = JSON.stringify(me.value)
-                if (me.projectName.length < 1) {
-                    me.projectName = window.prompt("Please input your ProjectName")
-                }
-                var filename = this.projectName + '.json';
-                // localStorage.setItem('projectName', me.projectName)
-                // localStorage.setItem('loadData', JSON.stringify(me.value))
-
-                me.modelSetting().then(function () {
-                    var file = new File([JSON.stringify(me.model)], filename, {
-                        type: "text/json;charset=utf-8"
-                    });
-                    FileSaver.saveAs(file);
-                });
-
-
             },
             toggleGrip: function () {
                 this.dragPageMovable = !this.dragPageMovable;
@@ -1181,7 +957,7 @@
                         var code = me.treeList[0].code
                         var file = new File([code], filename, {type: "text/yaml;charset=utf-8"})
 
-                        FileSaver.saveAs(file);
+                        saveAs(file);
                     } else if (me.template == 'Helm') {
                         var name = me.treeList[0].name
                         var templates = []
@@ -1285,23 +1061,18 @@
                 me.treeList.push(folder)
 
             },
-            deployDialogReady() {
+            deployReady() {
                 var me = this
-
-                if (localStorage.getItem('kuberToken')) {
-                    me.clusterName = localStorage.getItem('clusterName')
-                    me.clusterAddress = localStorage.getItem('clusterAddress')
-                    me.kuberToken = localStorage.getItem('kuberToken')
-
-                    me.deployDialog = true
+                if (me.kuberToken) {
+                    me.deploy()
                 } else {
                     alert("클러스터 정보가 없습니다")
                 }
             },
-            async deploy() {
+            deploy() {
                 var me = this
 
-                await me.value.definition.forEach(function (item) {
+                me.value.definition.forEach(function (item) {
                     var reqUrl = me.getReqUrl(item)
                     
                     if (item.status) {
@@ -1325,9 +1096,7 @@
                             alert("Deploy failed")
                         })
                     }
-                    
                 })
-
                 me.deployDialog = false
             },
             deleteObj(item) {
@@ -1389,7 +1158,6 @@
                         me.$EventBus.$emit(`${element.elementView.id}`, obj)
                     }).catch(function (err) {
                         console.log(err)
-                        clearInterval(me.getStatus)
                     })
                 }, 200)
 

@@ -7,8 +7,6 @@ import store from './store'
 import './registerServiceWorker'
 import VueJWT from 'vuejs-jwt'
 import VModal from 'vue-js-modal'
-import EditYaml from './components/edityamlpage.vue'
-import textReader from './components/yaml.vue'
 import Opengraph from './components/opengraph'
 import KubeModeling from './components/designer/k8s-modeling'
 import Mustache from 'mustache'
@@ -22,10 +20,8 @@ import 'vue-simple-context-menu/dist/vue-simple-context-menu.css'
 import VueSimpleContextMenu from 'vue-simple-context-menu'
 
 //view
-
-import dashEditYaml from "./components/dashEdityamlpage.vue";
-import dashYaml from "./components/dashYaml.vue";
-import Login from "./components/Login.vue"
+import EditYaml from './components/edityamlpage.vue'
+import textReader from './components/yaml.vue'
 
 Vue.use(VueFriendlyIframe);
 Vue.use(VueWindow)
@@ -37,13 +33,9 @@ Vue.use(KubeModeling);
 Vue.use(VModal)
 Vue.use(TreeView)
 
-
-Vue.component('dashEditYaml', dashEditYaml)
-Vue.component('dashYaml', dashYaml)
-
+// component
 Vue.component('EditYaml', EditYaml)
 Vue.component('text-reader', textReader)
-Vue.component('Login', Login)
 Vue.component('vue-context-menu', VueSimpleContextMenu)
 
 // Vue.use(Metaworks4);
