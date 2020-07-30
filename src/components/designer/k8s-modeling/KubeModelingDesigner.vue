@@ -1170,7 +1170,7 @@
             },
             deployReady() {
                 var me = this
-                if (me.kuberToken) {
+                if (me.clusterInfo) {
                     me.deploy()
                 } else {
                     alert("클러스터 정보가 없습니다")

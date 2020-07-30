@@ -18,7 +18,7 @@
                     <v-card-title>
                         {{ item.name }}
                         <v-spacer></v-spacer>
-                        <v-icon @click="deleteCluster(item)">delete</v-icon>
+                        <v-icon @click.stop="deleteCluster(item)">delete</v-icon>
                     </v-card-title>
                     <v-card-text>
                         API Server : {{ item.apiServer }}

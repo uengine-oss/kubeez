@@ -97,8 +97,6 @@
             me.$EventBus.$on('terminalOn', function (val) {
                 if(!me.terminal) {
                     var token = val;
-                    // console.log(location.pathname)
-                    // me.terminalUrl = location.pathname + "terminal/?token=" + token;
                     me.terminalUrl = "http://35.225.49.251:8080/" + "terminal/?token=" + token
                     me.terminal = true;
                 }
@@ -109,9 +107,7 @@
             })
             me.$EventBus.$on('sendCode', function (val) {
                 if(me.terminal) {
-                    var iframe = document.getElementById('eventTerminal')
-                    iframe.contentWindow.postMessage('kubectl get po', me.terminalUrl)
-                    // iframe.dispatchEvent(new KeyboardEvent('keydown', 'kubectl get po'))
+                    // $('iframe').get(0).contentWindow.wt.term.term.send("kubectl get po \r")
                 }
             })
 
