@@ -7,7 +7,7 @@
     export default {
         name: 'clusters-base',
         props: {
-            value: String,
+            value: Object,
         },
         data() {
             return {
@@ -39,7 +39,7 @@
                 localStorage.setItem('clusterName', val.name)
                 localStorage.setItem('clusterAddress', val.apiServer)
                 localStorage.setItem('kuberToken', val.token)
-                me.$emit('input', val.name)
+                me.$emit('input', val)
                 me.$emit('close')
             },
             closeToken() {

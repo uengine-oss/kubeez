@@ -12,11 +12,9 @@
         <v-row>
             <v-col v-for="(item, index) in clustersList" :key="index" cols="6" md="4">
                 <v-card
-                        outlined
-                        class="mx-auto"
-                        max-width="400"
-                        max-height="400"
-                        @dblclick="selectCluster(item)">
+                        class="mx-auto" max-width="400" max-height="400" outlined
+                        :class="item.name == value.name ? 'selected' : ''"
+                        @click="selectCluster(item)">
                     <v-card-title>
                         {{ item.name }}
                         <v-spacer></v-spacer>
@@ -65,6 +63,8 @@
     </v-container>
 </template>
 
-<style>
-
+<style scoped>
+.selected {
+    background-color: #E0F7FA;
+}
 </style>

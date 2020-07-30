@@ -16,11 +16,6 @@
             },
             save() {
                 var me = this
-                
-                localStorage.setItem('clusterName', me.clusterName);
-                localStorage.setItem('clusterAddress', me.clusterAddress);
-                localStorage.setItem('kuberToken', me.kuberToken);
-
                 var cluster = {
                     "name" : me.clusterName,
                     "apiServer" : me.clusterAddress,

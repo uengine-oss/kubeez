@@ -31,7 +31,6 @@
                 var me = this
                 var userId = ''
                 var newClusterKey = ''
-                
                 var cluster = {
                     "name" : me.clusterName,
                     "apiServer" : me.clusterAddress,
@@ -40,15 +39,9 @@
 
                 userId = localStorage.getItem('uid')
                 newClusterKey = firebase.database().ref('userLists/').child(userId + '/clusters/').push().key
-
                 firebase.database().ref('userLists/').child(userId + '/clusters/' + newClusterKey).update(cluster)
 
-                localStorage.setItem('clusterName', me.clusterName);
-                localStorage.setItem('clusterAddress', me.clusterAddress);
-                localStorage.setItem('kuberToken', me.kuberToken);
-
                 await me.getData()
-                
                 me.closeToken()
             },
             deleteCluster(val) {

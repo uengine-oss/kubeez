@@ -36,16 +36,17 @@
                     
                     <v-text-field
                             style="margin-right: 10px; margin-top: 20px; max-width: 180px"
-                            label="Cluster Name"
-                            v-model="clusterName"
-                            dense readonly
+                            label="Project Name"
+                            v-model="projectName"
+                            dense
                     ></v-text-field>
+                    
                     <v-btn
                             style="margin-right: 5px; margin-top: 15px;"
                             color="cyan" dark
                             @click="clusterDialog = true">
                         <v-icon>settings</v-icon>
-                        Clusters
+                        {{ clusterInfo ? clusterInfo.name : '' }}
                     </v-btn>
                     
                     <v-btn
@@ -114,7 +115,6 @@
                     <template v-slot:activator="{ on }">
                          <span
                                  @click="changeCategory(categoryIndex)"
-                                 class="draggable"
                                  align="center"
                                  :_component="category[0].component"
                                  :_width="category[0].width"
@@ -289,17 +289,13 @@
                 <v-card-title class="headline">Deploy</v-card-title>
                 <v-card-text>
                     <v-text-field
-                            v-model="projectName"
-                            label="projectName"
-                    ></v-text-field>
-                    <v-text-field
                             label="cluster"
-                            :value="clusterName"
+                            v-model="clusterInfo.name"
                             readonly
                     ></v-text-field>
                     <v-text-field
                             label="API Server"
-                            :value="clusterAddress"
+                            v-model="clusterInfo.apiServer"
                             readonly
                     ></v-text-field>
                 </v-card-text>
@@ -326,7 +322,7 @@
                 <v-list three-line subheader>
                     <v-list-item>
                         <v-list-item-content>
-                            <clusters @close="clusterDialog = false" v-model="clusterName" />
+                            <clusters @close="clusterDialog = false" v-model="clusterInfo" />
                         </v-list-item-content>
                     </v-list-item>
                 </v-list>
@@ -361,9 +357,7 @@
         data() {
             return {
                 // clusters
-                clusterName: '',
-                clusterAddress: '',
-                kuberToken: '',
+                clusterInfo: {},
                 clusterDialog: false,
                 // search object
                 isSearch: false,
@@ -474,9 +468,11 @@
             var me = this
 
             if (localStorage.getItem('kuberToken')) {
-                me.clusterName = localStorage.getItem('clusterName')
-                me.clusterAddress = localStorage.getItem('clusterAddress')
-                me.kuberToken = localStorage.getItem('kuberToken')
+                me.clusterInfo = {
+                    'name': localStorage.getItem('clusterName'),
+                    'apiServer': localStorage.getItem('clusterAddress'),
+                    'token': localStorage.getItem('kuberToken')
+                }
             }
 
             this.$nextTick(function () {
