@@ -466,22 +466,9 @@
             var me = this
             window.io = io
 
-            var valueInit = {"definition": [], "relation": []}
             var userUid = localStorage.getItem('uid')
 
-            if (me.parmType == 'local') {
-                localStorage.setItem('projectId', me.parmProjectId)
-                me.projectName = localStorage.getItem('localSaveProjectName') != null ? localStorage.getItem('localSaveProjectName') : 'local'
-
-                me.isRead = false
-                if (localStorage.getItem('localLoadData') != null) {
-                    me.value = JSON.parse(localStorage.getItem('localLoadData'));
-
-                } else {
-                    me.value = valueInit
-                }
-            }
-
+            me.load();
         },
         mounted: function () {
             var me = this
@@ -491,27 +478,6 @@
                 me.clusterAddress = localStorage.getItem('clusterAddress')
                 me.kuberToken = localStorage.getItem('kuberToken')
             }
-
-            //중간저장
-            me.$EventBus.$on('storage', function (newVal) {
-                var saveDate = JSON.parse(JSON.stringify(me.value))
-                saveDate.definition = saveDate.definition.filter(n => n)
-                saveDate.relation = saveDate.relation.filter(n => n)
-
-                if (me.parmType == 'local') {
-                    //로컬 저장
-                    localStorage.removeItem('localLoadData')
-                    localStorage.removeItem('localSaveTime')
-                    localStorage.removeItem('localSaveProjectName')
-
-                    //local save
-                    localStorage.setItem('localLoadData', JSON.stringify(saveDate))
-                    localStorage.setItem('localSaveTime', me.getNowTime())
-                    localStorage.setItem('localSaveProjectName', me.projectName)
-
-                }
-
-            });
 
             this.$nextTick(function () {
                 // me.messageRef.on('child_added', function (value) {
@@ -579,6 +545,14 @@
 
         },
         watch: {
+            value: {
+                deep: true,
+                handler: _.debounce(function () {
+                        this.save();
+                    }, 300)
+
+            },
+
             "projectName":
                 _.debounce(
                     function (newVal) {
@@ -595,6 +569,37 @@
             }
         },
         methods: {
+
+            load(){
+                var me = this;
+                localStorage.setItem('projectId', me.parmProjectId)
+                me.projectName = localStorage.getItem('localSaveProjectName') != null ? localStorage.getItem('localSaveProjectName') : 'local'
+
+                me.isRead = false
+                if (localStorage.getItem('localLoadData') != null) {
+                    me.value = JSON.parse(localStorage.getItem('localLoadData'));
+
+                }
+
+            },
+
+            save() {
+                var me = this;
+                var saveData = JSON.parse(JSON.stringify(me.value))
+                saveData.definition = saveData.definition.filter(n => n)
+                saveData.relation = saveData.relation.filter(n => n)
+
+                //로컬 저장
+                localStorage.removeItem('localLoadData')
+                localStorage.removeItem('localSaveTime')
+                localStorage.removeItem('localSaveProjectName')
+
+                //local save
+                localStorage.setItem('localLoadData', JSON.stringify(saveData))
+                localStorage.setItem('localSaveTime', new Date())
+                localStorage.setItem('localSaveProjectName', me.projectName)
+
+            },
 
             changeCategory(key) {
                 console.log(key)
