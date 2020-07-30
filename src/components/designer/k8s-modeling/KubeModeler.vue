@@ -18,6 +18,19 @@
                 value: {},
                 url: '',
                 elementTypes: [
+                [
+                    {
+                        'component': 'Workload',
+                        'label': 'Workload',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/deploy-palette.svg`
+                    },
+                    {
+                        'component': 'namespace',
+                        'label': 'Namespace',
+                        'width': '400',
+                        'height': '400',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ns-palette.svg`
+                    },
                     {
                         'component': 'deployment',
                         'label': 'Deployment',
@@ -40,6 +53,27 @@
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pod-palette.svg`
                     },
                     {
+                        'component': 'statefulSet',
+                        'label': 'StatefulSet',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sts-palette.svg`
+                    },
+                    {
+                        'component': 'daemonSet',
+                        'label': 'DaemonSet',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ds-palette.svg`
+                    },
+                ],
+                [
+                    {
+                        'component': 'Routing',
+                        'label': 'Routing',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/svc-palette.svg`
+                    },
+                    {
                         'component': 'service',
                         'label': 'Service',
                         'width': '100',
@@ -52,6 +86,13 @@
                         'width': '100',
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ing-palette.svg`
+                    },
+                ],
+                [
+                    {
+                        'component': 'Persistence',
+                        'label': 'Persistence',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pv-palette.svg`
                     },
                     {
                         'component': 'persistent-volume',
@@ -74,12 +115,12 @@
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sc-palette.svg`
                     },
+                ],
+                [
                     {
-                        'component': 'namespace',
-                        'label': 'Namespace',
-                        'width': '400',
-                        'height': '400',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ns-palette.svg`
+                        'component': 'Job',
+                        'label': 'Job',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/job-palette.svg`
                     },
                     {
                         'component': 'job',
@@ -95,20 +136,13 @@
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/cronjob-palette.svg`
                     },
+                ],[
                     {
-                        'component': 'statefulSet',
-                        'label': 'StatefulSet',
-                        'width': '100',
-                        'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sts-palette.svg`
+                        'component': 'Configuration',
+                        'label': 'Configuration',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/cm-palette.svg`
                     },
-                    {
-                        'component': 'daemonSet',
-                        'label': 'DaemonSet',
-                        'width': '100',
-                        'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ds-palette.svg`
-                    },
+
                     {
                         'component': 'configMap',
                         'label': 'ConfigMap',
@@ -122,6 +156,12 @@
                         'width': '100',
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/secret-palette.svg`
+                    },
+                ],[
+                    {
+                        'component': 'Role Based Access Control',
+                        'label': 'Role',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/role-palette.svg`
                     },
                     {
                         'component': 'role',
@@ -150,6 +190,12 @@
                         'width': '100',
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/crb-palette.svg`
+                    },
+                ],[
+                    {
+                        'component': 'Istio',
+                        'label': 'Istio',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-gateway.svg`
                     },
                     {
                         'component': 'gateway',
@@ -221,6 +267,7 @@
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
                     },
+                ]
                 ],
             }
         },

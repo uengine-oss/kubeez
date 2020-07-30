@@ -79,13 +79,13 @@
                 </v-row>
             </v-flex>
 
-            <v-card class="search-tool" max-height="45">
+            <!-- <v-card class="search-tool" max-height="45">
                 <span class="search-tool-icon">
                     <v-icon @click="onSearchBox()" large>search</v-icon>
                 </span>
             </v-card>
-            
-            <v-card class="tools" style="top:150px; text-align: center;" max-height="400">
+             -->
+            <!-- <v-card class="tools" style="top:150px; text-align: center;" max-height="400">
                 <span class="bpmn-icon-hand-tool" v-bind:class="{ icons : !dragPageMovable, hands : dragPageMovable }"
                         v-on:click="toggleGrip">
                 </span>
@@ -103,7 +103,90 @@
                     </template>
                     <span>{{item.label}}</span>
                 </v-tooltip>
+            </v-card> -->
+
+            <v-card class="tools"
+                    style="top:100px; text-align: center;"
+
+            >
+                <v-tooltip right v-for="(category, categoryIndex) in elementTypes" :key="categoryIndex">
+
+                    <template v-slot:activator="{ on }">
+                         <span
+                                 @click="changeCategory(categoryIndex)"
+                                 class="draggable"
+                                 align="center"
+                                 :_component="category[0].component"
+                                 :_width="category[0].width"
+                                 :_height="category[0].height"
+                                 :_description="category[0].description"
+                                 :_label="category[0].label"
+                         >
+                             <img height="30px" width="30px" :src="category[0].src" v-on="on">
+                         </span>
+                    </template>
+
+                    <span>{{ category[0].component }}</span>
+
+                </v-tooltip>
+
+
             </v-card>
+
+            <div
+                    v-for="(category, categoryIndex) in elementTypes" :key="categoryIndex">
+
+                <div v-if="selectedCategoryIndex == categoryIndex">
+           
+                    <v-tooltip right v-for="(item, key) in category" :key="key">
+
+                        <template v-slot:activator="{ on }" v-if="key>0">
+                            <span
+                                    class="draggable"
+                                    align="center"
+                                    :_component="item.component"
+                                    :_width="item.width"
+                                    :_height="item.height"
+                                    :_description="item.description"
+                                    :_label="item.label"
+
+                                    @click="item.x = 500 + Math.random()*200; item.y=280 + Math.random()*150; addElement(item)"
+                                    :style="toolStyle(key, categoryIndex, category.length)"
+                            >
+                                <img valign="middle" style="vertical-align:middle; border: 2 solid grey; -webkit-box-shadow: 5px 5px 20px 0px rgba(0,0,0,0.75); -moz-box-shadow: 5px 5px 20px 0px rgba(0,0,0,0.40); box-shadow: 5px 5px 20px 0px rgba(0,0,0,0.40);" onmouseover="this.height=this.height*1.5;this.width=this.width*1.5;this.left=this.left-this.width*0.5;this.right=this.right-this.width*0.5;" onmouseout="this.height=this.height/1.5;this.width=this.width/1.5;this.left=this.left+this.width*0.5;this.right=this.right+this.width*0.5;" height="40px" width="40px" :src="item.src" v-on="on" border=2>
+                                <v-chip v-on="on">{{item.label}}</v-chip>
+
+                            </span>
+                        </template>
+
+                        <v-card
+                                class="mx-auto"
+                                max-width="500"
+                                outlined
+                        >
+                            <v-list-item three-line>
+                                <v-list-item-content>
+                                    <div class="overline mb-4">{{item.component}}</div>
+                                    <v-list-item-title class="headline mb-1">{{item.label}}</v-list-item-title>
+                                    <v-list-item-subtitle>{{item.description}}</v-list-item-subtitle>
+                                </v-list-item-content>
+
+                                <v-list-item-avatar
+                                        tile
+                                        size="80"
+                                        color="white"
+                                >
+                                    <v-img :src="item.src"></v-img>
+                                </v-list-item-avatar>
+
+                            </v-list-item>
+
+                        </v-card>
+                    </v-tooltip>
+
+                </div>
+            </div>
+
 
         </v-layout>
 
@@ -345,6 +428,7 @@
                 chartJson: {},
                 valuesJson: {},
                 elementIdList: [],
+                selectedCategoryIndex: null,
 
             }
         },
@@ -364,18 +448,18 @@
                     return this.projectName
                 }
             },
-            filterElementTypes () {
-                var me = this
-                var result = me.elementTypes.filter(function (el) {
-                    var name = el.label.toLowerCase()
-                    var keyword = me.searchKeyword.toLowerCase()
-                    return name.indexOf(keyword) != -1
-                })
-                if(result.length == 0) {
-                    result = me.elementTypes
-                }
-                return result
-            }
+            // filterElementTypes () {
+            //     var me = this
+            //     var result = me.elementTypes.filter(function (el) {
+            //         var name = el.label.toLowerCase()
+            //         var keyword = me.searchKeyword.toLowerCase()
+            //         return name.indexOf(keyword) != -1
+            //     })
+            //     if(result.length == 0) {
+            //         result = me.elementTypes
+            //     }
+            //     return result
+            // }
 
         },
         created: function () {
@@ -511,6 +595,28 @@
             }
         },
         methods: {
+
+            changeCategory(key) {
+                console.log(key)
+                var me = this
+                if (me.selectedCategoryIndex == key)
+                    me.selectedCategoryIndex = null;
+                else
+                    me.selectedCategoryIndex = key
+            },
+
+            toolStyle(cardIndex, categoryIndex, cardLength) {
+                var me = this
+                var angle =  (cardIndex - categoryIndex/10) * 40 / (cardLength +1) - 10;
+                var angle2 = cardIndex * 10 / cardLength - 3;
+                var radians = (Math.PI/ 180) * angle;
+
+                var curvedX = Math.cos(radians) * 500 - 500;
+                var curvedY = Math.sin(radians) * 700 + categoryIndex * 10 + 50;
+                
+                return `left: ${100 + curvedX}px; top: ${104 + curvedY}px; text-align: center; position: absolute; transform: rotate(${angle2}deg);`;
+            },
+
             functionSelect(title) {
                 var me = this
                 if (title == 'Code Preview') {
