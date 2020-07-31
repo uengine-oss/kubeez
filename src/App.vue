@@ -9,7 +9,7 @@
             <v-toolbar-title style="width: 700px" class="ml-0 pl-3">
                 <v-layout>
                     <v-btn text style="width: 150px; height: 50px;"  @click.native="$router.push('/')">
-                        <v-img contain  max-height=45 max-width=140 src="../public/static/image/logochange2.png"></v-img>
+                        <v-img contain  max-height=45 max-width=140 src="../public/static/image/kuberez_logo.png"></v-img>
                     </v-btn>
                 </v-layout>
             </v-toolbar-title>
