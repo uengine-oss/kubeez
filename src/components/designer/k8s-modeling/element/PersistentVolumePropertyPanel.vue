@@ -117,7 +117,7 @@
 <script>
     import yaml from "js-yaml";
 
-    import YamlEditor from "./YamlEditor";
+    import YamlEditor from "../KubeYamlEditor";
 
     export default {
         name: 'ingress-property-panel',
@@ -138,7 +138,7 @@
             storage: {
                 get() {
                     var val = this.value.object.spec.capacity.storage
-                    val = val.replace('Gi', '')
+                    val = val.replace(/Gi/gi, '')
                     return val
                 },
                 set(val) {

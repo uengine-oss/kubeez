@@ -1,5 +1,4 @@
 <template>
-
     <codemirror
             ref="myCm"
             :options="{
@@ -8,10 +7,7 @@
                 lineWrapping: true,
             }"
             v-model="yamlText"
-    >
-    </codemirror>
-
-
+    ></codemirror>
 </template>
 
 
@@ -27,7 +23,6 @@
         props: {
             value: Object
         },
-
         components: {
             codemirror
         },
@@ -43,13 +38,10 @@
                 temp_text: ''
             }
         },
-
         watch: {
             value: {
                 deep: true,
                 handler: function () {
-                    // console.log(this.value)
-                    // console.log(json2yaml.stringify(this.value))
                     this.yamlText = json2yaml.stringify(this.value)
                 }
             },
@@ -60,7 +52,6 @@
                     try {
                         me.temp_text = me.yamlText
                         me.cursor_pos = me.codemirror.getCursor("start")
-                        // me.jsonToUi()
                         this.$nextTick(function () {
                             me.codemirror.setCursor(me.cursor_pos)
                             me.codemirror.refresh()

@@ -61,7 +61,8 @@
 
         <property-panel
                 v-if="openPanel"
-                v-model="value">
+                v-model="value"
+                :img="imgSrc">
         </property-panel>
 
         <vue-context-menu
@@ -85,6 +86,9 @@
         },
         props: {},
         computed: {
+            imgSrc() {
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+            },
             defaultStyle() {
                 return {}
             },
@@ -117,15 +121,33 @@
                             "host": "",
                             "subsets": [
                                 {
-                                    "name": "",
+                                    "name": "version1",
                                     "labels": {
                                         "version": "v1"
                                     }
                                 }
-                            ]
+                            ],
+                            "trafficPolicy": {
+                                "connectionPool": {
+                                    "http": {
+                                        "http1MaxPendingRequests": 1,
+                                        "maxRequestsPerConnection": 1
+                                    },
+                                    "tcp": {
+                                        "maxConnections": 1
+                                    }
+                                },
+                                "outlierDetection": {
+                                    "baseEjectionTime": "30s",
+                                    "consecutiveErrors": 5,
+                                    "interval": "10s",
+                                    "maxEjectionPercent": 10
+                                }
+                            }
                         }
                     },
-                    connectableType: [],
+                    connectableType: [ "Service" ],
+                    outboundService: "",
                 }
             },
             name() {
@@ -141,6 +163,13 @@
                 },
                 set: function (newVal) {
                     this.value.object.metadata.namespace = newVal
+                }
+            },
+            outboundServiceName() {
+                try{
+                    return this.value.outboundService.object.metadata.name
+                } catch(e) {
+                    return ""
                 }
             }
         },
@@ -158,12 +187,27 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
+
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement
+                    && obj.element.targetElement._type == "Service") {                    
+                    me.value.outboundService = obj.element.targetElement
+                }
+
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement
+                    && obj.element.targetElement._type == "Service") {
+                    me.value.outboundService = ""
+                }
+
             })
 
         },
         watch: {
             name(appName) {
+                this.value.name = appName
             },
+            outboundServiceName(val) {
+                this.value.object.spec.host = val
+            }
         },
         methods: {
         },

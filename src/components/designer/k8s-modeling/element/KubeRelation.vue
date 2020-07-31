@@ -16,31 +16,15 @@
                 v-on:removeShape="onRemoveShape(value)"
         >
         </edge-element>
-
-        <!--        <uml-property-panel-->
-        <!--            v-if="value.sourceElement._type == 'org.uengine.uml.model.Class'"-->
-        <!--            v-model="value"-->
-        <!--            :titleName="'uml-Relation'"-->
-        <!--        ></uml-property-panel>-->
-
-        <relation-panel
-                v-if="openPanel && isOpen"
-                v-model="value"
-                :titleName="'Relation'"
-        ></relation-panel>
     </div>
 </template>
 
 <script>
-    import Element from '../Kube-Element'
-    import Panel from './KubeRelationPanel'
+    import Relation from '../RelationAbstract'
 
     export default {
-        mixins: [Element],
+        mixins: [Relation],
         name: 'kube-relation',
-        components: {
-            "relation-panel": Panel
-        },
         props: {
             value: Object
         },
@@ -50,12 +34,8 @@
                 this.value.from = this.value.relationView.from;
                 this.value.to = this.value.relationView.to;
             }
-
         },
         computed: {
-            defaultStyle() {
-                return {}
-            },
             className() {
                 return 'org.uengine.modeling.model.Relation'
             },
@@ -91,34 +71,6 @@
                     // drawer: false
                 }
             },
-            vertices: {
-                get: function () {
-                    var style;
-                    try {
-                        return JSON.parse(this.value.relationView.value);
-                    } catch (e) {
-                        return null;
-                    }
-                },
-                set: function (val) {
-                    this.value.relationView.value = JSON.stringify(val);
-                }
-            },
-            isView () {
-                var me = this
-                if (me.value.sourceElement._type != me.value.targetElement._type) {
-                    return true
-                } else {
-                    return false
-                }
-            },
-            isOpen() {
-                var me = this
-                if (me.value.sourceElement._type == 'VirtualService' && me.value.targetElement._type == 'DestinationRule') {
-                    return true
-                }
-                return false
-            }
         },
         data: function () {
             return {}
@@ -126,45 +78,8 @@
         watch: {
         },
         mounted: function () {
-            var me = this
-            console.log(me.value)
-            me.$EventBus.$on(`${me.value.relationView.id}`, function (obj) {
-                if (obj.state == 'delete' && obj.element._type == 'org.uengine.modeling.model.Relation') {
-                    me.deleteRelation()
-                }
-
-            })
-
-            var obj = {
-                state: "addRelation",
-                element: me.value
-            }
-            me.$EventBus.$emit(me.value.sourceElement.elementView.id, obj)
-            me.$EventBus.$emit(me.value.targetElement.elementView.id, obj)
-
         },
         methods: {
-            deleteRelation() {
-                var me = this
-
-                return new Promise(function (resolve) {
-                    me.$EventBus.$off(`${me.value.relationView.id}`);
-
-                    var obj = {
-                        state: "deleteRelation",
-                        element: me.value
-                    }
-                    if (me.value.from) {
-                        me.$EventBus.$emit(me.value.from, obj)
-                    }
-                    if (me.value.to) {
-                        me.$EventBus.$emit(me.value.to, obj)
-                    }
-
-                    me.$emit('update:value', null);
-                    resolve()
-                })
-            }
         }
     }
 </script>

@@ -188,11 +188,13 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
 
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement){
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
+                    && obj.element.targetElement == "ClusterRole"){
                     me.value.outboundRole = obj.element.targetElement;
                 }
 
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement){
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement
+                    && obj.element.targetElement == "ClusterRole"){
                     me.value.outboundRole = null;
                 }
 

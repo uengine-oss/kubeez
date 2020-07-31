@@ -106,7 +106,7 @@
 <script>
     import yaml from "js-yaml";
 
-    import YamlEditor from "./YamlEditor";
+    import YamlEditor from "../KubeYamlEditor";
 
     export default {
         name: 'property-panel',
@@ -127,7 +127,7 @@
             storage: {
                 get() {
                     var val = this.value.object.spec.resources.requests.storage
-                    val = val.replace('Gi', '')
+                    val = val.replace(/Gi/gi, '')
                     return val
                 },
                 set(val) {

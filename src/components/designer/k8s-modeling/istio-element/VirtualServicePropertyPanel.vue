@@ -5,7 +5,7 @@
             <v-list class="pa-1">
                 <v-list-item>
                     <v-list-item-avatar>
-                        <!-- <img :src="img"> -->
+                        <img :src="img">
                     </v-list-item-avatar>
                     <v-list-item-title class="headline">
                         {{ value._type }}
@@ -58,12 +58,13 @@
 <script>
     import yaml from "js-yaml";
 
-    import YamlEditor from "./YamlEditor";
+    import YamlEditor from "../KubeYamlEditor";
 
     export default {
         name: 'property-panel',
         props: {
             value: Object,
+            img: String,
         },
         components: {
             "yaml-editor": YamlEditor,

@@ -85,6 +85,9 @@
         },
         props: {},
         computed: {
+            imgSrc() {
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+            },
             defaultStyle() {
                 return {}
             },
@@ -115,11 +118,20 @@
                         },
                         "spec": {
                             "hosts": [ "" ],
+                            "http": [
+                                {
+                                    "retries": {
+                                        "attempts": 1,
+                                        "perTryTimeout": "1s"
+                                    }
+                                }
+                            ],
                         },
                     },
                     outboundDestinationRules: [],
                     connectableType: [ "DestinationRule" ],
-                    routeType: "weight",
+                    relationComponent: "virtualservice-to-destinationrule",
+                    inboundGateway: null,
                 }
             },
             name() {
@@ -143,11 +155,18 @@
                     this.value.outboundDestinationRules.forEach(element => {
                         ruleNames += element.object.spec.subsets[0].name +  ","
                     })
-                    return ruleNames;
+                    return ruleNames
                 } catch (e) {
                     return ""
                 }
-            }
+            },
+            gatewayName() {
+                try {
+                    return this.value.inboundGateway.object.metadata.name + ","
+                } catch(e) {
+                    return ""
+                }
+            },
         },
         data: function () {
             return {
@@ -163,13 +182,26 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement) {                    
+                // console.log(obj)
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRule") {                    
                     me.value.outboundDestinationRules.push(obj.element.targetElement)
                 }
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRule") {
+                    me.value.outboundDestinationRules.splice(me.value.outboundDestinationRules.indexOf(obj.element.targetElement), 1)
+                }
 
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement) {
-                    me.value.outboundDestinationRules.splice(me.value.outboundDestinationRules.indexOf(obj.element.targetElement), 1);
+                if(obj.state=="updateRouteType" && obj.value) {
+                    me.setRouteType(obj)
+                }
+                if(obj.state=="updateWeight" && obj.value) {
+                    me.setWeight(obj)
+                }
+
+                if(obj.state=="addRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "Gateway") {  
+                    me.value.inboundGateway = obj.element.sourceElement
+                }
+                if(obj.state=="deleteRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "Gateway") {
+                    me.value.inboundGateway = null
                 }
             })
 
@@ -177,26 +209,69 @@
         watch: {
             outboundDestinationRuleNames() {
                 var me = this
-                me.value.object.spec.http = []
-                
-                var route = []
-                me.value.object.spec.http.push({route})
-                
+                if(!me.value.object.spec.http[1]) {
+                    var route = []
+                    me.value.object.spec.http.push({route})
+                }
+                me.value.object.spec.http[1].route = []
                 me.value.outboundDestinationRules.forEach(element => {
-                    var destination = [
-                        {
-                            "host": element.object.spec.host,
-                            "subset": element.object.spec.subsets[0].name
-                        }
-                    ]
-                    me.value.object.spec.http[0].route.push({
-                        destination,
-                        weight: 0
+                    me.value.object.spec.http[1].route.push({
+                        'destination': [
+                            {
+                                'host': element.object.spec.host,
+                                'subset': element.object.spec.subsets[0].name
+                            }
+                        ]
                     })
                 })
             },
+            gatewayName() {
+                var me = this
+                me.value.object.spec.gateways = []
+                if(me.value.inboundGateway) {
+                    me.value.object.spec.gateways.push(me.value.inboundGateway.object.metadata.name)
+                }
+            }
         },
         methods: {
+            setRouteType(obj) {
+                var me = this
+                var index = me.value.outboundDestinationRules.findIndex(function(val) {
+                    return val == obj.value.targetElement
+                })
+                if(obj.value.routeType == 'mirror') {
+                    me.value.outboundDestinationRules.splice(index, 1)
+                    me.value.object.spec.http[1].route.splice(index, 1)
+                    me.value.outboundDestinationRules.push(obj.value.targetElement)
+                    me.value.object.spec.http[1].route.push({
+                        'mirror': [
+                            {
+                                'host': obj.value.targetElement.object.spec.host,
+                                'subset': obj.value.targetElement.object.spec.subsets[0].name
+                            }
+                        ]
+                    })
+                } else if(obj.value.routeType == 'weight') {
+                    me.value.outboundDestinationRules.splice(index, 1)
+                    me.value.object.spec.http[1].route.splice(index, 1)
+                    me.value.outboundDestinationRules.push(obj.value.targetElement)
+                    me.value.object.spec.http[1].route.push({
+                        'destination': [
+                            {
+                                'host': obj.value.targetElement.object.spec.host,
+                                'subset': obj.value.targetElement.object.spec.subsets[0].name
+                            }
+                        ]
+                    })
+                }
+            },
+            setWeight(obj) {
+                var me = this
+                var index = me.value.outboundDestinationRules.findIndex(function(val) {
+                    return val == obj.value.targetElement
+                })
+                me.value.object.spec.http[1].route[index].weight = Number(obj.value.weight)
+            }
         },
     }
 </script>

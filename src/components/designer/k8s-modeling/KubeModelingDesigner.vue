@@ -12,7 +12,7 @@
                        :connectable="!isRead" v-if="value" v-on:canvasReady="bindEvents" :autoSliderUpdate="true"
                        v-on:connectShape="onConnectShape" :imageBase="imageBase">
                 <!--엘리먼트-->
-                <div v-for="(element, index) in value.definition" :key="index">
+                <div v-for="(element, index) in value.definition" :key="'definition'+index">
                     <component
                             v-if="index != null && element != null && element.elementView != undefined"
                             :is="getComponentByClassName(element._type)"
@@ -20,7 +20,7 @@
                             :ref="element.elementView.id"
                     ></component>
                 </div>
-                <div v-for="(element, index) in value.relation" :key="index">
+                <div v-for="(element, index) in value.relation" :key="'relation'+index">
                     <component
                             v-if="element != null"
                             :is="getComponentByClassName(element._type)"
@@ -34,88 +34,64 @@
             <v-flex style="justify:end; align:start;">
                 <v-row justify="end" align="start" style="margin-right: 10px;">
                     
-                    <v-menu
-                            v-if="!isDeploy"
-                            class="pa-2"
-                            style="margin-right: 3px"
-                            open-on-hover
-                            offset-y
-                    >
+                    <v-text-field
+                            style="margin-right: 10px; margin-top: 20px; max-width: 180px"
+                            label="Project Name"
+                            v-model="projectName"
+                            dense
+                    ></v-text-field>
+                    
+                    <v-btn
+                            style="margin-right: 5px; margin-top: 15px;"
+                            color="cyan" dark
+                            @click="clusterDialog = true">
+                        <v-icon>settings</v-icon>
+                        {{ clusterInfo ? clusterInfo.name : '' }}
+                    </v-btn>
+                    
+                    <v-btn
+                            style="margin-right: 5px; margin-top: 15px;"
+                            color="primary" dark
+                            @click="deployDialog = true">
+                        <v-icon>{{ files.version }}</v-icon>
+                        {{ isDeploy ? 'Update' : 'Deploy' }}
+                    </v-btn>
+                
+                    <v-menu class="pa-2" style="margin-right: 3px" open-on-hover offset-y>
                         <template v-slot:activator="{ on }">
                             <v-btn
                                     style="margin-right: 5px;margin-top: 15px;"
-                                    color="primary"
-                                    dark
-                                    @click="deployDialogReady()"
-                                    v-on="on"
-                            >
-                                <v-icon>{{ files.version }}</v-icon>
-                                Deploy
-                            </v-btn>
-                        </template>
-                    </v-menu>
-                    <v-menu
-                            v-if="isDeploy"
-                            class="pa-2"
-                            style="margin-right: 3px"
-                            open-on-hover
-                            offset-y
-                    >
-                        <template v-slot:activator="{ on }">
-                            <v-btn
-                                    style="margin-right: 5px;margin-top: 15px;"
-                                    color="green"
-                                    dark
-                                    @click="deployDialogReady()"
-                                    v-on="on"
-                            >
-                                <v-icon>{{ files.version }}</v-icon>
-                                Update
-                            </v-btn>
-                        </template>
-                    </v-menu>
-
-                    <v-menu
-                            class="pa-2"
-                            style="margin-right: 3px"
-                            open-on-hover
-                            offset-y
-                    >
-                        <template v-slot:activator="{ on }">
-                            <v-btn
-                                    style="margin-right: 5px;margin-top: 15px;"
-                                    color="orange"
-                                    dark
+                                    color="orange" dark
                                     @click="codeModalShow()"
-                                    v-on="on"
-                            >
+                                    v-on="on">
                                 <v-icon> {{ files.code }}</v-icon>
                                 CODE
                             </v-btn>
                         </template>
                         <v-list>
                             <v-list-item
-                                    v-for="(item, index) in codeItems"
-                                    :key="index"
-                                    @click="functionSelect(item.title)"
-                            >
+                                    v-for="(item, index) in codeItems" :key="index"
+                                    @click="functionSelect(item.title)">
                                 <v-list-item-title>{{ item.title }}</v-list-item-title>
                             </v-list-item>
                         </v-list>
                     </v-menu>
+                    
                 </v-row>
             </v-flex>
 
-            <v-card class="tools" style="top:100px; text-align: center;" max-height="450">
+            <!-- <v-card class="search-tool" max-height="45">
+                <span class="search-tool-icon">
+                    <v-icon @click="onSearchBox()" large>search</v-icon>
+                </span>
+            </v-card>
+             -->
+            <!-- <v-card class="tools" style="top:150px; text-align: center;" max-height="400">
                 <span class="bpmn-icon-hand-tool" v-bind:class="{ icons : !dragPageMovable, hands : dragPageMovable }"
                         v-on:click="toggleGrip">
                 </span>
 
-                <span class="tool-icon">
-                    <v-icon @click="onSearchBox($event)">search</v-icon>
-                </span>
-
-                <v-tooltip v-if="!isRead" right v-for="(item, key) in filterElementTypes" :key="key">
+                <v-tooltip right v-for="(item, key) in filterElementTypes" :key="key">
                     <template v-slot:activator="{ on }">
                         <span
                                 class="icons draggable"
@@ -123,20 +99,103 @@
                                 :_component="item.component"
                                 :_width="item.width"
                                 :_height="item.height">
-                        <img height="30px" width="30px" :src="item.src" v-on="on">
+                            <img height="30px" width="30px" :src="item.src" v-on="on">
                         </span>
                     </template>
                     <span>{{item.label}}</span>
                 </v-tooltip>
+            </v-card> -->
+
+            <v-card class="tools"
+                    style="top:100px; text-align: center;"
+
+            >
+                <v-tooltip right v-for="(category, categoryIndex) in elementTypes" :key="categoryIndex">
+
+                    <template v-slot:activator="{ on }">
+                         <span
+                                 @click="changeCategory(categoryIndex)"
+                                 align="center"
+                                 :_component="category[0].component"
+                                 :_width="category[0].width"
+                                 :_height="category[0].height"
+                                 :_description="category[0].description"
+                                 :_label="category[0].label"
+                         >
+                             <img height="30px" width="30px" :src="category[0].src" v-on="on">
+                         </span>
+                    </template>
+
+                    <span>{{ category[0].component }}</span>
+
+                </v-tooltip>
+
+
             </v-card>
+
+            <div
+                    v-for="(category, categoryIndex) in elementTypes" :key="categoryIndex">
+
+                <div v-if="selectedCategoryIndex == categoryIndex">
+           
+                    <v-tooltip right v-for="(item, key) in category" :key="key">
+
+                        <template v-slot:activator="{ on }" v-if="key>0">
+                            <span
+                                    class="draggable"
+                                    align="center"
+                                    :_component="item.component"
+                                    :_width="item.width"
+                                    :_height="item.height"
+                                    :_description="item.description"
+                                    :_label="item.label"
+
+                                    @click="item.x = 500 + Math.random()*200; item.y=280 + Math.random()*150; addElement(item)"
+                                    :style="toolStyle(key, categoryIndex, category.length)"
+                            >
+                                <img valign="middle" style="vertical-align:middle; border: 2 solid grey; -webkit-box-shadow: 5px 5px 20px 0px rgba(0,0,0,0.75); -moz-box-shadow: 5px 5px 20px 0px rgba(0,0,0,0.40); box-shadow: 5px 5px 20px 0px rgba(0,0,0,0.40);" onmouseover="this.height=this.height*1.5;this.width=this.width*1.5;this.left=this.left-this.width*0.5;this.right=this.right-this.width*0.5;" onmouseout="this.height=this.height/1.5;this.width=this.width/1.5;this.left=this.left+this.width*0.5;this.right=this.right+this.width*0.5;" height="40px" width="40px" :src="item.src" v-on="on" border=2>
+                                <v-chip v-on="on">{{item.label}}</v-chip>
+
+                            </span>
+                        </template>
+
+                        <v-card
+                                class="mx-auto"
+                                max-width="500"
+                                outlined
+                        >
+                            <v-list-item three-line>
+                                <v-list-item-content>
+                                    <div class="overline mb-4">{{item.component}}</div>
+                                    <v-list-item-title class="headline mb-1">{{item.label}}</v-list-item-title>
+                                    <v-list-item-subtitle>{{item.description}}</v-list-item-subtitle>
+                                </v-list-item-content>
+
+                                <v-list-item-avatar
+                                        tile
+                                        size="80"
+                                        color="white"
+                                >
+                                    <v-img :src="item.src"></v-img>
+                                </v-list-item-avatar>
+
+                            </v-list-item>
+
+                        </v-card>
+                    </v-tooltip>
+
+                </div>
+            </div>
+
 
         </v-layout>
 
-        <v-card id="searchBox" width="200">
+        <v-card v-if="isSearch" class="searchBox" width="200" max-height="50">
             <v-text-field
                     class="mx-3"
-                    label="Search"
+                    label="Search Object"
                     v-model="searchKeyword"
+                    dense
             ></v-text-field>
         </v-card>
 
@@ -148,7 +207,7 @@
                     </v-col>
                     <v-col :col="4">
                         <v-select
-                                :items="templateList"
+                                :items="templateTypes"
                                 v-model="template"
                                 label="Select Template"
                                 hide-details
@@ -188,7 +247,7 @@
                         </v-col>
                         <v-col>
                             <code-viewer
-                                    v-if="codeViewing"
+                                    v-if="codeView"
                                     v-model="openCode"
                             ></code-viewer>
                         </v-col>
@@ -210,7 +269,7 @@
                 <v-card-title class="headline">Generate Zip Archive</v-card-title>
                 <v-card-text>
                     <v-select
-                            :items="templateList"
+                            :items="templateTypes"
                             v-model="template"
                             label="Select Template"
                             hide-details
@@ -230,120 +289,85 @@
                 <v-card-title class="headline">Deploy</v-card-title>
                 <v-card-text>
                     <v-text-field
-                            v-model="projectName"
-                            label="projectName"
-                    ></v-text-field>
-                    <v-text-field
                             label="cluster"
-                            :value="clusterName"
+                            v-model="clusterInfo.name"
                             readonly
                     ></v-text-field>
                     <v-text-field
                             label="API Server"
-                            :value="clusterAddress"
+                            v-model="clusterInfo.apiServer"
                             readonly
                     ></v-text-field>
                 </v-card-text>
 
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="green darken-1" text @click="deploy()">Deploy</v-btn>
+                    <v-btn color="green darken-1" text @click="deployReady()">Deploy</v-btn>
                     <v-btn color="red darken-1" text @click="deployDialog = false">Cancel</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
 
+        <v-dialog v-model="clusterDialog" fullscreen hide-overlay transition="dialog-bottom-transition">
+            <v-card>
+                <v-toolbar dark color="primary">
+                    <v-toolbar-title>Manage Clusters</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items>
+                        <v-btn icon dark @click="clusterDialog = false">
+                            <v-icon>mdi-close</v-icon>
+                        </v-btn>
+                    </v-toolbar-items>
+                </v-toolbar>
+                <v-list three-line subheader>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <clusters @close="clusterDialog = false" v-model="clusterInfo" />
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+        </v-dialog>
 
     </div>
 
 </template>
 
 <script>
-    import TextReader from "@/components/yaml.vue";
-    import {
-        saveAs
-    } from 'file-saver';
-    import firebase from 'firebase'
+    import { saveAs } from 'file-saver'
     import * as io from 'socket.io-client'
-    import {codemirror} from 'vue-codemirror'
     import yaml from 'js-yaml'
     import json2yaml from 'json2yaml'
-    import 'codemirror/lib/codemirror.css'
-    import 'codemirror/theme/darcula.css'
-    import 'codemirror/mode/yaml/yaml.js'
-    import axios from 'axios'
 
     var fs = require('fs');
     var _ = require('lodash');
-    var Minio = require('minio');
-    var Base64 = require('js-base64').Base64;
-    var yamlpaser = require('js-yaml');
     var FileSaver = require('file-saver');
-    var changeCase = require('change-case');
-    var pluralize = require('pluralize');
     var JSZip = require('jszip')
 
 
     export default {
         name: 'kube-modeling-designer',
         components: {
-            TextReader,
             saveAs,
-            io,
-            codemirror
+            io
         },
         props: {
             elementTypes: Array
         },
         data() {
             return {
+                // clusters
+                clusterInfo: {},
+                clusterDialog: false,
+                // search object
+                isSearch: false,
                 searchKeyword: '',
-                types: 'deployment',
-                plainText: "",
-                dashOpen: false,
-                //db permmsion
-                isMultiShare: false,
-                isMultiShareType: 'ReadOnly',
-                isMultiShareTypeList: ['ReadOnly', 'Write'],
-                shareDialog: false,
-                participantsUid: '',
-                participantsEmail: '',
-                participantsLists: [],
-                shareEveryOne: false,
-
-                isMyEdit: false,
-                isOtherEdit: false,
-
-                isShareSave: false,
-                loadingDialog: true,
-                codeViewing: false,
-                versionItems: [
-                    {title: 'Versions'},
-                ],
-                shareItems: [
-                    {title: 'Share'},
-                ],
-                saveItems: [
-                    {title: 'Save to Server'},
-                    {title: 'Download model File'}
-                ],
-                openItems: [
-                    {title: 'Open from Files'},
-                    // {title: 'open from Local'},
-                ],
+                // code view
+                codeView: false,
                 codeItems: [
                     {title: 'Code Preview'},
                     {title: 'Download Archive'},
                 ],
-                onlineSaveDialog: false,
-                onlineSaveComfirmDialog: false,
-                isLoadVersion: false,
-                //server
-                author: '', //uid
-                serverComment: '',
-                shareComment: '',
-                serverDate: '',
-                editing: true,
                 files: {
                     version: 'mdi-server',
                     code: 'mdi-code-array',
@@ -367,18 +391,8 @@
                     'definition': [],
                     'relation': []
                 },
-                previewValue: {
-                    'definition': [],
-                    'relation': []
-                },
                 projectName: '',
-                duplicateprojectName: false,
                 generateZipDialog: false,
-                //undo Redo
-                undoRedoStorage: 100,
-                undoRedoArray: [],
-                undoRedoIndex: 0,
-                undoRedoLastIndex: 0,
                 imageBase: 'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/symbol/',
                 //스낵바 옵션
                 snackbar: false,
@@ -386,100 +400,34 @@
                 mode: 'multi-line',
                 timeout: 6000,
                 text: '수정중입니다.',
-                //Zip
-                pathTmp: [],
-                gitCodeUrl: {},
-                //data structure
-                model: [],
-                fullPathList: [],
+                // data structure
                 treeList: [],
-                getCodeList: [],
                 openCode: [],
                 template: '',
-                templateList: ['Separate File', 'Single File', 'Separate File per kind', 'Helm'],
+                templateTypes: [ 'Separate File', 'Single File', 'Separate File per kind', 'Helm' ],
                 treeOpen: true,
-                gitUrl: '',
-                gitPath: [],
-                gitCode: [],
-                checkName: true,
                 // Children
                 drawer: false,
-                chatUid: '',
-                messageRef: {},
-                //version
-                versionList: [],
-                version: '',
-                revisionInfo: {},
-                showVersionsDialog: false,
-                //cluster
-                clusterName: '',
-                clusterAddress: '',
-                kuberToken: '',
                 //deploy
                 isDeploy: false,
-                getStatus: null,
                 deployDialog: false,
-                projectAuthor: '',
-                parmVersion: '',
+                getStatus: null,
+                // 
                 parmType: '',
                 parmProjectId: '',
                 parmUid: '',
-
-                //save projectId
-                newProjectId: '',
-                //view
-                viewSelect: {},
-                viewOpenId: '',
-                // viewRowAddDialog: false,
-                viewSelectType: 'cqrs',
-                entityActionList: ['create', 'update', 'delete'],
-                entityAction: '',
-                //view create
-                viewColumnTypeList: ['String', 'Integer', 'Double'],
-                selectEvent: [],
-                viewColumnType: '',
-                viewColumn: '',
-                sourceEventColumn: '',
-                defaultValue: '',
                 //edit
                 isRead: false,
-                //fork
-                forkDialog: false,
-                isUndoRedo: false,
-                connetServer: '',
-                roomId: "masez",
-                // img: null,
-                rtcLogin: false,
-                webrtcDialog: false,
-
-                //multi Edit
-                // isYourValueChange: true,
-                database: null,
-
-                isSelfEdit: true,
-                isLoad: false,
-                sharedCount: 0,
-
                 //helm chart
                 chartJson: {},
                 valuesJson: {},
                 elementIdList: [],
+                selectedCategoryIndex: null,
 
             }
         },
         beforeDestroy: function () {
             var me = this
-
-            //rtc
-            // me.onLeave()
-
-            // me.database
-            //     .ref("/saver/sharedMulti/" + me.parmProjectId + "/" + me.parmVersion + '/participants')
-            //     .child(localStorage.getItem('uid'))
-            //     .remove()
-
-            //recevie off
-            //me.database.ref('value').off()
 
             //일정 시간 마다 가져오는 함수 멈추기
             clearInterval(me.connetServer);
@@ -487,101 +435,45 @@
             localStorage.removeItem('projectId')
             localStorage.removeItem('sharedMultiTimeStamp')
             // me.$EventBus.$emit('showSave')
-
         },
         computed: {
-
-            shareIconTypes() {
-                var me = this
-                if (me.isMultiShareType == 'ReadOnly') {
-                    return 'mdi-eye'
-                } else {
-                    return 'mdi-pencil'
-                }
-
-            },
             id: {
                 get: function () {
                     return this.projectName
                 }
             },
-            filterElementTypes () {
-                var me = this
-                return me.elementTypes.filter(function (el) {
-                    var name = el.label.toLowerCase()
-                    var keyword = me.searchKeyword.toLowerCase()
-                    return name.indexOf(keyword) != -1
-                })
-            }
+            // filterElementTypes () {
+            //     var me = this
+            //     var result = me.elementTypes.filter(function (el) {
+            //         var name = el.label.toLowerCase()
+            //         var keyword = me.searchKeyword.toLowerCase()
+            //         return name.indexOf(keyword) != -1
+            //     })
+            //     if(result.length == 0) {
+            //         result = me.elementTypes
+            //     }
+            //     return result
+            // }
 
         },
         created: function () {
             var me = this
-
-            //database db setting
-            me.database = firebase.database()
             window.io = io
-
-
-            me.roomId = 'msaez_' + me.parmProjectId
-
-
-            var valueInit = {"definition": [], "relation": []}
 
             var userUid = localStorage.getItem('uid')
 
-
-            if (me.parmType == 'local') {
-                localStorage.setItem('projectId', me.parmProjectId)
-                me.projectName = localStorage.getItem('localSaveProjectName') != null ? localStorage.getItem('localSaveProjectName') : 'local'
-
-                me.isRead = false
-                if (localStorage.getItem('localLoadData') != null) {
-                    me.value = JSON.parse(localStorage.getItem('localLoadData'));
-
-                } else {
-                    me.value = valueInit
-
-
-                }
-            }
-
+            me.load();
         },
         mounted: function () {
             var me = this
 
-            me.$EventBus.$on('saveDialog', function () {
-                me.uploadServerDialog()
-            })
-
-            me.$EventBus.$on('login', function (newVal) {
-                if (newVal != null) {
-                    me.parmUid = localStorage.getItem('uid')
+            if (localStorage.getItem('kuberToken')) {
+                me.clusterInfo = {
+                    'name': localStorage.getItem('clusterName'),
+                    'apiServer': localStorage.getItem('clusterAddress'),
+                    'token': localStorage.getItem('kuberToken')
                 }
-
-
-            })
-
-            //중간저장
-            me.$EventBus.$on('storage', function (newVal) {
-                var saveDate = JSON.parse(JSON.stringify(me.value))
-                saveDate.definition = saveDate.definition.filter(n => n)
-                saveDate.relation = saveDate.relation.filter(n => n)
-
-                if (me.parmType == 'local') {
-                    //로컬 저장
-                    localStorage.removeItem('localLoadData')
-                    localStorage.removeItem('localSaveTime')
-                    localStorage.removeItem('localSaveProjectName')
-
-                    //local save
-                    localStorage.setItem('localLoadData', JSON.stringify(saveDate))
-                    localStorage.setItem('localSaveTime', me.getNowTime())
-                    localStorage.setItem('localSaveProjectName', me.projectName)
-
-                }
-
-            });
+            }
 
             this.$nextTick(function () {
                 // me.messageRef.on('child_added', function (value) {
@@ -649,55 +541,20 @@
 
         },
         watch: {
-
-            checkValueRelation: {
+            value: {
                 deep: true,
-                handler: function (newVal, oldVal) {
-                    var me = this
-                    var delta
+                handler: _.debounce(function () {
+                        this.save();
+                    }, 300)
 
-
-                    if (me.isLoad == false) {
-                        if (me.isUndoRedo == false) {
-                            delta = jsondiffpatch.diff(oldVal, newVal);
-                            if (delta != undefined) {
-                                console.log("UndoRedo>>", delta)
-
-                                if (me.parmType != 'local') {
-                                    me.$EventBus.$emit('undoRedo', delta)
-
-                                } else {
-                                    me.$EventBus.$emit('undoRedo', delta)
-                                    me.$EventBus.$emit('storage')
-                                }
-                            }
-                        }
-                        me.isUndoRedo = false
-                    } else {
-                        me.isLoad = false
-                    }
-
-                }
             },
+
             "projectName":
                 _.debounce(
                     function (newVal) {
                         this.$EventBus.$emit('storage')
                     }, 200
                 ),
-            messageRef:
-
-                function (newVal) {
-                    // var me = this
-                    // newVal.on('child_added', function (value) {
-                    //     // console.log(value.val())
-                    //     if (value.val().uid != localStorage.getItem('uid')) {
-                    //         var element = JSON.parse(value.val().value)
-                    //         me.editing = false;
-                    //         me.$EventBus.$emit(`${element.elementView.id}`, element)
-                    //     }
-                    // });
-                },
             async template() {
                 var me = this
                 me.getListSetting();
@@ -708,6 +565,59 @@
             }
         },
         methods: {
+
+            load(){
+                var me = this;
+                localStorage.setItem('projectId', me.parmProjectId)
+                me.projectName = localStorage.getItem('localSaveProjectName') != null ? localStorage.getItem('localSaveProjectName') : 'local'
+
+                me.isRead = false
+                if (localStorage.getItem('localLoadData') != null) {
+                    me.value = JSON.parse(localStorage.getItem('localLoadData'));
+
+                }
+
+            },
+
+            save() {
+                var me = this;
+                var saveData = JSON.parse(JSON.stringify(me.value))
+                saveData.definition = saveData.definition.filter(n => n)
+                saveData.relation = saveData.relation.filter(n => n)
+
+                //로컬 저장
+                localStorage.removeItem('localLoadData')
+                localStorage.removeItem('localSaveTime')
+                localStorage.removeItem('localSaveProjectName')
+
+                //local save
+                localStorage.setItem('localLoadData', JSON.stringify(saveData))
+                localStorage.setItem('localSaveTime', new Date())
+                localStorage.setItem('localSaveProjectName', me.projectName)
+
+            },
+
+            changeCategory(key) {
+                console.log(key)
+                var me = this
+                if (me.selectedCategoryIndex == key)
+                    me.selectedCategoryIndex = null;
+                else
+                    me.selectedCategoryIndex = key
+            },
+
+            toolStyle(cardIndex, categoryIndex, cardLength) {
+                var me = this
+                var angle =  (cardIndex - categoryIndex/10) * 40 / (cardLength +1) - 10;
+                var angle2 = cardIndex * 10 / cardLength - 3;
+                var radians = (Math.PI/ 180) * angle;
+
+                var curvedX = Math.cos(radians) * 500 - 500;
+                var curvedY = Math.sin(radians) * 700 + categoryIndex * 10 + 50;
+                
+                return `left: ${100 + curvedX}px; top: ${104 + curvedY}px; text-align: center; position: absolute; transform: rotate(${angle2}deg);`;
+            },
+
             functionSelect(title) {
                 var me = this
                 if (title == 'Code Preview') {
@@ -715,7 +625,7 @@
                 } else if (title == 'Download Archive') {
                     me.generateZipDialog = true
                 } else if (title == 'Deploy to Server') {
-                    me.deployDialogReady()
+                    me.deployDialog = true
                 }
             },
             async codeModalShow() {
@@ -724,10 +634,10 @@
                 await me.getListSetting()
 
                 me.$modal.show('codeModal');
-                me.codeViewing = true;
+                me.codeView = true;
             },
             codeModalhide() {
-                this.codeViewing = false;
+                this.codeView = false;
                 this.$modal.hide('code-modal');
             },
             copy: function () {
@@ -795,25 +705,6 @@
                         //초기화
                     }
                 }
-            },
-            download: function () {
-                var me = this;
-                // var text = JSON.stringify(me.value)
-                if (me.projectName.length < 1) {
-                    me.projectName = window.prompt("Please input your ProjectName")
-                }
-                var filename = this.projectName + '.json';
-                // localStorage.setItem('projectName', me.projectName)
-                // localStorage.setItem('loadData', JSON.stringify(me.value))
-
-                me.modelSetting().then(function () {
-                    var file = new File([JSON.stringify(me.model)], filename, {
-                        type: "text/json;charset=utf-8"
-                    });
-                    FileSaver.saveAs(file);
-                });
-
-
             },
             toggleGrip: function () {
                 this.dragPageMovable = !this.dragPageMovable;
@@ -908,6 +799,7 @@
 
                 if (edgeElement && from && to) {
                     var vertices = '[' + edgeElement.shape.geom.vertices.toString() + ']';
+
                     var componentInfo = {
                         component: 'kube-relation',
                         sourceElement: from.$parent,
@@ -918,6 +810,11 @@
                             style: JSON.stringify({}),
                             value: vertices,
                         }
+                    }
+
+                    // relation component
+                    if (from.$parent.value.relationComponent) {
+                        componentInfo.component = from.$parent.value.relationComponent
                     }
 
                     from.$parent.value.elementView.id = from.id;
@@ -935,10 +832,9 @@
                     }
                     // this.syncOthers();
                 }
-            }
-            ,
+            },
             modifyRelation(element) {
-                console.log(element)
+                // console.log(element)
                 if(element.sourceElement.connectableType != undefined) {
                     if(element.sourceElement.connectableType.indexOf(element.targetElement._type) != -1) {
                         return element
@@ -956,7 +852,7 @@
                 var vueComponent = me.getComponentByName(componentInfo.component);
                 var element;
 
-                if (componentInfo.component == 'kube-relation') {
+                if (componentInfo.relationView) {
                     //relation info setting before make
                     element = vueComponent.computed.createNew(
                         this.uuid(),
@@ -997,7 +893,7 @@
                     } else {
                         me.value['relation'].push(element);
                         console.log("============== Storage Location Search Test 5-1 (Add Relation) ============= ")
-                        this.$EventBus.$emit('storage')
+                        // this.$EventBus.$emit('storage')
                     }
                 } else {
                     if (bounded != undefined) {
@@ -1168,7 +1064,7 @@
                         var code = me.treeList[0].code
                         var file = new File([code], filename, {type: "text/yaml;charset=utf-8"})
 
-                        FileSaver.saveAs(file);
+                        saveAs(file);
                     } else if (me.template == 'Helm') {
                         var name = me.treeList[0].name
                         var templates = []
@@ -1272,23 +1168,18 @@
                 me.treeList.push(folder)
 
             },
-            deployDialogReady() {
+            deployReady() {
                 var me = this
-
-                if (localStorage.getItem('kuberToken')) {
-                    me.clusterName = localStorage.getItem('clusterName')
-                    me.clusterAddress = localStorage.getItem('clusterAddress')
-                    me.kuberToken = localStorage.getItem('kuberToken')
-
-                    me.deployDialog = true
+                if (me.clusterInfo) {
+                    me.deploy()
                 } else {
                     alert("클러스터 정보가 없습니다")
                 }
             },
-            async deploy() {
+            deploy() {
                 var me = this
 
-                await me.value.definition.forEach(function (item) {
+                me.value.definition.forEach(function (item) {
                     var reqUrl = me.getReqUrl(item)
                     
                     if (item.status) {
@@ -1299,6 +1190,7 @@
                             me.getStatusData(reqUrl, item)
                         }).catch(function (err) {
                             console.log(err)
+                            alert("Update failed")
                         })
                     } else {
                         me.$http.post(reqUrl, item.object).then(function (res) {
@@ -1308,11 +1200,10 @@
                             me.getStatusData(reqUrl, item)
                         }).catch(function (err) {
                             console.log(err)
+                            alert("Deploy failed")
                         })
                     }
-                    
                 })
-
                 me.deployDialog = false
             },
             deleteObj(item) {
@@ -1374,7 +1265,6 @@
                         me.$EventBus.$emit(`${element.elementView.id}`, obj)
                     }).catch(function (err) {
                         console.log(err)
-                        clearInterval(me.getStatus)
                     })
                 }, 200)
 
@@ -1394,16 +1284,9 @@
                     me.$EventBus.$emit('terminalOn', response.data.token)
                 })
             },
-            onSearchBox(event) {
-                var search = document.getElementById('searchBox')
-                
-                if(search.style.display == 'none') {
-                    search.style.left = (event.pageX + 45) + 'px'
-                    search.style.top = (event.pageY - 100) + 'px'
-                    search.style.display = 'block'
-                } else {
-                    search.style.display = 'none'
-                }
+            onSearchBox() {
+                var me = this
+                me.isSearch = !me.isSearch
             },
         }
     }
@@ -1450,12 +1333,6 @@
             overflow-x: hidden;
             overflow-y: auto;
 
-            .tool-icon {
-                font-size: 30px;
-                margin-top: 5px;
-                margin-bottom: 5px;
-            }
-
             .icons {
                 margin-top: 5px;
                 margin-bottom: 5px;
@@ -1464,6 +1341,22 @@
             .hands {
                 margin-top: 5px;
                 margin-bottom: 5px;
+            }
+        }
+
+        .search-tool {
+            position: absolute;
+            width: 50px;
+            height: 45px;
+            top: 90px;
+            left: 20px;
+            text-align: center;
+            overflow-x: hidden;
+            overflow-y: hidden;
+
+            .search-tool-icon > .v-icon {
+                font-size: 32px;
+                margin-top: 5px;
             }
         }
 
@@ -1532,6 +1425,12 @@
         }
     }
 
+    .searchBox {
+        top: 90px;
+        left: 80px;
+        position: absolute;
+    }
+
     .text-reader input[type="file"] { /* 파일 필드 숨기기 */
         position: absolute;
         width: 1px;
@@ -1589,14 +1488,6 @@
     /*    letter-spacing: 1px;*/
     /*    background: white;*/
     /*}*/
-
-    #searchBox {
-        top: 0;
-        left: 0;
-        position: absolute;
-        display: none;
-    }
-
 
     .video-list {
         height: 160px;

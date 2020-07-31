@@ -95,7 +95,7 @@
     import yaml from "js-yaml";
     import json2yaml from 'json2yaml';
 
-    import YamlEditor from "./YamlEditor";
+    import YamlEditor from "../KubeYamlEditor";
     import NumberField from "./NumberField";
     import TemplateField from "./TemplateField";
 

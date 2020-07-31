@@ -1,6 +1,6 @@
 {
   "name": "kuber-ez",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "private": false,
   "main": "dist/kuberEz.common.js",
   "homepage": "http://theopencloudengine.github.io/event-storming-tool",
