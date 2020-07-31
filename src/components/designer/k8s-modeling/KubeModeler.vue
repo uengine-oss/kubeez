@@ -95,21 +95,21 @@
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pv-palette.svg`
                     },
                     {
-                        'component': 'persistent-volume',
+                        'component': 'persistentVolume',
                         'label': 'PersistentVolume',
                         'width': '100',
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pv-palette.svg`
                     },
                     {
-                        'component': 'persistent-volume-claim',
+                        'component': 'persistentVolumeClaim',
                         'label': 'PersistentVolumeClaim',
                         'width': '100',
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pvc-palette.svg`
                     },
                     {
-                        'component': 'storage-class',
+                        'component': 'storageClass',
                         'label': 'StorageClass',
                         'width': '100',
                         'height': '100',
@@ -171,21 +171,21 @@
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/role-palette.svg`
                     },
                     {
-                        'component': 'role-binding',
+                        'component': 'roleBinding',
                         'label': 'RoleBinding',
                         'width': '100',
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/rb-palette.svg`
                     },
                     {
-                        'component': 'cluster-role',
+                        'component': 'clusterRole',
                         'label': 'ClusterRole',
                         'width': '100',
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/c-role-palette.svg`
                     },
                     {
-                        'component': 'cluster-role-binding',
+                        'component': 'clusterRoleBinding',
                         'label': 'ClusterRoleBinding',
                         'width': '100',
                         'height': '100',
@@ -205,21 +205,21 @@
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-gateway.svg`
                     },
                     {
-                        'component': 'virtual-service',
+                        'component': 'virtualService',
                         'label': 'VirtualService',
                         'width': '100',
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-vsvc.svg`
                     },
                     {
-                        'component': 'destination-rule',
+                        'component': 'destinationRule',
                         'label': 'DestinationRule',
                         'width': '100',
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-drule.svg`
                     },
                     {
-                        'component': 'service-entry',
+                        'component': 'serviceEntry',
                         'label': 'ServiceEntry',
                         'width': '100',
                         'height': '100',
@@ -247,14 +247,14 @@
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
                     },
                     {
-                        'component': 'quota-spec',
+                        'component': 'quotaSpec',
                         'label': 'QuotaSpec',
                         'width': '100',
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
                     },
                     {
-                        'component': 'quota-spec-binding',
+                        'component': 'quotaSpecBinding',
                         'label': 'QuotaSpecBinding',
                         'width': '100',
                         'height': '100',

@@ -90,7 +90,28 @@
 
         },
         watch: {
-
+            "value.elementView.width": {
+                handler(newVal) {
+                    var me = this
+                    var obj = {
+                        type: me.value._type,
+                        width: newVal,
+                        height: me.value.elementView.height
+                    }
+                    me.$store.dispatch('resize', obj)
+                }
+            },
+            "value.elementView.height": {
+                handler(newVal) {
+                    var me = this
+                    var obj = {
+                        type: me.value._type,
+                        width: me.value.elementView.width,
+                        height: newVal
+                    }
+                    me.$store.dispatch('resize', obj)
+                }
+            }
         },
         mounted: function () {
             var me = this

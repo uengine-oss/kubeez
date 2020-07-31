@@ -52,7 +52,7 @@
                 <!--title-->
                 <text-element
                         :sub-width="'100%'"
-                        :sub-height="30"
+                        :sub-height="25"
                         :sub-top="0"
                         :sub-left="0"
                         :text="'Deployment'">
@@ -61,8 +61,8 @@
                         :image="imgSrc"
                         :sub-top="5"
                         :sub-left="5"
-                        :sub-width="30"
-                        :sub-height="30">
+                        :sub-width="25"
+                        :sub-height="25">
                 </image-element>
             </sub-elements>
 
@@ -71,7 +71,7 @@
                         v-if="value.status"
                         :sub-bottom="-20"
                         :sub-width="'50%'"
-                        :sub-height="30"
+                        :sub-height="25"
                         :sub-align="'center'"
                         :sub-style="{
                             'stroke': statusColor,

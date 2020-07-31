@@ -1,8 +1,8 @@
 module.exports = {
     configureWebpack: {
         devServer: {
-            proxy: 'http://35.225.49.251:8080/',
-            host: 'es2cd.io',
+            proxy: 'http://35.222.165.91:8080/',
+            // host: 'es2cd.io',
             port: '8080'
         }
     },

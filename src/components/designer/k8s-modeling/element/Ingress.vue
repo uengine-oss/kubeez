@@ -52,7 +52,7 @@
                 <!--title-->
                 <text-element
                         :sub-width="'100%'"
-                        :sub-height="30"
+                        :sub-height="25"
                         :sub-top="0"
                         :sub-left="0"
                         :text="'Ingress'">
@@ -61,8 +61,8 @@
                         :image="imgSrc"
                         :sub-top="5"
                         :sub-left="5"
-                        :sub-width="30"
-                        :sub-height="30">
+                        :sub-width="25"
+                        :sub-height="25">
                 </image-element>
             </sub-elements>
         </geometry-element>
@@ -123,11 +123,14 @@
                         "kind": "Ingress",
                         "metadata": {
                             "name": "",
+                            "annotations": {
+                                "nginx.ingress.kubernetes.io/rewrite-target": "/"
+                            }
                         },
                         "spec": {
                             "rules": [
                                 {
-                                    "host": "insurance.infogra.io",
+                                    "host": "test.io",
                                     "http": {
                                         "paths": [
                                             {
@@ -222,6 +225,7 @@
                 this.value.outboundServices.forEach(element => {
                         me.value.object.spec.rules[0].http.paths.push(
                             {
+                                "path": "/",
                                 "backend": {
                                     "serviceName": element.object.metadata.name,
                                     "servicePort": element.object.spec.ports[0].port

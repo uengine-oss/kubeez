@@ -51,7 +51,7 @@
                 <!--title-->
                 <text-element
                         :sub-width="'100%'"
-                        :sub-height="30"
+                        :sub-height="25"
                         :sub-top="0"
                         :sub-left="0"
                         :text="'MemQuota'">
@@ -105,8 +105,8 @@
                         'id': elementId,
                         'x': x,
                         'y': y,
-                        'width': 150,
-                        'height': 150,
+                        'width': width,
+                        'height': height,
                         'style': JSON.stringify({}),
                         'angle': 0,
                     },

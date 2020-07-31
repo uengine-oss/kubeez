@@ -27,8 +27,8 @@
                         :image="imgSrc"
                         :sub-top="5"
                         :sub-left="5"
-                        :sub-width="30"
-                        :sub-height="30"
+                        :sub-width="25"
+                        :sub-height="25"
                 >
 
                 </image-element>

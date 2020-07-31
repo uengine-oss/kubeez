@@ -871,8 +871,8 @@
                         this.uuid(),
                         componentInfo.x,
                         componentInfo.y,
-                        componentInfo.width,
-                        componentInfo.height
+                        me.$store.getters.getWidth(componentInfo.component),
+                        me.$store.getters.getHeight(componentInfo.component)
                     );
 
                 }

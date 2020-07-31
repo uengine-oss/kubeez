@@ -9,9 +9,9 @@ module.exports = {
         ]
     },
     devServer: {
-        host: 'es2cd.io',
+        // host: 'es2cd.io',
         port: 8080,
         disableHostCheck : true,
-        proxy: 'http://35.225.49.251:8080/',
+        proxy: 'http://35.222.165.91:8080/',
     },
 }

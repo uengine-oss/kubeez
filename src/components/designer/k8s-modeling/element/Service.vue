@@ -46,7 +46,7 @@
                 <!--title-->
                 <text-element
                         :sub-width="'100%'"
-                        :sub-height="30"
+                        :sub-height="25"
                         :sub-top="0"
                         :sub-left="0"
                         :text="'Service'">
@@ -55,8 +55,8 @@
                         :image="imgSrc"
                         :sub-top="5"
                         :sub-left="5"
-                        :sub-width="30"
-                        :sub-height="30">
+                        :sub-width="25"
+                        :sub-height="25">
                 </image-element>
             </sub-elements>
         </geometry-element>
@@ -108,8 +108,8 @@
                         'id': elementId,
                         'x': x,
                         'y': y,
-                        'width': 150,
-                        'height': 150,
+                        'width': width,
+                        'height': height,
                         'style': JSON.stringify({}),
                         'angle': 0,
                     },

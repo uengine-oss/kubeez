@@ -52,7 +52,7 @@
                 <!--title-->
                 <text-element
                         :sub-width="'100%'"
-                        :sub-height="30"
+                        :sub-height="25"
                         :sub-top="0"
                         :sub-left="0"
                         :text="'Pod'">
@@ -61,8 +61,8 @@
                         :image="imgSrc"
                         :sub-top="5"
                         :sub-left="5"
-                        :sub-width="30"
-                        :sub-height="30"
+                        :sub-width="25"
+                        :sub-height="25"
                 >
 
                 </image-element>
@@ -72,8 +72,8 @@
                 <circle-element
                         v-if="value.status"
                         :sub-bottom="-15"
-                        :sub-width="30"
-                        :sub-height="30"
+                        :sub-width="25"
+                        :sub-height="25"
                         :sub-align="'center'"
                         :sub-style="{
                             'stroke': statusColor,
@@ -174,13 +174,10 @@
             outboundVolumeNames() {
                 try {
                     var names;
-
                     this.value.outboundVolumes.forEach(element => {
                         names += element.object.metadata.name + ","
                     });
-
                     return names;
-
                 } catch (e) {
                     return "";
                 }
@@ -212,7 +209,7 @@
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 if (obj.state == "addRelation" && obj.element && obj.element.targetElement
                     && obj.element.targetElement._type == "PersistentVolumeClaim") {
-                    console.log("inner")
+                    // console.log("inner")
                     me.value.outboundVolumes.push(obj.element.targetElement);
                 }
 
