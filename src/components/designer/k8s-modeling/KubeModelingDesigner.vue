@@ -758,8 +758,8 @@
                                 component: componentInfo.component,
                                 x: dropX,
                                 y: dropY,
-                                width: parseInt(componentInfo.width, 10),
-                                height: parseInt(componentInfo.height, 10),
+                                width: me.$store.getters.getWidth(componentInfo.component),
+                                height: me.$store.getters.getHeight(componentInfo.component),
                                 label: ''
                             }
 

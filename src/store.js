@@ -11,42 +11,38 @@ export default new Vuex.Store({
         kubeHost: '',
         kubeToken: '',
         username:'',
-        storeAuthorized: false
+        storeAuthorized: false,
+        // 기본 사이즈 지정
+        deployment: {'width': 100, 'height': 100},
+        ingress: {'width': 100, 'height': 100},
+        namespace: {'width': 100, 'height': 100},
+        persistenceVolume: {'width': 100, 'height': 100},
+        persistenceVolumeClaim: {'width': 100, 'height': 100},
+        pod: {'width': 100, 'height': 100},
+        replicaSet: {'width': 100, 'height': 100},
+        service: {'width': 100, 'height': 100},
     },
     getters: {
         getAuth(state) {
             return state.storeAuthorized
-        }
+        },
+        getWidth: (state) => (type) => {
+            return eval("state." + type.charAt(0).toLowerCase() + type.slice(1) + ".width")
+        },
+        getHeight: (state) => (type) => {
+            return eval("state." + type.charAt(0).toLowerCase() + type.slice(1) + ".height")
+        },
     },
     mutations: {
-        LOGIN (state, data) {
-            // console.log(state)
-            // console.log(data)
-            state.kubeHost = data.kubeHost;
-            state.kubeToken = data.kubeToken;
-            state.username = data.userName;
-            state.storeAuthorized = true;
-
-            axios.defaults.headers.common['kubehost'] = state.kubeHost;
-            axios.defaults.headers.common['kubetoken'] = state.kubeToken;
+        resize(state, data) {
+            eval("state." + data.type.charAt(0).toLowerCase() + data.type.slice(1) + ".width = " + data.width)
+            eval("state." + data.type.charAt(0).toLowerCase() + data.type.slice(1) + ".height = " + data.height)
         },
-        LOGOUT (state) {
-            state.kubeHost = ''
-            state.kubeToken = ''
-            state.storeAuthorized = false;
-        }
     },
     actions: {
-        LOGIN ({ commit }, data) {
-            // // console.log(data)
-            commit('LOGIN', data)
+        resize({commit}, data) {
+            commit('resize', data)
+        },
 
-            // commit('LOGIN', {accessToken, host})
-            // Vue.prototype.$http.defaults.baseURL = 'http://localhost:8080';
-            // Vue.prototype.$http.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-        },
-        LOGOUT ({commit}) {
-            commit('LOGOUT')
-        },
     }
 })
