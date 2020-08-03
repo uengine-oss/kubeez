@@ -1,5 +1,5 @@
 # kuber-ez
-Kuber-ez is an web-based tool for kubernetes manifest composition and operation tool in a visual way that requires minimal understanding of Yaml and CLI
+Kuber-ez is a web-based tool for kubernetes manifest composition and operation tool in a visual way that requires minimal understanding of Yaml and CLI
 
 ## YouTube:
 https://youtu.be/rVi2VNK2udM
