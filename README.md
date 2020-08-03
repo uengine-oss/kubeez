@@ -1,6 +1,9 @@
 # kuber-ez
 Kuber-ez is an web-based tool for kubernetes manifest composition and operation tool in a visual way that requires minimal understanding of Yaml and CLI
 
+## YouTube:
+https://youtu.be/rVi2VNK2udM
+
 ## KuberEz UI 사용법
 ![image](https://user-images.githubusercontent.com/48265118/88506730-902d4d00-d015-11ea-9a76-9de8e4de73b8.png)
 
