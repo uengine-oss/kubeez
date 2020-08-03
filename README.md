@@ -30,7 +30,13 @@ https://youtu.be/rVi2VNK2udM
 ![image](https://user-images.githubusercontent.com/48265118/88513384-24ea7780-d023-11ea-8425-1a8a90a04351.png)
 
 
-## Build and run
+## Build and Run
 `
 npm install && npm run serve
 `
+
+## How to add new component
+
+You can find examples of Kubernetes object models in https://github.com/uengine-oss/kuber-ez/blob/master/src/components/designer/k8s-modeling/element
+Create a new copy of element and property panel component for the K8S object kind, and place them in the above folder.
+Then add the component to the 'elementTypes' array of https://github.com/uengine-oss/kuber-ez/blob/master/src/components/designer/k8s-modeling/KubeModeler.vue file.
