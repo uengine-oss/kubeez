@@ -4,7 +4,7 @@ Kuber-ez is an web-based tool for kubernetes manifest composition and operation 
 ## YouTube:
 https://youtu.be/rVi2VNK2udM
 
-## Oneline:
+## Online:
 http://msaez.io or http://msaez.io/#/kubernetes/anonymous/kuberLocal/kuberInit/-init
 
 ## KuberEz UI 사용법
