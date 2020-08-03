@@ -30,8 +30,7 @@ https://youtu.be/rVi2VNK2udM
 ![image](https://user-images.githubusercontent.com/48265118/88513384-24ea7780-d023-11ea-8425-1a8a90a04351.png)
 
 
-## 설치실행
+## Build and run
 `
-npm install
-npm run serve
+npm install && npm run serve
 `
