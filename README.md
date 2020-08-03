@@ -7,8 +7,6 @@ https://youtu.be/rVi2VNK2udM
 ## KuberEz UI 사용법
 ![image](https://user-images.githubusercontent.com/48265118/88506730-902d4d00-d015-11ea-9a76-9de8e4de73b8.png)
 
-### Example
-
 - Kubernetes 객체 Drag & Drop 모델링
 
 ![image](https://user-images.githubusercontent.com/48265118/88508769-8c4ff980-d01a-11ea-91f7-e9eab52c4376.png)
@@ -30,3 +28,10 @@ https://youtu.be/rVi2VNK2udM
 ![image](https://user-images.githubusercontent.com/48265118/88513320-0ab09980-d023-11ea-9818-d5056698b8a8.png)
 
 ![image](https://user-images.githubusercontent.com/48265118/88513384-24ea7780-d023-11ea-8425-1a8a90a04351.png)
+
+
+## 설치실행
+`
+npm install
+npm run serve
+`
