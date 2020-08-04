@@ -2,7 +2,8 @@
 Kuber-ez is a web-based tool for kubernetes manifest composition and operation tool in a visual way that requires minimal understanding of Yaml and CLI
 
 ## YouTube:
-https://youtu.be/rVi2VNK2udM
+For basic objects: https://youtu.be/rVi2VNK2udM
+For Istio objects: https://youtu.be/t0utOq4dosc
 
 ## Online:
 http://msaez.io or http://msaez.io/#/kubernetes/anonymous/kuberLocal/kuberInit/-init
