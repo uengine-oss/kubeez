@@ -84,7 +84,7 @@
             var me = this
             
             me.$EventBus.$on(`${me.value.relationView.id}`, function (obj) {
-                if (obj.state == 'delete' && obj.element._type == 'org.uengine.modeling.model.Relation') {
+                if (obj.state == 'delete' && obj.element.relationView) {
                     me.deleteRelation()
                 }
             })

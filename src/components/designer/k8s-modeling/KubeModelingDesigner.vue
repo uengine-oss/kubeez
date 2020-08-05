@@ -598,7 +598,7 @@
             },
 
             changeCategory(key) {
-                console.log(key)
+                // console.log(key)
                 var me = this
                 if (me.selectedCategoryIndex == key)
                     me.selectedCategoryIndex = null;
@@ -884,7 +884,7 @@
                     }
                 }
 
-                if (element._type == 'org.uengine.modeling.model.Relation') {
+                if (element.relationView) {
                     if (bounded != undefined) {
                         if (bounded) {
                             console.log("bounded")

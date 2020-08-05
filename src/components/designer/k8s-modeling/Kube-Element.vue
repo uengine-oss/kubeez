@@ -125,7 +125,7 @@
                             element: me.value
                         }
 
-                        if (me.value._type == 'org.uengine.modeling.model.Relation') {
+                        if (me.value.relationView) {
                             // console.log(me.value.relationView.id)
                             me.$EventBus.$emit(`${me.value.relationView.id}`, obj)
                         } else {
@@ -152,13 +152,13 @@
                 }
             });
 
-            if (me.value._type != 'org.uengine.modeling.model.Relation') {
+            if (!me.value.relationView) {
                 me.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                     if (obj.state == "delete") {
                         me.deleteActivity(obj)
                     }
                 })
-            } else if (me.value._type == 'org.uengine.modeling.model.Relation') {
+            } else if (me.value.relationView) {
                 me.$EventBus.$on(`${me.value.relationView.id}`, function (obj) {
                     if (obj.state == "delete") {
                         me.deleteActivity(obj)
@@ -218,7 +218,7 @@
 
                     me.selected = false;
                     //user delete
-                    if (me.value._type != "org.uengine.modeling.model.Relation") {
+                    if (!me.value.relationView) {
                         // console.log("user-delete-element");
                         // me.$EventBus.$emit('storage')
                         // me.$EventBus.$emit('undoRedo', obj)
@@ -234,7 +234,7 @@
                     }
                 } else {
                     //undoRedo 제
-                    if (me.value._type != "org.uengine.modeling.model.Relation") {
+                    if (!me.value.relationView) {
                         // console.log("undoRedo-delete-element")
 
                         var totalLength = designer.value.definition.length
@@ -403,7 +403,7 @@
                     state: 'delete',
                     element: value
                 }
-                if (me.value._type == 'org.uengine.modeling.model.Relation') {
+                if (me.value.relationView) {
                     me.$EventBus.$emit(`${me.value.relationView.id}`, obj)
                 } else {
                     me.$EventBus.$emit(`${me.value.elementView.id}`, obj)

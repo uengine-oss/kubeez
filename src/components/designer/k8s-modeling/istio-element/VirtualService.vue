@@ -130,7 +130,7 @@
                     },
                     outboundDestinationRules: [],
                     connectableType: [ "DestinationRule" ],
-                    relationComponent: "virtualservice-to-destinationrule",
+                    relationComponent: "VirtualserviceToDestinationrule",
                     inboundGateway: null,
                 }
             },
