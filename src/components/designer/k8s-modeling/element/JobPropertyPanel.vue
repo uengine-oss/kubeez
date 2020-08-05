@@ -34,9 +34,7 @@
             </v-list>
 
             <v-list class="pt-0" dense flat>
-                <v-layout 
-                        v-if="value.status && activeTab == 0"
-                        wrap>
+                <v-layout v-if="value.status && activeTab == 0" wrap>
                     <v-flex>
                         <v-card flat>
                             <v-card-text>
@@ -50,20 +48,8 @@
                         </v-card>
                     </v-flex>
                 </v-layout>
-                <v-layout
-                        v-else
-                        wrap>
-                    <v-flex grow style="width: 500px;">
-                        <v-card flat>
-                            <v-card-text>
-                                <yaml-editor
-                                    v-model="value.object"
-                                >
-                                </yaml-editor>
-                            </v-card-text>
-                        </v-card>
-                    </v-flex>
-                    <v-flex shrink style="width: 300px;">
+                <v-layout v-else wrap>
+                    <v-flex shrink style="width: 180px;">
                         <v-card flat>
                             <v-card-text>
                                 <v-text-field
@@ -87,6 +73,11 @@
                                 </number-field>
                             </v-card-text>
                         </v-card>
+                    </v-flex>
+                    <v-flex>
+                        <yaml-editor
+                            v-model="value.object">
+                        </yaml-editor>
                     </v-flex>
                 </v-layout>
             </v-list>

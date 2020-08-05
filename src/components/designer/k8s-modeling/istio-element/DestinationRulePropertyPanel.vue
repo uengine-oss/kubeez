@@ -27,16 +27,7 @@
 
             <v-list class="pt-0" dense flat>
                 <v-layout wrap v-if="activeTab == 0">
-                    <v-flex grow style="width: 500px;">
-                        <v-card flat>
-                            <v-card-text>
-                                <yaml-editor
-                                    v-model="propertyData">
-                                </yaml-editor>
-                            </v-card-text>
-                        </v-card>
-                    </v-flex>
-                    <v-flex shrink style="width: 300px;">
+                    <v-flex shrink style="width: 180px;">
                         <v-card flat>
                             <v-card-text>
                                 <v-text-field
@@ -54,18 +45,14 @@
                             </v-card-text>
                         </v-card>
                     </v-flex>
+                    <v-flex>
+                        <yaml-editor
+                            v-model="value.object">
+                        </yaml-editor>
+                    </v-flex>
                 </v-layout>
                 <v-layout wrap v-else>
-                    <v-flex grow style="width: 500px;">
-                        <v-card flat>
-                            <v-card-text>
-                                <yaml-editor
-                                    v-model="trafficPolicy">
-                                </yaml-editor>
-                            </v-card-text>
-                        </v-card>
-                    </v-flex>
-                    <v-flex shrink style="width: 300px;">
+                    <v-flex shrink style="width: 200px;">
                         <v-card flat>
                             <v-card-text>
                                 <number-field
@@ -83,7 +70,6 @@
                                     :label="'Max Connections'"
                                     v-model="value.object.spec.trafficPolicy.connectionPool.tcp.maxConnections">
                                 </number-field>
-
                                 <v-text-field
                                     label="Base Ejection Time"
                                     v-model="baseEjectionTime"
@@ -106,6 +92,11 @@
                                 </number-field>
                             </v-card-text>
                         </v-card>
+                    </v-flex>
+                    <v-flex>
+                        <yaml-editor
+                            v-model="value.object">
+                        </yaml-editor>
                     </v-flex>
                 </v-layout>
             </v-list>
@@ -188,7 +179,7 @@
         data: function () {
             return {
                 activeTab: 0,
-                tabs: [ "DestinationRule Property", "TrafficPolicy(circuit breaker)" ],
+                tabs: [ "Property", "TrafficPolicy" ],
             }
         },
         watch: {

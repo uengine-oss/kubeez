@@ -141,13 +141,7 @@
                                     "containers": [
                                         {
                                             "name": "",
-                                            "image": ""
-                                        }
-                                    ],
-                                    "tolerations": [
-                                        {
-                                            "key": "",
-                                            "effect": "",
+                                            "image": "",
                                             "ports": [
                                                 {
                                                     "containerPort": 80
