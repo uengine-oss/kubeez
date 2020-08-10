@@ -23,16 +23,7 @@
 
             <v-list class="pt-0" dense flat>
                 <v-layout wrap>
-                    <v-flex grow style="width: 650px;">
-                        <v-card flat>
-                            <v-card-text>
-                                <yaml-editor
-                                    v-model="value.object">
-                                </yaml-editor>
-                            </v-card-text>
-                        </v-card>
-                    </v-flex>
-                    <v-flex shrink style="width: 200px;">
+                    <v-flex shrink style="width: 180px;">
                         <v-card flat>
                             <v-card-text>
                                 <v-text-field
@@ -41,6 +32,11 @@
                                 ></v-text-field>
                             </v-card-text>
                         </v-card>
+                    </v-flex>
+                    <v-flex>
+                        <yaml-editor
+                            v-model="value.object">
+                        </yaml-editor>
                     </v-flex>
                 </v-layout>
             </v-list>

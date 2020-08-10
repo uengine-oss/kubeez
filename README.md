@@ -1,10 +1,15 @@
 # kuber-ez
-Kuber-ez is an web-based tool for kubernetes manifest composition and operation tool in a visual way that requires minimal understanding of Yaml and CLI
+Kuber-ez is a web-based tool for kubernetes manifest composition and operation tool in a visual way that requires minimal understanding of Yaml and CLI
 
-## KuberEz UI 사용법
+## YouTube:
+- Basic object editing: https://youtu.be/rVi2VNK2udM
+- Istio object editing: https://youtu.be/t0utOq4dosc
+
+## Online:
+http://msaez.io or http://msaez.io/#/kubernetes/anonymous/kuberLocal/kuberInit/-init
+
+## Snapshots:
 ![image](https://user-images.githubusercontent.com/48265118/88506730-902d4d00-d015-11ea-9a76-9de8e4de73b8.png)
-
-### Example
 
 - Kubernetes 객체 Drag & Drop 모델링
 
@@ -27,3 +32,15 @@ Kuber-ez is an web-based tool for kubernetes manifest composition and operation 
 ![image](https://user-images.githubusercontent.com/48265118/88513320-0ab09980-d023-11ea-9818-d5056698b8a8.png)
 
 ![image](https://user-images.githubusercontent.com/48265118/88513384-24ea7780-d023-11ea-8425-1a8a90a04351.png)
+
+
+## Build and Run
+`
+npm install && npm run serve
+`
+
+## How to add new component
+
+You can find examples of Kubernetes object models in https://github.com/uengine-oss/kuber-ez/blob/master/src/components/designer/k8s-modeling/element.
+Create a new copy of element and property panel component for the K8S object kind (e.g. Deployment.vue and DeploymentPropertyPanel.vue), and place them in the above folder.
+Then add the component to the 'elementTypes' array of https://github.com/uengine-oss/kuber-ez/blob/master/src/components/designer/k8s-modeling/KubeModeler.vue file.

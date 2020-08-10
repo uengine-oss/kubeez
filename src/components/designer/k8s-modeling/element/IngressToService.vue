@@ -19,18 +19,18 @@
         <relation-panel
                 v-if="openPanel && isOpen"
                 v-model="value"
-                :titleName="'VirtualService To DestinationRule'"
+                :titleName="'Ingress To Service'"
         ></relation-panel>
     </div>
 </template>
 
 <script>
     import Relation from '../RelationAbstract'
-    import Panel from './VirtualSeviceToDestinationRulePanel'
+    import Panel from './IngressToServicePanel'
 
     export default {
         mixins: [Relation],
-        name: 'VirtualserviceToDestinationrule',
+        name: 'IngressToService',
         props: {},
         components: {
             'relation-panel': Panel,
@@ -44,7 +44,7 @@
         },
         computed: {
             className() {
-                return 'VirtualserviceToDestinationrule'
+                return 'IngressToService'
             },
             style_() {
                 var style = {}
@@ -71,44 +71,34 @@
                     },
                     sourceMultiplicity: 3,
                     targetMultiplicity: 3,
-                    routeType: 'weight',
-                    weight: 0,
+                    path: "/",
                 }
             },
             isOpen() {
-                if (this.value.sourceElement._type == 'VirtualService') {
+                if (this.value.sourceElement._type == 'Ingress') {
                     return true
                 }
                 return false
             },
             name() {
-                if(this.value.routeType == 'weight') {
-                    return this.value.routeType + "\n" + this.value.weight + "%";
-                } else if(this.value.routeType == 'mirror') {
-                    return this.value.routeType
+                try {
+                    return this.value.path
+                } catch(e) {
+                    return ''
                 }
             },
         },
         data() {
-            return {
-            }
+            return {}
         },
         watch: {
             name(value) {
                 this.value.name = value
             },
-            routeType() {
-                try {
-                    return this.value.weight
-                } catch(e) {
-                    return ""
-                }
-            }
         },
         mounted() {
         },
         methods: {
-
         }
     }
 </script>

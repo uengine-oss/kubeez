@@ -32,29 +32,28 @@
                     </v-card-text>
                 </v-layout>
                 <v-layout wrap v-else>
-                    <v-flex grow style="width: 350px;">
-                        <v-card flat>
-                            <v-card-text>
-                                <yaml-editor
-                                    v-model="value.sourceElement.object.spec.http[0]">
-                                </yaml-editor>
-                            </v-card-text>
-                        </v-card>
-                    </v-flex>
-                    <v-flex shrink style="width: 250px;">
+                    <v-flex shrink style="width: 180px;">
                         <v-card flat>
                             <v-card-text>
                                 <number-field
                                     :label="'Attempts'"
                                     v-model="attempts"
-                                >
-                                </number-field>
+                                ></number-field>
                                 <v-text-field
                                     label="PerTryTimeout"
                                     v-model="perTryTimeout"
                                     type="number"
                                     suffix="s">
                                 </v-text-field>
+                            </v-card-text>
+                        </v-card>
+                    </v-flex>
+                    <v-flex grow style="width: 320px;">
+                        <v-card flat>
+                            <v-card-text>
+                                <yaml-editor
+                                    v-model="value.sourceElement.object.spec.http[0]">
+                                </yaml-editor>
                             </v-card-text>
                         </v-card>
                     </v-flex>

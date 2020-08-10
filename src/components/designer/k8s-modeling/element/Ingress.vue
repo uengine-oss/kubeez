@@ -134,6 +134,7 @@
                                     "http": {
                                         "paths": [
                                             {
+                                                "path": "/",
                                                 "backend": {
                                                     "serviceName": "",
                                                     "servicePort": 80
@@ -148,6 +149,7 @@
                     outboundServices: [],
                     connectableType: ["Service"],
                     status: null,
+                    relationComponent: "IngressToService",
                 }
             },
             namespace: {
@@ -168,13 +170,10 @@
             outboundServiceNames() {
                 try {
                     var serviceNames = "";
-                    
                     this.value.outboundServices.forEach(element => {
                         serviceNames += element.object.metadata.name + ":" + element.object.spec.ports[0].port +  ","
                     })
-
                     return serviceNames;
-
                 } catch(e) {
                     return ""
                 }
@@ -197,16 +196,12 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "Service"){
-                    
-                    obj.element.targetElement.relationId = obj.element.relationView.id
-                    me.value.outboundServices.push(obj.element.targetElement)
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
+                    obj.element.targetElement.relationId = obj.element.relationView.id;
+                    me.value.outboundServices.push(obj.element.targetElement);
                 }
                 
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "Service"){
-
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
                     me.value.outboundServices.splice(me.value.outboundServices.indexOf(obj.element.targetElement), 1);
                 }
 
@@ -214,15 +209,17 @@
                     me.value.status = obj.element.status
                 }
 
+                if(obj.state=="updatePath" && obj.value) {
+                    me.setPath(obj)
+                }
             })
             
         },
         watch: {
             "outboundServiceNames": function(names){
-
-                this.value.object.spec.rules[0].http.paths = [];
                 var me = this;
-                this.value.outboundServices.forEach(element => {
+                me.value.object.spec.rules[0].http.paths = [];
+                me.value.outboundServices.forEach(element => {
                         me.value.object.spec.rules[0].http.paths.push(
                             {
                                 "path": "/",
@@ -241,7 +238,6 @@
                     var me = this
                     if(newVal.length < oldVal.length) {
                         var index = me.getIndex(newVal, oldVal)
-
                         if (me.value.outboundServices[index]) {
                             me.deleteRelation(me.value.outboundServices[index].relationId)
                         }
@@ -263,6 +259,13 @@
                 })
                 return index
             },
+            setPath(obj) {
+                var me = this
+                var index = me.value.outboundServices.findIndex(function(val) {
+                    return val == obj.value.targetElement
+                })
+                me.value.object.spec.rules[0].http.paths[index].path = obj.value.path
+            }
         }
     }
 </script>
