@@ -114,7 +114,7 @@
 
                     <template v-slot:activator="{ on }">
                          <span
-                                 @click="changeCategory(categoryIndex)"
+                                 @mouseover="changeCategory(categoryIndex)"
                                  align="center"
                                  :_component="category[0].component"
                                  :_width="category[0].width"
@@ -161,12 +161,13 @@
 
                         <v-card
                                 class="mx-auto"
-                                max-width="500"
+                                max-width="400"
+                                max-height="400"
                                 outlined
                         >
                             <v-list-item three-line>
                                 <v-list-item-content>
-                                    <div class="overline mb-4">{{item.component}}</div>
+                                    <div class="overline mb-4">{{category[0].label}}</div>
                                     <v-list-item-title class="headline mb-1">{{item.label}}</v-list-item-title>
                                     <v-list-item-subtitle>{{item.description}}</v-list-item-subtitle>
                                 </v-list-item-content>

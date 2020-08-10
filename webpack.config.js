@@ -14,4 +14,7 @@ module.exports = {
         disableHostCheck : true,
         proxy: 'http://35.222.165.91:8080/',
     },
+    configureWebpack: {
+        devtool: 'source-map'
+    }
 }

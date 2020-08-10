@@ -22,49 +22,56 @@
                     {
                         'component': 'Workload',
                         'label': 'Workload',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/deploy-palette.svg`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/deploy-palette.svg`,
                     },
                     {
                         'component': 'namespace',
                         'label': 'Namespace',
                         'width': '400',
                         'height': '400',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ns-palette.svg`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ns-palette.svg`,
+                        description: 'Kubernetes supports multiple virtual clusters backed by the same physical cluster. These virtual clusters are called namespaces.'
                     },
                     {
                         'component': 'deployment',
                         'label': 'Deployment',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/deploy-palette.svg`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/deploy-palette.svg`,
+                        description: 'A Deployment provides declarative updates for Pods ReplicaSets. You describe a desired state in a Deployment, and the Deployment Controller changes the actual state to the desired state at a controlled rate. You can define Deployments to create new ReplicaSets, or to remove existing Deployments and adopt all their resources with new Deployments.'
                     },
                     {
                         'component': 'replicaSet',
                         'label': 'ReplicaSet',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/rs-palette.svg`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/rs-palette.svg`,
+                        description: "A ReplicaSet's purpose is to maintain a stable set of replica Pods running at any given time. As such, it is often used to guarantee the availability of a specified number of identical Pods."
+
                     },
                     {
                         'component': 'pod',
                         'label': 'Pod',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pod-palette.svg`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pod-palette.svg`,
+                        description: "Pods are the smallest deployable units of computing that you can create and manage in Kubernetes."
                     },
                     {
                         'component': 'statefulSet',
                         'label': 'StatefulSet',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sts-palette.svg`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sts-palette.svg`,
+                        description: "StatefulSet is the workload API object used to manage stateful applications. Manages the deployment and scaling of a set of Pods, and provides guarantees about the ordering and uniqueness of these Pods."
                     },
                     {
                         'component': 'daemonSet',
                         'label': 'DaemonSet',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ds-palette.svg`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ds-palette.svg`,
+                        description: "A DaemonSet ensures that all (or some) Nodes run a copy of a Pod. As nodes are added to the cluster, Pods are added to them. As nodes are removed from the cluster, those Pods are garbage collected. Deleting a DaemonSet will clean up the Pods it created."
                     },
                 ],
                 [
@@ -78,14 +85,16 @@
                         'label': 'Service',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/svc-palette.svg`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/svc-palette.svg`,
+                        desc: "An abstract way to expose an application running on a set of Pods as a network service."
                     },
                     {
                         'component': 'ingress',
                         'label': 'Ingress',
                         'width': '100',
                         'height': '100',
-                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ing-palette.svg`
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ing-palette.svg`,
+                        desc: "An API object that manages external access to the services in a cluster, typically HTTP. Ingress may provide load balancing, SSL termination and name-based virtual hosting."
                     },
                 ],
                 [
