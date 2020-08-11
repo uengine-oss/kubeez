@@ -7,9 +7,6 @@
                 lineWrapping: true,
             }"
             v-model="yamlText"
-            :class="isEdit ? 'edit' : 'default'"
-            @focus="isEdit = true"
-            @blur="isEdit = false"
     ></codemirror>
 </template>
 
@@ -39,7 +36,6 @@
                 yamlText: json2yaml.stringify(this.value),
                 cursor_pos: '',
                 temp_text: '',
-                isEdit: false,
             }
         },
         watch: {
@@ -112,11 +108,7 @@
         cursor: pointer;
     }
 
-    .vue-codemirror.default {
-        width: 280px;
-        transform: scale(0.8) translate(0%, -5%);
-    }
-    .vue-codemirror.edit {
-        width: 400px;
+    .vue-codemirror {
+        width: 370px;
     }
 </style>

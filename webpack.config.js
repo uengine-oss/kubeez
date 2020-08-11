@@ -10,9 +10,8 @@ module.exports = {
     },
     devServer: {
         // host: 'es2cd.io',
-        port: 8080,
+        port: 8081,
         disableHostCheck : true,
-        proxy: 'http://35.222.165.91:8080/',
     },
     configureWebpack: {
         devtool: 'source-map'

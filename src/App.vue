@@ -97,7 +97,7 @@
             me.$EventBus.$on('terminalOn', function (val) {
                 if(!me.terminal) {
                     var token = val;
-                    me.terminalUrl = "http://35.225.49.251:8080/" + "terminal/?token=" + token
+                    // me.terminalUrl = "terminal/?token=" + token
                     me.terminal = true;
                 }
             })
