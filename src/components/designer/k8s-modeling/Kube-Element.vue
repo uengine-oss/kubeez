@@ -30,7 +30,14 @@
                 openPanel: false,
                 namePanel: '',
                 editUserImg:[],
-                deploySuccess: false
+                deploySuccess: false,
+                menuList : [
+                    { name: "Get " + this.value._type },
+                    { name: "Create " + this.value._type },
+                    { name: "Describe " + this.value._type },
+                    { name: "Delete " + this.value._type },
+                    { name: "Update " + this.value._type }
+                ],
             }
         },
         computed: {
@@ -86,8 +93,7 @@
                 } else {
                     return '#e74c3c'
                 }
-            }
-
+            },
         },
         watch: {
             "value.elementView.width": {
@@ -425,34 +431,22 @@
                 }
                 me.$EventBus.$emit(relationId, obj)
             },
-            changeStatusColor(status) {
-                var me = this
-                
-                if(status == 'success') {
-                    me.deploySuccess = true
-                } else {
-                    me.deploySuccess = false
-                }
-            },
             handleClick(event) {
                 var me = this
-                if(me.value.status) {
-                    event.pageY = event.pageY - 62
-                    me.$refs.vueSimpleContextMenu.showMenu(event)
-                }
+                event.pageY = event.pageY - 62
+                me.$refs.vueSimpleContextMenu.showMenu(event)
             },
             async optionClicked(event) {
                 var me = this
-                var designer = me.getComponent('kube-modeling-designer')
+                var code = 'kubectl ' + event.option.name.toLowerCase()
                 
-                if(event.option.name == 'Delete') {
-                    await designer.deleteObj(me.value)
-                    me.refresh()
-                } else {
-                    await designer.terminal()
+                if(code.includes('describe') || code.includes('delete')) {
+                    code += ' ' + me.value.name
                 }
+                code += ' \n'
+                console.log(code)
+                me.$EventBus.$emit('sendCode', code)
             },
-
         }
     }
 </script>

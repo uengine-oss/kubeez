@@ -1179,14 +1179,19 @@
             },
             deploy() {
                 var me = this
+                var params = {
+                    "apiServer": me.clusterInfo.apiServer,
+                    "token": me.clusterInfo.token
+                }
 
                 me.value.definition.forEach(function (item) {
                     var reqUrl = me.getReqUrl(item)
-                    
+                    params.data = item.object
+
                     if (item.status) {
                         reqUrl += item.object.metadata.name
 
-                        me.$http.put(reqUrl, item.object).then(function (res) {
+                        me.$http.put(reqUrl, params).then(function (res) {
                             console.log(res.status)
                             me.getStatusData(reqUrl, item)
                         }).catch(function (err) {
@@ -1194,7 +1199,7 @@
                             alert("Update failed")
                         })
                     } else {
-                        me.$http.post(reqUrl, item.object).then(function (res) {
+                        me.$http.post(reqUrl, params).then(function (res) {
                             me.isDeploy = true
                             console.log(res.status)
                             reqUrl += item.object.metadata.name
@@ -1210,10 +1215,15 @@
             deleteObj(item) {
                 var me = this
                 var reqUrl = me.getReqUrl(item)
+                var params = {
+                    "apiServer": me.clusterInfo.apiServer,
+                    "token": me.clusterInfo.token,
+                    "data": item.object
+                }
                 
                 clearInterval(me.getStatus)
 
-                me.$http.delete(reqUrl, item.object).then(function (res) {
+                me.$http.delete(reqUrl, params).then(function (res) {
                     item.status = null
                     console.log(res.status)
                 }).catch(function (err) {
@@ -1254,10 +1264,14 @@
             },
             getStatusData(reqUrl, element) {
                 var me = this
-                var jsonData = element.object
+                var params = {
+                    "apiServer": me.clusterInfo.apiServer,
+                    "token": me.clusterInfo.token,
+                    "data": element.object
+                }
                 
                 me.getStatus = setInterval(function() {
-                    me.$http.get(reqUrl, jsonData).then(function (res) {
+                    me.$http.get(reqUrl, params).then(function (res) {
                         // console.log(res.data.status)
                         var obj = {
                             state: "get",
@@ -1268,22 +1282,6 @@
                         console.log(err)
                     })
                 }, 200)
-
-            },
-            terminal() {
-                var me = this
-                
-                var item = {
-                    "type": "Token",
-                    "name" : localStorage.getItem('clusterName'),
-                    "apiServer" : localStorage.getItem('clusterAddress'),
-                    "token": localStorage.getItem('kuberToken'),
-                }
-
-                me.$http.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
-                me.$http.post("api/kube-token", item).then(function (response) {
-                    me.$EventBus.$emit('terminalOn', response.data.token)
-                })
             },
             onSearchBox() {
                 var me = this

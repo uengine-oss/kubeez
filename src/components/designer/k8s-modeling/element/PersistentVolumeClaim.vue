@@ -61,8 +61,7 @@
 
             <sub-elements>
                 <circle-element
-                        v-if="value.status"
-                        :sub-bottom="-15"
+                            :sub-bottom="-15"
                         :sub-width="25"
                         :sub-height="25"
                         :sub-align="'center'"
@@ -178,8 +177,12 @@
             
         },
         mounted: function () {
-
             var me = this;
+
+            if(me.value.status) {
+                me.setStatus()
+                me.refresh()
+            }
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
@@ -211,11 +214,10 @@
         methods: {
             setStatus() {
                 var me = this
-                
                 if(me.value.status.phase == 'Bound') {
-                    me.changeStatusColor('success')
+                    me.deploySuccess = true
                 } else {
-                    me.changeStatusColor('waiting')
+                    me.deploySuccess = false
                 }
             },
         }
