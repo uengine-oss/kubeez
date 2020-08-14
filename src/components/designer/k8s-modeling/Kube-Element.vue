@@ -8,6 +8,8 @@
     var changeCase = require('change-case');
     var pluralize = require('pluralize');
 
+    import json2yaml from 'json2yaml'
+
     export default {
         name: 'modeling-element-base',
         props: {
@@ -33,9 +35,9 @@
                 deploySuccess: false,
                 menuList : [
                     { name: "Get " + this.value._type },
-                    { name: "Create " + this.value._type },
                     { name: "Describe " + this.value._type },
                     { name: "Delete " + this.value._type },
+                    { name: "Create " + this.value._type },
                     { name: "Update " + this.value._type }
                 ],
             }
@@ -439,12 +441,20 @@
             async optionClicked(event) {
                 var me = this
                 var code = 'kubectl ' + event.option.name.toLowerCase()
+                var designer = me.getComponent('kube-modeling-designer')
                 
                 if(code.includes('describe') || code.includes('delete')) {
                     code += ' ' + me.value.name
+                } else if(code.includes('create')) {
+                    code = 'kubectl create -f- <<EOF \n'
+                    var yaml = designer.yamlFilter(json2yaml.stringify(me.value.object))
+                    code += yaml + "EOF"
+                } else if(code.includes('update')) {
+                    code = 'kubectl apply -f- <<EOF \n'
+                    var yaml = designer.yamlFilter(json2yaml.stringify(me.value.object))
+                    code += yaml + "EOF"
                 }
-                code += ' \n'
-                console.log(code)
+                code += '\n'
                 me.$EventBus.$emit('sendCode', code)
             },
         }

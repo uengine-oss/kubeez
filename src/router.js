@@ -17,8 +17,9 @@ export default new Router({
     routes: [
         {
             path: '/',
-            name: 'EventStormingCanvas',
-            component: KubeModeler
+            redirect: '/dash'
+            // name: 'EventStormingCanvas',
+            // component: KubeModeler
         },
         {
             path: '/dash',

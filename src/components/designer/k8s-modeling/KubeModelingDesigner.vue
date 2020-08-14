@@ -1046,6 +1046,7 @@
                 }
                 yaml_text = lines.join('\n')
                 yaml_text = yaml_text.replace(/ null/g, ' ')
+                yaml_text = yaml_text.replace(/\"/g, '')
                 return yaml_text
             },
             async generateZip() {
