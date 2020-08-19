@@ -34,8 +34,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#2196f3',
-                        fill: '#2196f3',
+                        'stroke': '#98cbff',
+                        fill: '#98cbff',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -58,14 +58,13 @@
                 </text-element>
                 <image-element
                         :image="imgSrc"
-                        :sub-top="5"
+                        :sub-bottom="5"
                         :sub-left="5"
-                        :sub-width="25"
+                        :sub-width="30"
                         :sub-height="25">
                 </image-element>
             </sub-elements>
         </geometry-element>
-
 
         <property-panel
                 v-if="openPanel"
@@ -88,7 +87,7 @@
 
     export default {
         mixins: [Element],
-        name: 'service',
+        name: 'knativeService',
         components: {
             "property-panel": PropertyPanel
         },
@@ -98,10 +97,10 @@
                 return {}
             },
             className() {
-                return 'Service'
+                return 'knativeService'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/svc.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/knative/logo.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -119,32 +118,32 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "v1",
+                        "apiVersion": "serving.knative.dev/v1alpha1",
                         "kind": "Service",
                         "metadata": {
-                            "name": "",
-                            "labels": {
-                                "app": ""
-                            }
+                            "name": "helloworld-go",
+                            "namespace": "default"
                         },
                         "spec": {
-                            "ports": [
-                                {
-                                    "port": 80,
-                                    "targetPort": 80
+                            "runLatest": {
+                                "configuration": {
+                                    "revisionTemplate": {
+                                        "spec": {
+                                            "container": {
+                                                "image": "gcr.io/knative-samples/helloworld-go",
+                                                "env": [
+                                                    {
+                                                        "name": "TARGET",
+                                                        "value": "Go Sample v1"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
                                 }
-                            ],
-                            "selector": {
-                                "app": ""
-                            },
-                            "type": "ClusterIP"
+                            }
                         }
                     },
-                    outboundDeployment: null,
-                    outboundPod: null,
-                    outboundReplicaSet: null,
-                    connectableType: ["Deployment", "Pod", "ReplicaSet"],
-                    status: null,
                 }
             },
             name() {
@@ -162,87 +161,19 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-            outboundDeploymentName() {
-                try {
-                    return this.value.outboundDeployment.object.metadata.name;
-                } catch(e) {
-                    return "";
-                }
-            },
-
-            outboundPodName() {
-                try {
-                    return this.value.outboundPod.object.metadata.name;
-                } catch(e) {
-                    return "";
-                }
-            },
-
-            outboundReplicaSetName() {
-                try {
-                    return this.value.outboundReplicaSet.object.metadata.name
-                } catch(e) {
-                    return ""
-                }
-            }
-
         },
         data: function () {
             return {};
         },
-        created: function () {
-
-        },
         mounted: function () {
-
             var me = this;
-
-            this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
-                    me.value.outboundDeployment = obj.element.targetElement;
-                }
-                else if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
-                    me.value.outboundPod = obj.element.targetElement;
-                }
-                else if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
-                    me.value.outboundReplicaSet = obj.element.targetElement;
-                }
-
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
-                    me.value.outboundDeployment = null;
-                }
-                else if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
-                    me.value.outboundPod = null;
-                }
-                else if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
-                    me.value.outboundReplicaSet = null;
-                }
-
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status
-                }
-            })
             
         },
         watch: {
             name(appName){
                 this.value.object.metadata.labels.app = appName;
             },
-
-            "outboundDeploymentName": function(val) {
-                this.value.object.spec.selector.app = val;
-            },
-
-            "outboundPodName": function(val) {
-                this.value.object.spec.selector.app = val;
-            },
-
-            "outboundReplicaSetName": function(val) {
-                this.value.object.spec.selector.app = val
-            }
-
         },
-
         methods: {
         },
     }

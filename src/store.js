@@ -43,6 +43,8 @@ export default new Vuex.Store({
         quotaSpec: {'width': 100, 'height': 100},
         quotaSpecBinding: {'width': 100, 'height': 100},
         memquota: {'width': 100, 'height': 100},
+        // knative 기본 사이즈 지정
+        knativeService: {'width': 100, 'height': 100}
     },
     getters: {
         getAuth(state) {
