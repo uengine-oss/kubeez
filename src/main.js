@@ -63,13 +63,7 @@ window.$Mustache = Mustache
 
 // TrackJS -- Error Logging
 
-
-if( true ){
-    // window.API_HOST = "localhost:8080";
-    window.API_HOST = "http://localhost:8080";
-}else{
-    window.API_HOST = process.env.VUE_APP_API_HOST
-}
+window.API_HOST = "http://localhost:8080";
 window.vueFilePath = process.env.VUE_APP_FILE_PATH
 
 
