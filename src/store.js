@@ -44,7 +44,9 @@ export default new Vuex.Store({
         quotaSpecBinding: {'width': 100, 'height': 100},
         memquota: {'width': 100, 'height': 100},
         // knative 기본 사이즈 지정
-        knativeService: {'width': 100, 'height': 100}
+        knativeService: {'width': 100, 'height': 100},
+        // argo 기본 사이즈 지정
+        workflow: {'width': 100, 'height': 100}
     },
     getters: {
         getAuth(state) {
