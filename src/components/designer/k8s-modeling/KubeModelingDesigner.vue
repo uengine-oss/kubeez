@@ -999,7 +999,7 @@
                 if (me.template.length > 0) {
                     var template = me.template;
                 } else {
-                    var template = 'Separate File';
+                    var template = 'Separate File per kind';
                 }
 
                 if (template == 'Separate File') {
