@@ -9,7 +9,6 @@ Kuber-ez is a web-based tool for kubernetes manifest composition and operation t
 http://msaez.io or http://msaez.io/#/kubernetes/anonymous/kuberLocal/kuberInit/-init
 
 ## Snapshots:
-![image](https://user-images.githubusercontent.com/48265118/88506730-902d4d00-d015-11ea-9a76-9de8e4de73b8.png)
 
 ![image](https://user-images.githubusercontent.com/48265118/88508769-8c4ff980-d01a-11ea-91f7-e9eab52c4376.png)
 
