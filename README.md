@@ -38,9 +38,15 @@ npm install && npm run serve
 
 If you want to use KuberEz for managing your clusters, you have to run all the components of KuberEz in a Kubernetes cluster:
 
+
+
 ```
 kubectl create -f kubernetes/deploy.yaml
 ```
+
+![image](https://user-images.githubusercontent.com/487999/91242900-8d905580-e783-11ea-959e-216eac3bf1a6.png)
+
+(Above diagram shows all the kuberEz components)
 
 ## How to add new component
 
