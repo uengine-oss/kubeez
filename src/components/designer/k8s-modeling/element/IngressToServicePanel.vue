@@ -4,17 +4,32 @@
         <v-navigation-drawer absolute permanent right>
             <!--  상단 이미지 및 선택 타이틀 이름-->
             <v-list class="pa-1">
-                <v-list-item>
-                    <v-list-item-title class="headline">{{ titleName }}</v-list-item-title>
-                </v-list-item>
+                <v-tabs v-model="activeTab">
+                    <v-tab
+                        v-for="(tab, idx) in tabItems"
+                        :key="idx"
+                        @click="changeType(idx)">
+                        <v-list-item-title>{{ tab }}</v-list-item-title>
+                    </v-tab>
+                </v-tabs>
             </v-list>
 
             <v-list class="pt-0" dense flat>
-                <v-layout wrap>
+                <v-layout v-if="activeTab == 0" wrap>
                     <v-card-text>
                         <v-text-field
                             label="Service Path"
+                            hint="ex) /foo"
                             v-model="path"
+                        ></v-text-field>
+                    </v-card-text>
+                </v-layout>
+                <v-layout v-else wrap>
+                    <v-card-text>
+                        <v-text-field
+                            label="Host"
+                            hint="ex) foo.bar.com"
+                            v-model="host"
                         ></v-text-field>
                     </v-card-text>
                 </v-layout>
@@ -38,34 +53,61 @@
                     return this.value.path
                 },
                 set(val) {
-                    this.value.path = val
-                    var obj = {
-                        "path": val
-                    }
-                    this.updateSourceElement('updatePath', obj)
+                    var me = this
+                    me.value.path = val
+                    me.value.targetElement.path = val
+                    me.updateSourceElement()
+                }
+            },
+            host: {
+                get() {
+                    return this.value.host
+                },
+                set(val) {
+                    var me = this
+                    me.value.host = val
+                    me.value.targetElement.host = val
+                    me.updateSourceElement()
                 }
             },
         },
         data() {
-            return {}
+            return {
+                activeTab: 0,
+                tabItems: [ "Path", "Virtual Host" ]
+            }
         },
         watch: {
         },
-        beforeDestroy() {
-            var obj = {
-                "path": this.path
+        mounted() {
+            var me = this
+            if(me.value.routeType == 'path') {
+                me.activeTab = 0
+            } else if(me.value.routeType == 'host') {
+                me.activeTab = 1
             }
-            this.updateSourceElement('updatePath', obj)
+        },
+        beforeDestroy() {
+            var me = this
+            var obj = {}
+            me.updateSourceElement()
         },
         methods: {
-            updateSourceElement(state, value) {
+            updateSourceElement() {
                 var me = this
-                var obj = {
-                    state: state,
-                    value: value
-                }
-                obj.value.targetElement = me.value.targetElement
+                var obj = {}
+                obj.state = 'updateType'
+                obj.targetElement = me.value.targetElement
                 me.$EventBus.$emit(`${me.value.sourceElement.elementView.id}`, obj)
+            },
+            changeType(val) {
+                var me = this
+                me.activeTab = val
+                if(val == 0) {
+                    me.value.routeType = "path"
+                } else if(val == 1) {
+                    me.value.routeType = "host"
+                }
             }
         }
     }

@@ -56,10 +56,6 @@
                                         label="Name"
                                         v-model="value.object.metadata.name"
                                 ></v-text-field>
-                                <v-text-field
-                                        label="Host"
-                                        v-model="value.object.spec.rules[0].host"
-                                ></v-text-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>

@@ -1,184 +1,167 @@
 <template>
     <div>
         <geometry-element
-                selectable
-                :movable="editMode"
-                :resizable="editMode"
-                connectable
-                :deletable=editMode
-                :id.sync="value.elementView.id"
-                :x.sync="value.elementView.x"
-                :y.sync="value.elementView.y"
-                :width.sync="value.elementView.width"
-                :height.sync="value.elementView.height"
-                :angle.sync="value.elementView.angle"
-                v-on:selectShape="selectedActivity"
-                v-on:deSelectShape="deSelectedActivity"
-                v-on:dblclick="showProperty"
-                v-on:rotateShape="onRotateShape"
-                v-on:labelChanged="onLabelChanged"
-                v-on:addedToGroup="onAddedToGroup"
-                v-on:removeShape="onRemoveShape(value)"
-                :label.sync="name"
-                :_style="{
-                    'label-angle':value.elementView.angle,
-                    'font-weight': 'bold','font-size': '16'
-                }"
-                v-on:contextmenu.prevent.stop="handleClick($event)"
+            selectable
+            :movable="editMode"
+            :resizable="editMode"
+            connectable
+            :deletable="editMode"
+            :id.sync="value.elementView.id"
+            :x.sync="value.elementView.x"
+            :y.sync="value.elementView.y"
+            :width.sync="value.elementView.width"
+            :height.sync="value.elementView.height"
+            :angle.sync="value.elementView.angle"
+            v-on:selectShape="selectedActivity"
+            v-on:deSelectShape="deSelectedActivity"
+            v-on:dblclick="showProperty"
+            v-on:rotateShape="onRotateShape"
+            v-on:labelChanged="onLabelChanged"
+            v-on:addedToGroup="onAddedToGroup"
+            v-on:removeShape="onRemoveShape(value)"
+            :label.sync="name"
+            :_style="{
+                'label-angle':value.elementView.angle,
+                'font-weight': 'bold','font-size': '16'
+            }"
+            v-on:contextmenu.prevent.stop="handleClick($event)"
         >
-
             <!--v-on:dblclick="$refs['dialog'].open()"-->
             <geometry-rect
-                    :_style="{
-                        'fill-r': 1,
-                        'fill-cx': .1,
-                        'fill-cy': .1,
-                        'stroke-width': 1.4,
-                        'stroke': '#4caf50',
-                        fill: '#4caf50',
-                        'fill-opacity': 1,
-                        r: '1',
-                        'z-index': '998'
-                    }"
+                :_style="{
+                    'fill-r': 1,
+                    'fill-cx': .1,
+                    'fill-cy': .1,
+                    'stroke-width': 1.4,
+                    'stroke': '#4caf50',
+                    fill: '#4caf50',
+                    'fill-opacity': 1,
+                    r: '1',
+                    'z-index': '998'
+                }"
             ></geometry-rect>
 
-            <sub-controller
-                    :image="'subprocess.png'"
-                    @click.prevent.stop="handleClick($event)"
+            <sub-controller 
+                :image="'subprocess.png'" 
+                @click.prevent.stop="handleClick($event)"
             ></sub-controller>
 
             <sub-elements>
                 <!--title-->
                 <text-element
-                        :sub-width="'100%'"
-                        :sub-height="25"
-                        :sub-top="0"
-                        :sub-left="0"
-                        :text="'Ingress'">
-                </text-element>
+                    :sub-width="'100%'"
+                    :sub-height="25"
+                    :sub-top="0"
+                    :sub-left="0"
+                    :text="'Ingress'"
+                ></text-element>
                 <image-element
-                        :image="imgSrc"
-                        :sub-top="5"
-                        :sub-left="5"
-                        :sub-width="25"
-                        :sub-height="25">
-                </image-element>
+                    :image="imgSrc"
+                    :sub-bottom="5"
+                    :sub-left="5"
+                    :sub-width="25"
+                    :sub-height="25"
+                ></image-element>
             </sub-elements>
         </geometry-element>
 
-        <property-panel
-                v-if="openPanel"
-                v-model="value"
-                :img="imgSrc">
-        </property-panel>
+        <property-panel 
+            v-if="openPanel" 
+            v-model="value" 
+            :img="imgSrc"
+        ></property-panel>
 
         <vue-context-menu
             :elementId="value._type"
             :options="menuList"
             :ref="'vueSimpleContextMenu'"
-            @option-clicked="optionClicked">
-        </vue-context-menu>
+            @option-clicked="optionClicked"
+        ></vue-context-menu>
     </div>
 </template>
 
 <script>
-    import Element from '../Kube-Element'
-    import PropertyPanel from './IngressPropertyPanel'
+    import Element from "../Kube-Element";
+    import PropertyPanel from "./IngressPropertyPanel";
 
     export default {
         mixins: [Element],
-        name: 'ingress',
+        name: "ingress",
         components: {
-            "property-panel": PropertyPanel
+            "property-panel": PropertyPanel,
         },
         props: {},
         computed: {
             defaultStyle() {
-                return {}
+                return {};
             },
             className() {
-                return 'Ingress'
+                return "Ingress";
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ing.svg`
+                return `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ing.svg`;
             },
             createNew(elementId, x, y, width, height) {
                 return {
                     _type: this.className(),
-                    name: '',
-                    namespace:'',
+                    name: "",
+                    namespace: "",
                     elementView: {
-                        '_type': this.className(),
-                        'id': elementId,
-                        'x': x,
-                        'y': y,
-                        'width': width,
-                        'height': height,
-                        'style': JSON.stringify({}),
-                        'angle': 0,
+                        _type: this.className(),
+                        id: elementId,
+                        x: x,
+                        y: y,
+                        width: width,
+                        height: height,
+                        style: JSON.stringify({}),
+                        angle: 0,
                     },
                     object: {
-                        "apiVersion": "extensions/v1beta1",
-                        "kind": "Ingress",
-                        "metadata": {
-                            "name": "",
-                            "annotations": {
+                        apiVersion: "networking.k8s.io/v1beta1",
+                        kind: "Ingress",
+                        metadata: {
+                            name: "",
+                            annotations: {
+                                "kubernetes.io/ingress.class": "nginx",
                                 "nginx.ingress.kubernetes.io/rewrite-target": "/"
-                            }
+                            },
                         },
-                        "spec": {
-                            "rules": [
-                                {
-                                    "host": "test.io",
-                                    "http": {
-                                        "paths": [
-                                            {
-                                                "path": "/",
-                                                "backend": {
-                                                    "serviceName": "",
-                                                    "servicePort": 80
-                                                }
-                                            }
-                                        ]
-                                    }
-                                }
-                            ]
-                        }
+                        spec: {
+                            rules: [],
+                        },
                     },
                     outboundServices: [],
-                    connectableType: ["Service"],
+                    connectableType: [ "Service" ],
                     status: null,
                     relationComponent: "IngressToService",
-                }
+                };
             },
             namespace: {
-                get: function() {
-                    return this.value.object.metadata.namespace
+                get: function () {
+                    return this.value.object.metadata.namespace;
                 },
-                set: function (newVal){
-                    this.value.object.metadata.namespace = newVal
-                }
+                set: function (newVal) {
+                    this.value.object.metadata.namespace = newVal;
+                },
             },
             name() {
                 try {
                     return this.value.object.metadata.name;
-                } catch(e) {
+                } catch (e) {
                     return "Untitled";
                 }
             },
             outboundServiceNames() {
                 try {
                     var serviceNames = "";
-                    this.value.outboundServices.forEach(element => {
-                        serviceNames += element.object.metadata.name + ":" + element.object.spec.ports[0].port +  ","
-                    })
+                    this.value.outboundServices.forEach((element) => {
+                      // serviceNames += element.host + element.path + ' ' + element.targetElement.name + ","
+                      serviceNames += element.host + element.path + " " + element.name + ",";
+                    });
                     return serviceNames;
-                } catch(e) {
-                    return ""
+                } catch (e) {
+                    return "";
                 }
-            },
-            paths() {
-                return this.value.object.spec.rules[0].http.paths
             },
         },
         data: function () {
@@ -190,80 +173,89 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
-                    obj.element.targetElement.relationId = obj.element.relationView.id;
+                if (obj.state == "addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
+                    obj.element.targetElement.routeType = obj.element.routeType;
+                    obj.element.targetElement.host = obj.element.host;
+                    obj.element.targetElement.path = obj.element.path;
                     me.value.outboundServices.push(obj.element.targetElement);
                 }
-                
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
+
+                if (obj.state == "deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
                     me.value.outboundServices.splice(me.value.outboundServices.indexOf(obj.element.targetElement), 1);
                 }
 
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status
+                if (obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
+                    me.value.status = obj.element.status;
                 }
 
-                if(obj.state=="updatePath" && obj.value) {
-                    me.setPath(obj)
+                if (obj.state == "updateType" && obj.targetElement) {
+                    me.setRoute(obj);
                 }
-            })
-            
+            });
         },
         watch: {
-            "outboundServiceNames": function(names){
+            outboundServiceNames(names) {
                 var me = this;
-                me.value.object.spec.rules[0].http.paths = [];
-                me.value.outboundServices.forEach(element => {
-                        me.value.object.spec.rules[0].http.paths.push(
-                            {
-                                "path": "/",
-                                "backend": {
-                                    "serviceName": element.object.metadata.name,
-                                    "servicePort": element.object.spec.ports[0].port
-                                }
-                            }
-                        );
+                me.value.object.spec.rules = [];
+                me.value.outboundServices.forEach((element) => {
+                    if (element.routeType == "path" && me.findHost(element.host) != -1 && me.value.object.spec.rules.length > 0) {
+                        var index = me.findHost(element.host);
+                        me.value.object.spec.rules[index].http.paths.push({
+                            path: element.path,
+                            backend: {
+                                serviceName: element.object.metadata.name,
+                                servicePort: element.object.spec.ports[0].port,
+                            },
+                        });
+                        element.host = me.value.object.spec.rules[index].host;
+                    } else {
+                        var obj = {
+                            host: "",
+                            http: { paths: [] },
+                        };
+                        obj.host = element.host;
+                        obj.http.paths.push({
+                            path: element.path,
+                            backend: {
+                                serviceName: element.object.metadata.name,
+                                servicePort: element.object.spec.ports[0].port,
+                            },
+                        });
+                        me.value.object.spec.rules.push(obj);
                     }
-                );
+                });
             },
-            paths: {
-                deep: true,
-                handler: function (newVal, oldVal) {
-                    var me = this
-                    if(newVal.length < oldVal.length) {
-                        var index = me.getIndex(newVal, oldVal)
-                        if (me.value.outboundServices[index]) {
-                            me.deleteRelation(me.value.outboundServices[index].relationId)
-                        }
-                    }
-                }
-            }
         },
         methods: {
-            getIndex(newArr, oldArr) {
-                var index
-                oldArr.some(function(item, idx) {
-                    if (newArr[idx] == undefined) {
-                        index = idx
-                        return true
-                    } else if (item.backend.serviceName != newArr[idx].backend.serviceName) {
-                        index = idx
-                        return true
-                    }
-                })
-                return index
+            setRoute(obj) {
+                var me = this;
+                var index = me.value.outboundServices.findIndex(function (val) {
+                    return val == obj.targetElement;
+                });
+                me.value.outboundServices.splice(index, 1);
+                me.value.outboundServices.push(obj.targetElement);
+                // me.value.object.spec.rules[index].host = obj.value.host;
             },
-            setPath(obj) {
-                var me = this
-                var index = me.value.outboundServices.findIndex(function(val) {
-                    return val == obj.value.targetElement
-                })
-                me.value.object.spec.rules[0].http.paths[index].path = obj.value.path
-            }
-        }
-    }
+            findHost(host) {
+                var me = this;
+                var num = 0;
+                me.value.outboundServices.forEach(function (el) {
+                    if (el.host == host) {
+                        num++;
+                    }
+                });
+                if (num > 1) {
+                    // return me.value.outboundServices.findIndex(function (el) {
+                    //     return el.host == host;
+                    // });
+                    return me.value.object.spec.rules.findIndex(function (el) {
+                        return el.host == host;
+                    });
+                }
+            },
+        },
+    };
 </script>
 
 <style>
-
 </style>

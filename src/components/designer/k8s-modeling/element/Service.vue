@@ -58,7 +58,7 @@
                 </text-element>
                 <image-element
                         :image="imgSrc"
-                        :sub-top="5"
+                        :sub-bottom="5"
                         :sub-left="5"
                         :sub-width="25"
                         :sub-height="25">
@@ -226,21 +226,18 @@
         },
         watch: {
             name(appName){
+                this.value.name = appName;
                 this.value.object.metadata.labels.app = appName;
             },
-
-            "outboundDeploymentName": function(val) {
+            outboundDeploymentName(val) {
                 this.value.object.spec.selector.app = val;
             },
-
-            "outboundPodName": function(val) {
+            outboundPodName(val) {
                 this.value.object.spec.selector.app = val;
             },
-
-            "outboundReplicaSetName": function(val) {
+            outboundReplicaSetName(val) {
                 this.value.object.spec.selector.app = val
             }
-
         },
 
         methods: {
