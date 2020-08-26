@@ -38,63 +38,8 @@ npm install && npm run serve
 
 If you want to use KuberEz for managing your clusters, you have to run all the components of KuberEz in a Kubernetes cluster:
 
-- component1: webkubectl
 ```
-## create webkubectl
-$ kubectl create -f- <<EOF
-apiVersion: v1
-kind: Pod
-metadata:
-  name: webkubectl
-  labels:
-    app: webkubectl
-spec:
-  containers:
-    - name: webkubectl
-      image: gcr.io/eventstorming-tool/webkubectl
-      securityContext:
-        privileged: true
-EOF
-## get address after service expose
-$ kubectl expose po webkubectl --type=LoadBalancer --port=8082
-```
-
-in gateway/src/main/resources/application.yml
-
-![gateway사용법캡처](https://user-images.githubusercontent.com/48265118/90728455-e2ede200-e2ff-11ea-910a-14437670e2c6.PNG)
-
-```
-cd gateway
-mvn clean compile
-mvn spring-boot:run
-```
-
-- component2: api-tunneling-server between KuberEz and Kubernetes cluster.
-```
-## create api-server
-$ kubectl create -f- <<EOF
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: api-server
-  labels:
-    app: api-server
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: api-server
-  template:
-    metadata:
-      labels:
-        app: api-server
-    spec:
-     containers:
-     - name: api-server
-       image: sanghoon01/api-server:latest
-EOF
-## service expose
-kubectl expose deploy api-server --type=LoadBalancer --port=8080
+kubectl create -f kubernetes/deploy.yaml
 ```
 
 ## How to add new component
