@@ -127,6 +127,20 @@
                 ],
                 [
                     {
+                        'component': 'Autoscaler',
+                        'label': 'Autoscaler',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/hpa-palette.svg`
+                    },
+                    {
+                        'component': 'hpa',
+                        'label': 'Horizontal Pod Autoscaler',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/hpa-palette.svg`
+                    }
+                ],
+                [
+                    {
                         'component': 'Job',
                         'label': 'Job',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/job-palette.svg`
