@@ -813,8 +813,13 @@
                         }
                     }
 
+                    var result = me.modifyRelation({
+                        sourceElement: from.$parent,
+                        targetElement: to.$parent
+                    })
+
                     // relation component
-                    if (from.$parent.value.relationComponent) {
+                    if (result != false && from.$parent.value.relationComponent) {
                         componentInfo.component = from.$parent.value.relationComponent
                     }
 
@@ -864,7 +869,10 @@
                     var result = me.modifyRelation(element);
 
                     if(result == false) {
-                        return;
+                        element.style = {
+                            'stroke-dasharray': '- '
+                        }
+                        // return;
                     }
 
                 } else {
