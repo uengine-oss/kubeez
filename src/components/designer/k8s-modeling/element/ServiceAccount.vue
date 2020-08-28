@@ -53,7 +53,7 @@
                         :sub-height="25"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'ClusterRole'">
+                        :text="'ServiceAccount'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -82,12 +82,12 @@
 
 <script>
     import Element from '../Kube-Element'
-    import PropertyPanel from './ClusterRolePropertyPanel'
+    import PropertyPanel from './ServiceAccountPanel'
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
     export default {
         mixins: [Element],
-        name: 'clusterRole',
+        name: 'serviceAccount',
         components: {
             ImageElement,
             "property-panel": PropertyPanel
@@ -98,10 +98,10 @@
                 return {}
             },
             className() {
-                return 'ClusterRole'
+                return 'ServiceAccount'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/c-role.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sa.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -119,18 +119,11 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "rbac.authorization.k8s.io/v1",
-                        "kind": "ClusterRole",
+                        "apiVersion": "v1",
+                        "kind": "ServiceAccount",
                         "metadata": {
-                            "name": "",
-                        },
-                        "rules": [
-                            {
-                                "apiGroups": [ "" ],
-                                "resources": [],
-                                "verbs": []
-                            }
-                        ]
+                            "name": ""
+                        }
                     },
                     status: null,
                 }
@@ -159,20 +152,10 @@
         },
         mounted(){
             var me = this;
-
-            this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = "created"
-                    var designer = me.getComponent('kube-modeling-designer')
-                    clearInterval(designer.getStatus)
-                }
-            })
-
         },
         watch: {
         },
-        methods: {
+        methods: {            
         }
     }
 </script>

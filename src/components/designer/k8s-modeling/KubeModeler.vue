@@ -214,6 +214,13 @@
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/crb-palette.svg`
                     },
+                    {
+                        'component': 'serviceAccount',
+                        'label': 'ServiceAccount',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sa-palette.svg`
+                    },
                 ],[
                     {
                         'component': 'Istio',

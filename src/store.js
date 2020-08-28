@@ -33,6 +33,7 @@ export default new Vuex.Store({
         clusterRole: {'width': 100, 'height': 100},
         clusterRoleBinding: {'width': 100, 'height': 100},
         hpa: {'width': 100, 'height': 100},
+        serviceAccount: {'width': 100, 'height': 100},
         // istio 기본 사이즈 지정
         gateway: {'width': 100, 'height': 100},
         virtualService: {'width': 100, 'height': 100},
