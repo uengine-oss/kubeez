@@ -29,9 +29,13 @@ http://msaez.io or http://msaez.io/#/kubernetes/anonymous/kuberLocal/kuberInit/-
 ### Standalone Mode
 
 If you want to use the KuberEz for simply drawing models and generating Yaml, you only need to run front-end server:
-`
+```
 npm install && npm run serve
-`
+```
+or
+```
+docker run --name="kuberEz" -p 8081:8080 -d ohsy818/kuber-ez
+```
 
 ### Full-fledged Mode
 
@@ -43,7 +47,7 @@ If you want to use KuberEz for managing your clusters, you have to run all the c
 kubectl create -f kubernetes/deploy.yaml
 ```
 
-![image](https://user-images.githubusercontent.com/487999/91242900-8d905580-e783-11ea-959e-216eac3bf1a6.png)
+![image](https://user-images.githubusercontent.com/48265118/91529225-e1e23380-e943-11ea-8c35-12ddf7d6712e.png)
 
 (Above diagram shows all the kuberEz components)
 
