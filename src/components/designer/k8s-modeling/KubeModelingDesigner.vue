@@ -421,8 +421,7 @@
                 isRead: false,
                 //helm chart
                 chartJson: {},
-                valuesJson: {},
-                elementIdList: [],
+                valuesYaml: '',
                 selectedCategoryIndex: null,
 
             }
@@ -535,11 +534,6 @@
                 // }
 
             });
-
-            me.$EventBus.$on('setValuesYaml', function(obj) {
-                me.valuesJson = {...me.valuesJson, ...obj}
-            })
-
         },
         watch: {
             value: {
@@ -1042,7 +1036,7 @@
                 } else if (template == 'Separate File per kind') {
                     me.setYamlPerKind(me.treeList)
                 } else if (template == 'Helm') {
-                    me.getHelmChartSetting()
+                    me.setHelmChart()
                 }
                 
             },
@@ -1113,12 +1107,12 @@
                 var me = this
 
                 me.value.definition.forEach(function (item) {
-                    var name = item._type
+                    var name = (item._type).toLowerCase()
                     
                     var codeValue = {
                         'key': item.elementView.id,
                         'name': name + '.yaml',
-                        'code': json2yaml.stringify(item.object),
+                        'code': me.yamlFilter(json2yaml.stringify(item.object)),
                         'file': me.fileType('.yaml')
                     }                        
                     
@@ -1134,7 +1128,7 @@
                     }
                 })
             },
-            getHelmChartSetting() {
+            setHelmChart() {
                 var me = this
                 var templates = []
                 var notes = {
@@ -1143,19 +1137,18 @@
                     'code': '',
                     'file': 'txt'
                 }
-
                 templates.push(notes)
                 me.setYamlPerKind(templates)
 
                 me.chartJson = {
                     "apiVersion": "v1",
-                    "name": "local-test",
+                    "name": me.projectName,
                     "version": "0.1.0",
                     "description": "A Helm chart for Kubernetes"
                 }
 
                 var folder = {
-                    'name': 'kubernetes',
+                    'name': me.projectName,
                     'children': [
                         {
                             'key': 'chart',
@@ -1170,13 +1163,12 @@
                         {
                             'key': 'values',
                             'name': 'values.yaml',
-                            'code': me.yamlFilter(json2yaml.stringify(me.valuesJson)),
+                            'code': me.valuesYaml,
                             'file': me.fileType('.yaml')
                         }
                     ]
                 }
                 me.treeList.push(folder)
-
             },
             deployReady() {
                 var me = this

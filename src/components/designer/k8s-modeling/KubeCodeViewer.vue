@@ -47,6 +47,7 @@
                         @Focus="onCmFocus"
                         @input="onCmCodeChange"
                         height="700"
+                        style="width: 580px;"
                 >
                 </codemirror>
             </v-card-text>

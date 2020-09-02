@@ -164,28 +164,28 @@
             },
             outboundDeploymentName() {
                 try {
-                    return this.value.outboundDeployment.object.metadata.name;
+                    return this.value.outboundDeployment.object.metadata.name + ', ' + 
+                        this.value.outboundDeployment.object.spec.template.spec.containers[0].ports[0].containerPort;
                 } catch(e) {
                     return "";
                 }
             },
-
             outboundPodName() {
                 try {
-                    return this.value.outboundPod.object.metadata.name;
+                    return this.value.outboundPod.object.metadata.name + ', ' + 
+                        this.value.outboundPod.object.spec.containers[0].ports[0].containerPort;
                 } catch(e) {
                     return "";
                 }
             },
-
             outboundReplicaSetName() {
                 try {
-                    return this.value.outboundReplicaSet.object.metadata.name
+                    return this.value.outboundReplicaSet.object.metadata.name + ', ' + 
+                        this.value.outboundReplicaSet.object.spec.template.spec.containers[0].ports[0].containerPort;
                 } catch(e) {
                     return ""
                 }
             }
-
         },
         data: function () {
             return {};
@@ -225,18 +225,27 @@
             
         },
         watch: {
-            name(appName){
-                this.value.name = appName;
-                this.value.object.metadata.labels.app = appName;
+            name(appName) {
+                var me = this;
+                me.value.name = appName;
+                me.value.object.metadata.labels.app = appName;
             },
             outboundDeploymentName(val) {
-                this.value.object.spec.selector.app = val;
+                var me = this;
+                me.value.object.spec.selector.app = me.value.outboundDeployment.object.metadata.name;
+                me.value.object.spec.ports[0].targetPort 
+                    = me.value.outboundDeployment.object.spec.template.spec.containers[0].ports[0].containerPort;
             },
             outboundPodName(val) {
-                this.value.object.spec.selector.app = val;
+                var me = this;
+                me.value.object.spec.selector.app = val;
+                me.value.object.spec.ports[0].targetPort = me.value.outboundPod.object.spec.containers[0].ports[0].containerPort;
             },
             outboundReplicaSetName(val) {
-                this.value.object.spec.selector.app = val
+                var me = this;
+                me.value.object.spec.selector.app = me.value.outboundReplicaSet.object.metadata.name;
+                me.value.object.spec.ports[0].targetPort 
+                    = me.value.outboundReplicaSet.object.spec.template.spec.containers[0].ports[0].containerPort;
             }
         },
 
