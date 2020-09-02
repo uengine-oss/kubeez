@@ -44,7 +44,7 @@ If you want to use KuberEz for managing your clusters, you have to run all the c
 
 
 ```
-kubectl create -f kubernetes/deploy.yaml
+kubectl create -f https://raw.githubusercontent.com/uengine-oss/kuber-ez/master/kubernetes/deploy.yaml
 ```
 
 ![image](https://user-images.githubusercontent.com/48265118/91529225-e1e23380-e943-11ea-8c35-12ddf7d6712e.png)
