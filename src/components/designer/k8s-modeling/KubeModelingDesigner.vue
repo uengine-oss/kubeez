@@ -1282,7 +1282,7 @@
                     }).catch(function (err) {
                         console.log(err)
                     })
-                }, 200)
+                }, 500)
             },
             onSearchBox() {
                 var me = this

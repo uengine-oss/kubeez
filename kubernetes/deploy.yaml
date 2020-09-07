@@ -98,7 +98,7 @@ spec:
     app: api-server
   type: LoadBalancer
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: extensions/v1beta1
 kind: Ingress
 metadata: 
   name: gateway
@@ -107,33 +107,21 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec: 
   rules: 
-    - http: 
+    - host: kuberez.io
+      http: 
         paths: 
-          - path: /dash
-            backend: 
+          - backend: 
               serviceName: front-end
-              servicePort: 8082
-          - path: /static/.*
-            backend: 
-              serviceName: front-end
-              servicePort: 8082
-          - path: /js/.*
-            backend: 
-              serviceName: front-end
-              servicePort: 8082
-          - path: /img/.*
-            backend: 
-              serviceName: front-end
-              servicePort: 8082
-          - path: /css/.*
-            backend: 
-              serviceName: front-end
-              servicePort: 8082
-          - path: /api/.*
-            backend: 
-              serviceName: webkubectl
               servicePort: 8081
-          - path: /terminal/.*
-            backend: 
+    - host: api.kuberez.io
+      http: 
+        paths: 
+          - backend: 
+              serviceName: k8s-tunneling-server
+              servicePort: 8080
+    - host: webkubectl.kuberez.io
+      http: 
+        paths: 
+          - backend: 
               serviceName: webkubectl
-              servicePort: 8081
+              servicePort: 8082

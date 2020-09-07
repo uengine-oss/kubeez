@@ -58,20 +58,6 @@
                         :sub-height="25">
                 </image-element>
             </sub-elements>
-
-            <sub-elements>
-                <circle-element
-                            :sub-bottom="-15"
-                        :sub-width="25"
-                        :sub-height="25"
-                        :sub-align="'center'"
-                        :sub-style="{
-                            'stroke': statusColor,
-                            fill: statusColor,
-                            'fill-opacity': 1,
-                        }">
-                </circle-element>
-            </sub-elements>
         </geometry-element>
 
 

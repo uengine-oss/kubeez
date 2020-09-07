@@ -63,7 +63,8 @@ window.$Mustache = Mustache
 
 // TrackJS -- Error Logging
 
-window.API_HOST = "http://localhost:8080";
+// window.API_HOST = "http://localhost:8080";
+window.API_HOST = "http://api.kuberez.io";
 window.vueFilePath = process.env.VUE_APP_FILE_PATH
 
 

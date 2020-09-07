@@ -34,6 +34,7 @@
                 editUserImg:[],
                 deploySuccess: false,
                 menuList : [
+                    { name: "Terminal Open" },
                     { name: "Get " + this.value._type },
                     { name: "Describe " + this.value._type },
                     { name: "Delete " + this.value._type },
