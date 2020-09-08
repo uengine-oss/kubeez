@@ -5,7 +5,7 @@ module.exports = {
             port: '8081'
         }
     },
-    "transpileDependencies": [
-        "vuetify"
-    ]
-}
+    devtool: "source-map"
+  },
+  transpileDependencies: ["vuetify"]
+};

@@ -853,7 +853,7 @@
                 var element;
 
                 if (componentInfo.relationView) {
-                    //relation info setting before make
+                    //relation info setting before makexxxx
                     element = vueComponent.computed.createNew(
                         this.uuid(),
                         componentInfo.sourceElement.value,
