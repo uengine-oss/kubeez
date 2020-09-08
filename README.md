@@ -9,17 +9,10 @@ Kuber-ez is a web-based tool for kubernetes manifest composition and operation t
 http://msaez.io or http://msaez.io/#/kubernetes/anonymous/kuberLocal/kuberInit/-init
 
 ## Snapshots:
-![image](https://user-images.githubusercontent.com/48265118/88506730-902d4d00-d015-11ea-9a76-9de8e4de73b8.png)
-
-- Kubernetes 객체 Drag & Drop 모델링
 
 ![image](https://user-images.githubusercontent.com/48265118/88508769-8c4ff980-d01a-11ea-91f7-e9eab52c4376.png)
 
-- UI 편집기를 통한 프로퍼티 입력 및 Yaml 수정
-
 ![image](https://user-images.githubusercontent.com/48265118/88508857-be615b80-d01a-11ea-9649-f5ddabd60445.png)
-
-- Deploy
 
 ![kuberEz화면캡처2](https://user-images.githubusercontent.com/48265118/88508967-01233380-d01b-11ea-8ea9-4ae6908af7a4.png)
 
@@ -27,17 +20,36 @@ http://msaez.io or http://msaez.io/#/kubernetes/anonymous/kuberLocal/kuberInit/-
 
 ![image](https://user-images.githubusercontent.com/48265118/88509906-fe294280-d01c-11ea-8640-0519e8ca44ca.png)
 
-- View Terminal
-
 ![image](https://user-images.githubusercontent.com/48265118/88513320-0ab09980-d023-11ea-9818-d5056698b8a8.png)
 
 ![image](https://user-images.githubusercontent.com/48265118/88513384-24ea7780-d023-11ea-8425-1a8a90a04351.png)
 
 
 ## Build and Run
-`
+### Standalone Mode
+
+If you want to use the KuberEz for simply drawing models and generating Yaml, you only need to run front-end server:
+```
 npm install && npm run serve
-`
+```
+or
+```
+docker run --name="kuberEz" -p 8081:8080 -d ohsy818/kuber-ez
+```
+
+### Full-fledged Mode
+
+If you want to use KuberEz for managing your clusters, you have to run all the components of KuberEz in a Kubernetes cluster:
+
+
+
+```
+kubectl create -f https://raw.githubusercontent.com/uengine-oss/kuber-ez/master/kubernetes/deploy.yaml
+```
+
+![image](https://user-images.githubusercontent.com/48265118/91529225-e1e23380-e943-11ea-8c35-12ddf7d6712e.png)
+
+(Above diagram shows all the kuberEz components)
 
 ## How to add new component
 

@@ -97,7 +97,7 @@
             me.$EventBus.$on('terminalOn', function (val) {
                 if(!me.terminal) {
                     var token = val;
-                    me.terminalUrl = "http://35.225.49.251:8080/" + "terminal/?token=" + token
+                    me.terminalUrl = "terminal/?token=" + token
                     me.terminal = true;
                 }
             })
@@ -107,7 +107,10 @@
             })
             me.$EventBus.$on('sendCode', function (val) {
                 if(me.terminal) {
-                    // $('iframe').get(0).contentWindow.wt.term.term.send("kubectl get po \r")
+                    $('iframe').get(0).contentWindow.wt.term.term.send(val)
+                } else {
+                    me.getTerminalToken()
+                    $('iframe').get(0).contentWindow.wt.term.term.send(val)
                 }
             })
 
@@ -135,6 +138,22 @@
             },
             wikiOpen() {
                 window.open('http://uengine.org/eventstorming/#/')
+            },
+            getTerminalToken() {
+                var me = this
+                var item = {
+                    "type": "Token",
+                    "name" : localStorage.getItem('clusterName'),
+                    "apiServer" : localStorage.getItem('clusterAddress'),
+                    "token": localStorage.getItem('kuberToken'),
+                }
+
+                me.$http.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
+                me.$http.post("api/kube-token", item).then(function (response) {
+                    me.$EventBus.$emit('terminalOn', response.data.token)
+                }).catch(function (err) {
+                    alert("Failed to load Terminal")
+                })
             },
         }
     }

@@ -8,7 +8,7 @@
                 :vertices.sync="vertices"
                 :from.sync="value.from"
                 :to.sync="value.to"
-                :_style="style_"
+                :_style="value.style"
                 :label="value.name"
                 v-on:dblclick="showProperty"
                 v-on:selectShape="selectedActivity"
@@ -47,14 +47,10 @@
                 return {
                     _type: this.className(),
                     name: '',
-                    // relationKey: '',
-                    // relationValue: '',
                     sourceElement: from,
                     targetElement: to,
                     from: from.elementView.id,
                     to: to.elementView.id,
-                    // checkValue: false,
-                    // selected: false,
                     relationView: {
                         id: elementId,
                         style: JSON.stringify({
@@ -68,7 +64,7 @@
                     },
                     sourceMultiplicity: 3,
                     targetMultiplicity: 3,
-                    // drawer: false
+                    style: {}
                 }
             },
         },

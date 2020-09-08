@@ -8,6 +8,8 @@
     var changeCase = require('change-case');
     var pluralize = require('pluralize');
 
+    import json2yaml from 'json2yaml'
+
     export default {
         name: 'modeling-element-base',
         props: {
@@ -30,7 +32,15 @@
                 openPanel: false,
                 namePanel: '',
                 editUserImg:[],
-                deploySuccess: false
+                deploySuccess: false,
+                menuList : [
+                    { name: "Terminal Open" },
+                    { name: "Get " + this.value._type },
+                    { name: "Describe " + this.value._type },
+                    { name: "Delete " + this.value._type },
+                    { name: "Create " + this.value._type },
+                    { name: "Update " + this.value._type }
+                ],
             }
         },
         computed: {
@@ -86,8 +96,7 @@
                 } else {
                     return '#e74c3c'
                 }
-            }
-
+            },
         },
         watch: {
             "value.elementView.width": {
@@ -425,34 +434,30 @@
                 }
                 me.$EventBus.$emit(relationId, obj)
             },
-            changeStatusColor(status) {
-                var me = this
-                
-                if(status == 'success') {
-                    me.deploySuccess = true
-                } else {
-                    me.deploySuccess = false
-                }
-            },
             handleClick(event) {
                 var me = this
-                if(me.value.status) {
-                    event.pageY = event.pageY - 62
-                    me.$refs.vueSimpleContextMenu.showMenu(event)
-                }
+                event.pageY = event.pageY - 62
+                me.$refs.vueSimpleContextMenu.showMenu(event)
             },
             async optionClicked(event) {
                 var me = this
+                var code = 'kubectl ' + event.option.name.toLowerCase()
                 var designer = me.getComponent('kube-modeling-designer')
                 
-                if(event.option.name == 'Delete') {
-                    await designer.deleteObj(me.value)
-                    me.refresh()
-                } else {
-                    await designer.terminal()
+                if(code.includes('describe') || code.includes('delete')) {
+                    code += ' ' + me.value.name
+                } else if(code.includes('create')) {
+                    code = 'kubectl create -f- <<EOF \n'
+                    var yaml = designer.yamlFilter(json2yaml.stringify(me.value.object))
+                    code += yaml + "EOF"
+                } else if(code.includes('update')) {
+                    code = 'kubectl apply -f- <<EOF \n'
+                    var yaml = designer.yamlFilter(json2yaml.stringify(me.value.object))
+                    code += yaml + "EOF"
                 }
+                code += '\n'
+                me.$EventBus.$emit('sendCode', code)
             },
-
         }
     }
 </script>

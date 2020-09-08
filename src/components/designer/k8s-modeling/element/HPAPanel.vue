@@ -53,9 +53,33 @@
                         <v-card flat>
                             <v-card-text>
                                 <v-text-field
-                                        label="Name"
-                                        v-model="value.object.metadata.name"
+                                    label="Name"
+                                    v-model="value.object.metadata.name"
                                 ></v-text-field>
+                                <v-label>Replicas</v-label>
+                                <v-row>
+                                    <v-col cols="6" class="py-0">
+                                        <number-field
+                                                :label="'Min'"
+                                                v-model="value.object.spec.minReplicas"
+                                        ></number-field>
+                                    </v-col>
+                                    <v-col class="py-0">
+                                        <number-field
+                                                :label="'Max'"
+                                                v-model="value.object.spec.maxReplicas"
+                                        ></number-field>
+                                    </v-col>
+                                </v-row>
+                                <v-select
+                                    label="Resource Type"
+                                    v-model="value.object.spec.metrics[0].resource.name"
+                                    :items="resourceTypes">
+                                </v-select>
+                                <number-field
+                                    :label="'AverageUtilization'"
+                                    v-model="value.object.spec.metrics[0].resource.target.averageUtilization"
+                                ></number-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -77,41 +101,47 @@
     import yaml from "js-yaml";
 
     import YamlEditor from "../KubeYamlEditor";
+    import NumberField from "./NumberField";
 
     export default {
-        name: 'ingress-property-panel',
+        name: 'property-panel',
         props: {
             value: Object,
             img: String,
         },
         components: {
-            "yaml-editor": YamlEditor
+            "yaml-editor": YamlEditor,
+            "number-field": NumberField,
         },
         computed: {
             descriptionText() {
-                return 'Ingress'
+                return 'Horizontal Pod Autoscaler'
             },
             status() {
                 return JSON.parse(JSON.stringify(this.value.status))
             },
-
         },
         data: function () {
             return {
                 activeTab: 0,
                 tabItems: [ "status", "property" ],
+                resourceTypes: [ "cpu", "memory" ]
             }
         },
         watch: {
-           status: {
+            status: {
                 deep: true,
                 handler: function () {
                 }
             },
         },
         methods: {
-            desDocOpen() {
-                window.open('https://kubernetes.io/docs/concepts/services-networking/ingress/')
+            desDocOpen(property) {
+                var url = 'https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/'
+                if(property) {
+                    url += property
+                }
+                window.open(url)
             },
         }
     }

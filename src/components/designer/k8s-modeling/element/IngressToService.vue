@@ -71,7 +71,9 @@
                     },
                     sourceMultiplicity: 3,
                     targetMultiplicity: 3,
-                    path: "/",
+                    path: "",
+                    host: "",
+                    routeType: "path"
                 }
             },
             isOpen() {
@@ -82,7 +84,11 @@
             },
             name() {
                 try {
-                    return this.value.path
+                    if(this.value.routeType == "path") {
+                        return this.value.host + this.value.path
+                    } else if(this.value.routeType == "host") {
+                        return this.value.host + this.value.path
+                    }
                 } catch(e) {
                     return ''
                 }

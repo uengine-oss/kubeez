@@ -34,8 +34,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#34aace',
-                        fill: '#34aace',
+                        'stroke': '#98cbff',
+                        fill: '#98cbff',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -54,22 +54,22 @@
                         :sub-height="25"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'CronJob'">
+                        :text="'Workflow'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
-                        :sub-top="5"
+                        :sub-bottom="5"
                         :sub-left="5"
-                        :sub-width="25"
+                        :sub-width="30"
                         :sub-height="25">
                 </image-element>
             </sub-elements>
         </geometry-element>
 
-         <property-panel
-            v-if="openPanel"
-            v-model="value"
-            :img="imgSrc">
+        <property-panel
+                v-if="openPanel"
+                v-model="value"
+                :img="imgSrc">
         </property-panel>
 
         <vue-context-menu
@@ -83,14 +83,12 @@
 
 <script>
     import Element from '../Kube-Element'
-    import PropertyPanel from './CronJobPropertyPanel'
-    import ImageElement from "../../../opengraph/shape/ImageElement";
+    import PropertyPanel from './WorkflowPanel'
 
     export default {
         mixins: [Element],
-        name: 'cronjob',
+        name: 'workflow',
         components: {
-            ImageElement,
             "property-panel": PropertyPanel
         },
         props: {},
@@ -99,10 +97,10 @@
                 return {}
             },
             className() {
-                return 'CronJob'
+                return 'Workflow'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/cronjob.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/argo/argo-icon-color.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -120,38 +118,37 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "batch/v1beta1",
-                        "kind": "CronJob",
-                        "metadata": {
-                            "name": ""
-                        },
-                        "spec": {
-                            "jobTemplate": {
-                                "spec": {
-                                    "template": {
-                                        "spec": {
-                                            "containers": [
-                                                {
-                                                    "name": "",
-                                                    "image": ""
-                                                }
-                                            ],
-                                            "restartPolicy": "OnFailure"
+                    "apiVersion": "argoproj.io/v1alpha1",
+                    "kind": "Workflow",
+                    "metadata": {
+                        "generateName": "hello-world-"
+                    },
+                    "spec": {
+                        "entrypoint": "whalesay",
+                        "templates": [
+                            {
+                                "name": "whalesay",
+                                "container": {
+                                    "image": "docker/whalesay",
+                                    "command": [ "cowsay" ],
+                                    "args": [ "hello world" ],
+                                    "resources": {
+                                        "limits": {
+                                            "memory": "32Mi",
+                                            "cpu": "100m"
                                         }
                                     }
                                 }
-                            },
-                            "schedule": "*/1 * * * *",
-                        }
-                    },
-                    connectableType: [""],
-                    status: null,
+                            }
+                        ]
+                    }
+                },
                 }
             },
             name() {
                 try {
-                    return this.value.object.metadata.name;
-                } catch (e) {
+                    return this.value.object.metadata.generateName    
+                } catch(e) {
                     return "Untitled";
                 }
             },
@@ -163,37 +160,24 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-
         },
         data: function () {
             return {};
         },
-        created: function () {
-        },
-        mounted(){
+        mounted: function () {
             var me = this;
-
-            this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status
-                    me.refresh()
-                }
-            })
-
+            
         },
-
         watch: {
-            name(appName) {
-                this.value.object.spec.jobTemplate.spec.template.spec.containers[0].name = appName;
+            name(appName){
+                this.value.object.metadata.labels.app = appName;
             },
-
         },
-        methods: {            
-        }
+        methods: {
+        },
     }
 </script>
-  
+
 <style>
 
 </style>

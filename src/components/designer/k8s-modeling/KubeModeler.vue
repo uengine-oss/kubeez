@@ -127,6 +127,20 @@
                 ],
                 [
                     {
+                        'component': 'Autoscaler',
+                        'label': 'Autoscaler',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/hpa-palette.svg`
+                    },
+                    {
+                        'component': 'hpa',
+                        'label': 'Horizontal Pod Autoscaler',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/hpa-palette.svg`
+                    }
+                ],
+                [
+                    {
                         'component': 'Job',
                         'label': 'Job',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/job-palette.svg`
@@ -199,6 +213,13 @@
                         'width': '100',
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/crb-palette.svg`
+                    },
+                    {
+                        'component': 'serviceAccount',
+                        'label': 'ServiceAccount',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sa-palette.svg`
                     },
                 ],[
                     {
@@ -276,6 +297,33 @@
                         'height': '100',
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
                     },
+                ],[
+                    {
+                        'component': 'Knative',
+                        'label': 'Knative',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/knative/logo.svg`
+                    },
+                    {
+                        'component': 'knativeService',
+                        'label': 'Service',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/knative/logo.svg`
+                    }
+                ],
+                [
+                    {
+                        'component': 'argo',
+                        'label': 'Argo',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/argo/argo-icon-color.svg`
+                    },
+                    {
+                        'component': 'workflow',
+                        'label': 'Workflow',
+                        'width': '100',
+                        'height': '100',
+                        'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/argo/argo-icon-color.svg`
+                    }
                 ]
                 ],
             }

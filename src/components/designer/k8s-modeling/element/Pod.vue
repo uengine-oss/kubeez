@@ -43,7 +43,6 @@
             ></geometry-rect>
 
             <sub-controller
-                    v-if="value.status"
                     :image="'subprocess.png'"
                     @click.prevent.stop="handleClick($event)"
             ></sub-controller>
@@ -192,19 +191,18 @@
             }
         },
         data: function () {
-            return {
-                menuList : [
-                    { name: "View Terminal" },
-                    { name: "Delete" }
-                ]
-            };
+            return {};
         },
         created: function () {
 
         },
         mounted: function () {
-
             var me = this;
+
+            if(me.value.status) {
+                me.setStatus()
+                me.refresh()
+            }
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 if (obj.state == "addRelation" && obj.element && obj.element.targetElement
@@ -266,15 +264,11 @@
         methods: {
             setStatus() {
                 var me = this
-                
                 if(me.value.status.containerStatuses) {
-                    // var state = me.value.status.containerStatuses[0].state
-                    // var stateKey = Object.keys(state)
-                    // console.log(me.value.status.containerStatuses[0].ready)
                     if(me.value.status.containerStatuses[0].ready) {
-                        me.changeStatusColor('success')
+                        me.deploySuccess = true
                     } else {
-                        me.changeStatusColor('waiting')
+                        me.deploySuccess = false
                     }
                 }    
 

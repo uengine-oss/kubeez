@@ -43,7 +43,6 @@
             ></geometry-rect>
 
             <sub-controller
-                    v-if="value.status"
                     :image="'subprocess.png'"
                     @click.prevent.stop="handleClick($event)"
             ></sub-controller>
@@ -59,7 +58,7 @@
                 </text-element>
                 <image-element
                         :image="imgSrc"
-                        :sub-top="5"
+                        :sub-bottom="5"
                         :sub-left="5"
                         :sub-width="25"
                         :sub-height="25">
@@ -216,16 +215,17 @@
         },
         data: function () {
             return {
-                menuList : [
-                    { name: "View Terminal" },
-                    { name: "Delete" }
-                ],
             };
         },
         created: function () {
         },
         mounted(){
             var me = this;
+
+            if(me.value.status) {
+                me.setReplicasStatus()
+                me.refresh()
+            }
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
@@ -294,9 +294,9 @@
                 }
                 
                 if(replicas > 0 && availableReplicas > 0 && availableReplicas == replicas) {
-                    me.changeStatusColor('success')
+                    me.deploySuccess = true
                 } else {
-                    me.changeStatusColor('waiting')
+                    me.deploySuccess = false
                 }
             },
             

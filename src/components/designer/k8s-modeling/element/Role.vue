@@ -42,7 +42,6 @@
             ></geometry-rect>
 
             <sub-controller
-                    v-if="value.status"
                     :image="'subprocess.png'"
                     @click.prevent.stop="handleClick($event)"
             ></sub-controller>
@@ -58,7 +57,7 @@
                 </text-element>
                 <image-element
                         :image="imgSrc"
-                        :sub-top="5"
+                        :sub-bottom="5"
                         :sub-left="5"
                         :sub-width="25"
                         :sub-height="25">
@@ -155,12 +154,7 @@
 
         },
         data: function () {
-            return {
-                menuList : [
-                    { name: "View Terminal" },
-                    { name: "Delete" }
-                ]
-            };
+            return {};
         },
         created: function () {
         },

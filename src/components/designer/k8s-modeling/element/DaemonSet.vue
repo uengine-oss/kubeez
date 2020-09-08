@@ -42,7 +42,6 @@
             ></geometry-rect>
 
             <sub-controller
-                    v-if="value.status"
                     :image="'subprocess.png'"
                     @click.prevent.stop="handleClick($event)"
             ></sub-controller>
@@ -173,12 +172,7 @@
             },
         },
         data() {
-            return {
-                menuList : [
-                    { name: "View Terminal" },
-                    { name: "Delete" }
-                ]
-            };
+            return {};
         },
         created() {
         },

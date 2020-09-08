@@ -27,15 +27,14 @@
                 v-on:contextmenu.prevent.stop="handleClick($event)"
         >
 
-            <!--v-on:dblclick="$refs['dialog'].open()"-->
             <geometry-rect
                     :_style="{
                         'fill-r': 1,
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#34aace',
-                        fill: '#34aace',
+                        'stroke': '#326ce5',
+                        fill: '#326ce5',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -54,11 +53,11 @@
                         :sub-height="25"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'CronJob'">
+                        :text="'ServiceAccount'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
-                        :sub-top="5"
+                        :sub-bottom="5"
                         :sub-left="5"
                         :sub-width="25"
                         :sub-height="25">
@@ -83,12 +82,12 @@
 
 <script>
     import Element from '../Kube-Element'
-    import PropertyPanel from './CronJobPropertyPanel'
+    import PropertyPanel from './ServiceAccountPanel'
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
     export default {
         mixins: [Element],
-        name: 'cronjob',
+        name: 'serviceAccount',
         components: {
             ImageElement,
             "property-panel": PropertyPanel
@@ -99,10 +98,10 @@
                 return {}
             },
             className() {
-                return 'CronJob'
+                return 'ServiceAccount'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/cronjob.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sa.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -120,31 +119,12 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "batch/v1beta1",
-                        "kind": "CronJob",
+                        "apiVersion": "v1",
+                        "kind": "ServiceAccount",
                         "metadata": {
                             "name": ""
-                        },
-                        "spec": {
-                            "jobTemplate": {
-                                "spec": {
-                                    "template": {
-                                        "spec": {
-                                            "containers": [
-                                                {
-                                                    "name": "",
-                                                    "image": ""
-                                                }
-                                            ],
-                                            "restartPolicy": "OnFailure"
-                                        }
-                                    }
-                                }
-                            },
-                            "schedule": "*/1 * * * *",
                         }
                     },
-                    connectableType: [""],
                     status: null,
                 }
             },
@@ -172,22 +152,8 @@
         },
         mounted(){
             var me = this;
-
-            this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status
-                    me.refresh()
-                }
-            })
-
         },
-
         watch: {
-            name(appName) {
-                this.value.object.spec.jobTemplate.spec.template.spec.containers[0].name = appName;
-            },
-
         },
         methods: {            
         }

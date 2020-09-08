@@ -1,5 +1,4 @@
 <template>
-    <!-- width 390 -->
     <v-layout wrap>
         <v-navigation-drawer absolute permanent right v-bind:style="{width: 800}">
             <!--  상단 이미지 및 선택 타이틀 이름-->
@@ -8,18 +7,7 @@
                     <v-list-item-avatar>
                         <img :src="img">
                     </v-list-item-avatar>
-                    <v-tabs
-                            v-model="activeTab"
-                            v-if="value.status">
-                        <v-tab
-                            v-for="(tab, idx) in tabItems"
-                            :key="idx">
-                            <v-list-item-title>{{ tab }}</v-list-item-title>
-                        </v-tab>
-                    </v-tabs>
-                    <v-list-item-title
-                            v-else
-                            class="headline">
+                    <v-list-item-title class="headline">
                         {{ value._type }}
                     </v-list-item-title>
                     <v-tooltip left>
@@ -34,27 +22,13 @@
             </v-list>
 
             <v-list class="pt-0" dense flat>
-                <v-layout v-if="value.status && activeTab == 0" wrap>
-                    <v-flex>
-                        <v-card flat>
-                            <v-card-text>
-                                <tree-view
-                                        :data="status"
-                                        :options="{
-                                                rootObjectKey: 'status'
-                                            }"
-                                ></tree-view>
-                            </v-card-text>
-                        </v-card>
-                    </v-flex>
-                </v-layout>
-                <v-layout v-else wrap>
-                    <v-flex shrink style="width: 180px;">
+                <v-layout wrap>
+                    <v-flex shrink style="width: 230px;">
                         <v-card flat>
                             <v-card-text>
                                 <v-text-field
-                                        label="Name"
-                                        v-model="value.object.metadata.name"
+                                    label="Name"
+                                    v-model="value.object.metadata.name"
                                 ></v-text-field>
                             </v-card-text>
                         </v-card>
@@ -79,39 +53,27 @@
     import YamlEditor from "../KubeYamlEditor";
 
     export default {
-        name: 'ingress-property-panel',
+        name: 'property-panel',
         props: {
             value: Object,
             img: String,
         },
         components: {
-            "yaml-editor": YamlEditor
+            "yaml-editor": YamlEditor,
         },
         computed: {
             descriptionText() {
-                return 'Ingress'
+                return 'ServiceAccount'
             },
-            status() {
-                return JSON.parse(JSON.stringify(this.value.status))
-            },
-
         },
         data: function () {
-            return {
-                activeTab: 0,
-                tabItems: [ "status", "property" ],
-            }
+            return {}
         },
         watch: {
-           status: {
-                deep: true,
-                handler: function () {
-                }
-            },
         },
         methods: {
             desDocOpen() {
-                window.open('https://kubernetes.io/docs/concepts/services-networking/ingress/')
+                window.open('https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/')
             },
         }
     }

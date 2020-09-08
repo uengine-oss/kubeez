@@ -34,8 +34,8 @@
                         'fill-cx': .1,
                         'fill-cy': .1,
                         'stroke-width': 1.4,
-                        'stroke': '#34aace',
-                        fill: '#34aace',
+                        'stroke': '#d0b4f1',
+                        fill: '#d0b4f1',
                         'fill-opacity': 1,
                         r: '1',
                         'z-index': '998'
@@ -54,7 +54,7 @@
                         :sub-height="25"
                         :sub-top="0"
                         :sub-left="0"
-                        :text="'CronJob'">
+                        :text="'HPA'">
                 </text-element>
                 <image-element
                         :image="imgSrc"
@@ -83,12 +83,12 @@
 
 <script>
     import Element from '../Kube-Element'
-    import PropertyPanel from './CronJobPropertyPanel'
+    import PropertyPanel from './HPAPanel'
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
     export default {
         mixins: [Element],
-        name: 'cronjob',
+        name: 'hpa',
         components: {
             ImageElement,
             "property-panel": PropertyPanel
@@ -99,10 +99,10 @@
                 return {}
             },
             className() {
-                return 'CronJob'
+                return 'HPA'
             },
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/cronjob.svg`
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/hpa.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -120,32 +120,33 @@
                         'angle': 0,
                     },
                     object: {
-                        "apiVersion": "batch/v1beta1",
-                        "kind": "CronJob",
+                        "apiVersion": "autoscaling/v2beta2",
+                        "kind": "HorizontalPodAutoscaler",
                         "metadata": {
                             "name": ""
                         },
                         "spec": {
-                            "jobTemplate": {
-                                "spec": {
-                                    "template": {
-                                        "spec": {
-                                            "containers": [
-                                                {
-                                                    "name": "",
-                                                    "image": ""
-                                                }
-                                            ],
-                                            "restartPolicy": "OnFailure"
+                            "scaleTargetRef": {
+                            },
+                            "minReplicas": 1,
+                            "maxReplicas": 10,
+                            "metrics": [
+                                {
+                                    "type": "Resource",
+                                    "resource": {
+                                        "name": "cpu",
+                                        "target": {
+                                            "type": "Utilization",
+                                            "averageUtilization": 50
                                         }
                                     }
                                 }
-                            },
-                            "schedule": "*/1 * * * *",
+                            ]
                         }
                     },
-                    connectableType: [""],
                     status: null,
+                    outboundDeployment: {},
+                    connectableType: [ "Deployment" ],
                 }
             },
             name() {
@@ -163,7 +164,13 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-
+            outboundDeploymentName() {
+                try {
+                    return this.value.outboundDeployment.object.metadata.name;
+                } catch(e) {
+                    return '';
+                }
+            }
         },
         data: function () {
             return {};
@@ -174,20 +181,23 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status
-                    me.refresh()
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment") {
+                    me.value.outboundDeployment = obj.element.targetElement
                 }
             })
-
         },
-
         watch: {
             name(appName) {
-                this.value.object.spec.jobTemplate.spec.template.spec.containers[0].name = appName;
+                this.value.name = appName;
             },
-
+            outboundDeploymentName() {
+                var me = this;
+                me.value.object.spec.scaleTargetRef = {
+                    'apiVersion': me.value.outboundDeployment.object.apiVersion,
+                    'kind': me.value.outboundDeployment.object.kind,
+                    'name': me.value.outboundDeployment.object.metadata.name
+                };
+            }
         },
         methods: {            
         }

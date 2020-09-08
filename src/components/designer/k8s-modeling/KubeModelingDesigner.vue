@@ -421,8 +421,7 @@
                 isRead: false,
                 //helm chart
                 chartJson: {},
-                valuesJson: {},
-                elementIdList: [],
+                valuesYaml: '',
                 selectedCategoryIndex: null,
 
             }
@@ -535,11 +534,6 @@
                 // }
 
             });
-
-            me.$EventBus.$on('setValuesYaml', function(obj) {
-                me.valuesJson = {...me.valuesJson, ...obj}
-            })
-
         },
         watch: {
             value: {
@@ -813,8 +807,13 @@
                         }
                     }
 
+                    var result = me.modifyRelation({
+                        sourceElement: from.$parent,
+                        targetElement: to.$parent
+                    })
+
                     // relation component
-                    if (from.$parent.value.relationComponent) {
+                    if (result != false && from.$parent.value.relationComponent) {
                         componentInfo.component = from.$parent.value.relationComponent
                     }
 
@@ -864,7 +863,10 @@
                     var result = me.modifyRelation(element);
 
                     if(result == false) {
-                        return;
+                        element.style = {
+                            'stroke-dasharray': '- '
+                        }
+                        // return;
                     }
 
                 } else {
@@ -999,7 +1001,7 @@
                 if (me.template.length > 0) {
                     var template = me.template;
                 } else {
-                    var template = 'Separate File';
+                    var template = 'Separate File per kind';
                 }
 
                 if (template == 'Separate File') {
@@ -1034,7 +1036,7 @@
                 } else if (template == 'Separate File per kind') {
                     me.setYamlPerKind(me.treeList)
                 } else if (template == 'Helm') {
-                    me.getHelmChartSetting()
+                    me.setHelmChart()
                 }
                 
             },
@@ -1046,6 +1048,7 @@
                 }
                 yaml_text = lines.join('\n')
                 yaml_text = yaml_text.replace(/ null/g, ' ')
+                yaml_text = yaml_text.replace(/\"/g, '')
                 return yaml_text
             },
             async generateZip() {
@@ -1104,12 +1107,12 @@
                 var me = this
 
                 me.value.definition.forEach(function (item) {
-                    var name = item._type
+                    var name = (item._type).toLowerCase()
                     
                     var codeValue = {
                         'key': item.elementView.id,
                         'name': name + '.yaml',
-                        'code': json2yaml.stringify(item.object),
+                        'code': me.yamlFilter(json2yaml.stringify(item.object)),
                         'file': me.fileType('.yaml')
                     }                        
                     
@@ -1125,7 +1128,7 @@
                     }
                 })
             },
-            getHelmChartSetting() {
+            setHelmChart() {
                 var me = this
                 var templates = []
                 var notes = {
@@ -1134,19 +1137,18 @@
                     'code': '',
                     'file': 'txt'
                 }
-
                 templates.push(notes)
                 me.setYamlPerKind(templates)
 
                 me.chartJson = {
                     "apiVersion": "v1",
-                    "name": "local-test",
+                    "name": me.projectName,
                     "version": "0.1.0",
                     "description": "A Helm chart for Kubernetes"
                 }
 
                 var folder = {
-                    'name': 'kubernetes',
+                    'name': me.projectName,
                     'children': [
                         {
                             'key': 'chart',
@@ -1161,13 +1163,12 @@
                         {
                             'key': 'values',
                             'name': 'values.yaml',
-                            'code': me.yamlFilter(json2yaml.stringify(me.valuesJson)),
+                            'code': me.valuesYaml,
                             'file': me.fileType('.yaml')
                         }
                     ]
                 }
                 me.treeList.push(folder)
-
             },
             deployReady() {
                 var me = this
@@ -1179,14 +1180,19 @@
             },
             deploy() {
                 var me = this
+                var params = {
+                    "apiServer": me.clusterInfo.apiServer,
+                    "token": me.clusterInfo.token
+                }
 
                 me.value.definition.forEach(function (item) {
                     var reqUrl = me.getReqUrl(item)
-                    
+                    params.data = item.object
+
                     if (item.status) {
                         reqUrl += item.object.metadata.name
 
-                        me.$http.put(reqUrl, item.object).then(function (res) {
+                        me.$http.put(reqUrl, params).then(function (res) {
                             console.log(res.status)
                             me.getStatusData(reqUrl, item)
                         }).catch(function (err) {
@@ -1194,7 +1200,7 @@
                             alert("Update failed")
                         })
                     } else {
-                        me.$http.post(reqUrl, item.object).then(function (res) {
+                        me.$http.post(reqUrl, params).then(function (res) {
                             me.isDeploy = true
                             console.log(res.status)
                             reqUrl += item.object.metadata.name
@@ -1210,10 +1216,15 @@
             deleteObj(item) {
                 var me = this
                 var reqUrl = me.getReqUrl(item)
+                var params = {
+                    "apiServer": me.clusterInfo.apiServer,
+                    "token": me.clusterInfo.token,
+                    "data": item.object
+                }
                 
                 clearInterval(me.getStatus)
 
-                me.$http.delete(reqUrl, item.object).then(function (res) {
+                me.$http.delete(reqUrl, params).then(function (res) {
                     item.status = null
                     console.log(res.status)
                 }).catch(function (err) {
@@ -1254,10 +1265,14 @@
             },
             getStatusData(reqUrl, element) {
                 var me = this
-                var jsonData = element.object
+                var params = {
+                    "apiServer": me.clusterInfo.apiServer,
+                    "token": me.clusterInfo.token,
+                    "data": element.object
+                }
                 
                 me.getStatus = setInterval(function() {
-                    me.$http.get(reqUrl, jsonData).then(function (res) {
+                    me.$http.get(reqUrl, params).then(function (res) {
                         // console.log(res.data.status)
                         var obj = {
                             state: "get",
@@ -1267,23 +1282,7 @@
                     }).catch(function (err) {
                         console.log(err)
                     })
-                }, 200)
-
-            },
-            terminal() {
-                var me = this
-                
-                var item = {
-                    "type": "Token",
-                    "name" : localStorage.getItem('clusterName'),
-                    "apiServer" : localStorage.getItem('clusterAddress'),
-                    "token": localStorage.getItem('kuberToken'),
-                }
-
-                me.$http.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
-                me.$http.post("api/kube-token", item).then(function (response) {
-                    me.$EventBus.$emit('terminalOn', response.data.token)
-                })
+                }, 500)
             },
             onSearchBox() {
                 var me = this

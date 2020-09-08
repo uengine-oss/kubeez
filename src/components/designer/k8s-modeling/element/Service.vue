@@ -42,6 +42,11 @@
                     }"
             ></geometry-rect>
 
+            <sub-controller
+                    :image="'subprocess.png'"
+                    @click.prevent.stop="handleClick($event)"
+            ></sub-controller>
+
             <sub-elements>
                 <!--title-->
                 <text-element
@@ -53,7 +58,7 @@
                 </text-element>
                 <image-element
                         :image="imgSrc"
-                        :sub-top="5"
+                        :sub-bottom="5"
                         :sub-left="5"
                         :sub-width="25"
                         :sub-height="25">
@@ -159,36 +164,31 @@
             },
             outboundDeploymentName() {
                 try {
-                    return this.value.outboundDeployment.object.metadata.name;
+                    return this.value.outboundDeployment.object.metadata.name + ', ' + 
+                        this.value.outboundDeployment.object.spec.template.spec.containers[0].ports[0].containerPort;
                 } catch(e) {
                     return "";
                 }
             },
-
             outboundPodName() {
                 try {
-                    return this.value.outboundPod.object.metadata.name;
+                    return this.value.outboundPod.object.metadata.name + ', ' + 
+                        this.value.outboundPod.object.spec.containers[0].ports[0].containerPort;
                 } catch(e) {
                     return "";
                 }
             },
-
             outboundReplicaSetName() {
                 try {
-                    return this.value.outboundReplicaSet.object.metadata.name
+                    return this.value.outboundReplicaSet.object.metadata.name + ', ' + 
+                        this.value.outboundReplicaSet.object.spec.template.spec.containers[0].ports[0].containerPort;
                 } catch(e) {
                     return ""
                 }
             }
-
         },
         data: function () {
-            return {
-                menuList : [
-                    { name: "View Terminal" },
-                    { name: "Delete" }
-                ]
-            };
+            return {};
         },
         created: function () {
 
@@ -225,22 +225,28 @@
             
         },
         watch: {
-            name(appName){
-                this.value.object.metadata.labels.app = appName;
+            name(appName) {
+                var me = this;
+                me.value.name = appName;
+                me.value.object.metadata.labels.app = appName;
             },
-
-            "outboundDeploymentName": function(val) {
-                this.value.object.spec.selector.app = val;
+            outboundDeploymentName(val) {
+                var me = this;
+                me.value.object.spec.selector.app = me.value.outboundDeployment.object.metadata.name;
+                me.value.object.spec.ports[0].targetPort 
+                    = me.value.outboundDeployment.object.spec.template.spec.containers[0].ports[0].containerPort;
             },
-
-            "outboundPodName": function(val) {
-                this.value.object.spec.selector.app = val;
+            outboundPodName(val) {
+                var me = this;
+                me.value.object.spec.selector.app = val;
+                me.value.object.spec.ports[0].targetPort = me.value.outboundPod.object.spec.containers[0].ports[0].containerPort;
             },
-
-            "outboundReplicaSetName": function(val) {
-                this.value.object.spec.selector.app = val
+            outboundReplicaSetName(val) {
+                var me = this;
+                me.value.object.spec.selector.app = me.value.outboundReplicaSet.object.metadata.name;
+                me.value.object.spec.ports[0].targetPort 
+                    = me.value.outboundReplicaSet.object.spec.template.spec.containers[0].ports[0].containerPort;
             }
-
         },
 
         methods: {
