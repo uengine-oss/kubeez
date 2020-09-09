@@ -2,41 +2,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata: 
-  name: front-end
-  labels: 
-    app: front-end
-spec: 
-  selector: 
-    matchLabels: 
-      app: front-end
-  replicas: 1
-  template: 
-    metadata: 
-      labels: 
-        app: front-end
-    spec: 
-      containers: 
-        - name: front-end
-          image: ohsy818/kuber-ez:latest
-          ports: 
-            - containerPort: 8080
----
-apiVersion: v1
-kind: Pod
-metadata: 
-  name: webkubectl
-  labels: 
-    name: webkubectl
-spec: 
-  containers: 
-    - name: webkubectl
-      image: gcr.io/eventstorming-tool/webkubectl
-      securityContext:
-        privileged: true
----
-apiVersion: apps/v1
-kind: Deployment
-metadata: 
   name: api-server
   labels: 
     app: api-server
@@ -56,33 +21,51 @@ spec:
           ports: 
             - containerPort: 8080
 ---
-apiVersion: v1
-kind: Service
+apiVersion: apps/v1
+kind: Deployment
 metadata: 
   name: front-end
   labels: 
     app: front-end
 spec: 
-  ports: 
-    - port: 8081
-      targetPort: 8080
   selector: 
-    app: front-end
-  type: ClusterIP
+    matchLabels: 
+      app: front-end
+  replicas: 1
+  template: 
+    metadata: 
+      labels: 
+        app: front-end
+    spec: 
+      containers: 
+        - name: front-end
+          image: ohsy818/kuber-ez:latest
+          ports: 
+            - containerPort: 8080
 ---
-apiVersion: v1
-kind: Service
+apiVersion: apps/v1
+kind: Deployment
 metadata: 
   name: webkubectl
   labels: 
     app: webkubectl
 spec: 
-  ports: 
-    - port: 8082
-      targetPort: 8080
   selector: 
-    app: webkubectl
-  type: ClusterIP
+    matchLabels: 
+      app: webkubectl
+  replicas: 1
+  template: 
+    metadata: 
+      labels: 
+        app: webkubectl
+    spec: 
+      containers: 
+        - name: webkubectl
+          image: gcr.io/eventstorming-tool/webkubectl
+          securityContext:
+            privileged: true
+          ports: 
+            - containerPort: 8080
 ---
 apiVersion: v1
 kind: Service
@@ -96,32 +79,63 @@ spec:
       targetPort: 8080
   selector: 
     app: api-server
-  type: LoadBalancer
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: front-end
+  labels: 
+    app: front-end
+spec: 
+  ports: 
+    - port: 8081
+      targetPort: 8080
+  selector: 
+    app: front-end
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: webkubectl
+  labels: 
+    app: webkubectl
+spec: 
+  ports: 
+    - port: 8082
+      targetPort: 8080
+  selector: 
+    app: webkubectl
+  type: NodePort
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
-metadata: 
+metadata:
   name: gateway
   annotations: 
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/rewrite-target: /
-spec: 
-  rules: 
+spec:
+  rules:
     - host: kuberez.io
-      http: 
+      http:
         paths: 
-          - backend: 
+          - path: /
+            backend: 
               serviceName: front-end
               servicePort: 8081
-    - host: api.kuberez.io
-      http: 
-        paths: 
-          - backend: 
-              serviceName: k8s-tunneling-server
-              servicePort: 8080
-    - host: webkubectl.kuberez.io
-      http: 
-        paths: 
-          - backend: 
+          - path: /api/(/|$)(.*)
+            backend: 
               serviceName: webkubectl
               servicePort: 8082
+          - path: /terminal/(/|$)(.*)
+            backend: 
+              serviceName: webkubectl
+              servicePort: 8082
+    - host: api.kuberez.io
+      http:
+        paths: 
+          - backend:
+              serviceName: k8s-tunneling-server
+              servicePort: 8080

@@ -3,9 +3,8 @@ module.exports = {
         devServer: {
             // host: 'es2cd.io',
             port: '8081'
-        }
+        },
+        devtool: "source-map"
     },
-    devtool: "source-map"
-  },
   transpileDependencies: ["vuetify"]
 };

@@ -54,7 +54,7 @@
                             color="primary" dark
                             @click="deployDialog = true">
                         <v-icon>{{ files.version }}</v-icon>
-                        {{ isDeploy ? 'Update' : 'Deploy' }}
+                        Deploy
                     </v-btn>
                 
                     <v-menu class="pa-2" style="margin-right: 3px" open-on-hover offset-y>
@@ -410,7 +410,6 @@
                 // Children
                 drawer: false,
                 //deploy
-                isDeploy: false,
                 deployDialog: false,
                 getStatus: null,
                 // 
@@ -1188,7 +1187,7 @@
                 me.value.definition.forEach(function (item) {
                     var reqUrl = me.getReqUrl(item)
                     params.data = item.object
-
+                    
                     if (item.status) {
                         reqUrl += item.object.metadata.name
 
@@ -1201,7 +1200,6 @@
                         })
                     } else {
                         me.$http.post(reqUrl, params).then(function (res) {
-                            me.isDeploy = true
                             console.log(res.status)
                             reqUrl += item.object.metadata.name
                             me.getStatusData(reqUrl, item)
@@ -1222,8 +1220,6 @@
                     "data": item.object
                 }
                 
-                clearInterval(me.getStatus)
-
                 me.$http.delete(reqUrl, params).then(function (res) {
                     item.status = null
                     console.log(res.status)
@@ -1265,24 +1261,19 @@
             },
             getStatusData(reqUrl, element) {
                 var me = this
-                var params = {
-                    "apiServer": me.clusterInfo.apiServer,
-                    "token": me.clusterInfo.token,
-                    "data": element.object
-                }
+                reqUrl += '?apiServer=' + me.clusterInfo.apiServer + '&token=' + me.clusterInfo.token
                 
-                me.getStatus = setInterval(function() {
-                    me.$http.get(reqUrl, params).then(function (res) {
-                        // console.log(res.data.status)
+                setInterval(function() {
+                    me.$http.get(reqUrl).then(function (res) {
                         var obj = {
                             state: "get",
                             element: res.data
                         }
                         me.$EventBus.$emit(`${element.elementView.id}`, obj)
                     }).catch(function (err) {
-                        console.log(err)
+                        // console.log(err)
                     })
-                }, 500)
+                }, 1000)
             },
             onSearchBox() {
                 var me = this
