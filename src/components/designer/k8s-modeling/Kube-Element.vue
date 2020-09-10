@@ -454,6 +454,8 @@
                     code = 'kubectl apply -f- <<EOF \n'
                     var yaml = designer.yamlFilter(json2yaml.stringify(me.value.object))
                     code += yaml + "EOF"
+                } else {
+                    code = ''
                 }
                 code += '\n'
                 me.$EventBus.$emit('sendCode', code)

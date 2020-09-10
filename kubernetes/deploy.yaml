@@ -115,7 +115,6 @@ metadata:
   name: gateway
   annotations: 
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
     - host: kuberez.io
@@ -125,11 +124,11 @@ spec:
             backend: 
               serviceName: front-end
               servicePort: 8081
-          - path: /api/(/|$)(.*)
+          - path: /api
             backend: 
               serviceName: webkubectl
               servicePort: 8082
-          - path: /terminal/(/|$)(.*)
+          - path: /terminal
             backend: 
               serviceName: webkubectl
               servicePort: 8082

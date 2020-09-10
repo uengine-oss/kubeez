@@ -110,7 +110,6 @@
                     $('iframe').get(0).contentWindow.wt.term.term.send(val)
                 } else {
                     me.getTerminalToken()
-                    $('iframe').get(0).contentWindow.wt.term.term.send(val)
                 }
             })
 
