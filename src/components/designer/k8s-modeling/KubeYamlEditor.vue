@@ -1,5 +1,12 @@
 <template>
-    <codemirror
+    <div>
+        <v-switch 
+            v-model="isJson" class="justify-end" dense
+            style="padding:0; margin:0; height:30px; padding-right:15px;" 
+            :label="isJson ? 'Json' : 'Yaml'"
+        ></v-switch>
+        <codemirror
+            v-if="!isJson"
             ref="myCm"
             :options="{
                 theme: 'darcula',
@@ -7,13 +14,20 @@
                 lineWrapping: true,
             }"
             v-model="yamlText"
-    ></codemirror>
+        ></codemirror>
+        <vue-json-editor
+            v-else
+            v-model="value"
+            :expandedOnStart="true"
+        ></vue-json-editor>
+    </div>
 </template>
 
 
 <script>
     import yaml from "js-yaml";
     import json2yaml from 'json2yaml'
+    import vueJsonEditor from 'vue-json-editor';
 
     import {codemirror} from "vue-codemirror";
 
@@ -24,7 +38,8 @@
             value: Object
         },
         components: {
-            codemirror
+            codemirror,
+            vueJsonEditor,
         },
         computed: {
             codemirror: function () {
@@ -36,6 +51,7 @@
                 yamlText: json2yaml.stringify(this.value),
                 cursor_pos: '',
                 temp_text: '',
+                isJson: false,
             }
         },
         watch: {
@@ -69,7 +85,7 @@
     </script>
 
 
-<style lang="scss" rel="stylesheet/scss">
+<style lang="scss" rel="stylesheet/scss" scoped>
     .v-icon.outlined {
         border: 1px solid currentColor;
         border-radius: 0%;
