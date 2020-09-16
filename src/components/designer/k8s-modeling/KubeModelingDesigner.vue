@@ -807,8 +807,8 @@
                     }
 
                     var result = me.modifyRelation({
-                        sourceElement: from.$parent,
-                        targetElement: to.$parent
+                        sourceElement: from.$parent.value,
+                        targetElement: to.$parent.value
                     })
 
                     // relation component
