@@ -1179,14 +1179,14 @@
             },
             deploy() {
                 var me = this
-                var params = {
-                    "apiServer": me.clusterInfo.apiServer,
-                    "token": me.clusterInfo.token
-                }
 
                 me.value.definition.forEach(function (item) {
                     var reqUrl = me.getReqUrl(item)
-                    params.data = item.object
+                    var params = {
+                        "apiServer": me.clusterInfo.apiServer,
+                        "token": me.clusterInfo.token,
+                        "data": item.object
+                    }
                     
                     if (item.status) {
                         reqUrl += item.object.metadata.name
