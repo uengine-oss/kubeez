@@ -177,7 +177,8 @@
                         }
                     },
                     outboundVolumes: [],
-                    connectableType: [ "PersistentVolumeClaim" ],
+                    outboundConfigMap: null,
+                    connectableType: [ "PersistentVolumeClaim", "ConfigMap" ],
                     status: null,
                     replicasStatus: "",
                     
@@ -212,6 +213,13 @@
                     return "";
                 }
             },
+            outboundConfigMapName(){
+                try {
+                    return this.value.outboundConfigMap.object.metadata.name;
+                }catch(e){
+                    return "";
+                }
+            },
         },
         data: function () {
             return {
@@ -228,17 +236,16 @@
             }
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistentVolumeClaim"){
-
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
                     me.value.outboundVolumes.push(obj.element.targetElement);
                 }
 
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistentVolumeClaim"){
-
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
                     me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
-                    // console.log(me.value.outboundVolumes)
+                }
+
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ConfigMap") {
+                    me.value.outboundConfigMap = obj.element.targetElement;
                 }
 
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
@@ -274,7 +281,15 @@
                     }
                 );
             },
-
+            outboundConfigMapName() {
+                var me = this;
+                me.value.object.spec.template.spec.containers[0].envFrom = [];
+                me.value.object.spec.template.spec.containers[0].envFrom.push({
+                    "configMapRef": {
+                        "name": me.value.outboundConfigMap.object.metadata.name
+                    }
+                });
+            }
         },
 
         methods: {
