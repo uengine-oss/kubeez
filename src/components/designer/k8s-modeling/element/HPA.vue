@@ -88,7 +88,7 @@
 
     export default {
         mixins: [Element],
-        name: 'hpa',
+        name: 'horizontalPodutoscaler',
         components: {
             ImageElement,
             "property-panel": PropertyPanel
@@ -99,7 +99,7 @@
                 return {}
             },
             className() {
-                return 'HPA'
+                return 'HorizontalPodAutoscaler'
             },
             imgSrc() {
                 return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/hpa.svg`

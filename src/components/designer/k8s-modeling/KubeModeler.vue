@@ -132,7 +132,7 @@
                         'src': `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/hpa-palette.svg`
                     },
                     {
-                        'component': 'hpa',
+                        'component': 'horizontalPodutoscaler',
                         'label': 'Horizontal Pod Autoscaler',
                         'width': '100',
                         'height': '100',
