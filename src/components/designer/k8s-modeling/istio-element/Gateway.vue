@@ -114,7 +114,7 @@
                         },
                         "spec": {
                             "selector": {
-                                "app": ""
+                                "istio": "ingressgateway"
                             },
                             "servers": [
                                 {
@@ -123,7 +123,7 @@
                                         "name": "",
                                         "protocol": ""
                                     },
-                                    "hosts": []
+                                    "hosts": [ "*" ]
                                 }
                             ]
                         }

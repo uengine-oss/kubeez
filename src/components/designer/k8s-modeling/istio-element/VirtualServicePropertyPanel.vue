@@ -34,6 +34,10 @@
                                     label="Host"
                                     v-model="value.object.spec.hosts[0]"
                                 ></v-text-field>
+                                <v-text-field
+                                    label="URI"
+                                    v-model="value.object.spec.http[0].match[0].uri.exact"
+                                ></v-text-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>

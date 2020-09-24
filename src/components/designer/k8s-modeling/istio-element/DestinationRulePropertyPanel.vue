@@ -47,7 +47,7 @@
                     </v-flex>
                     <v-flex>
                         <yaml-editor
-                            v-model="value.object">
+                            v-model="propertyData">
                         </yaml-editor>
                     </v-flex>
                 </v-layout>
@@ -95,7 +95,7 @@
                     </v-flex>
                     <v-flex>
                         <yaml-editor
-                            v-model="value.object">
+                            v-model="trafficPolicy">
                         </yaml-editor>
                     </v-flex>
                 </v-layout>

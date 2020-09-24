@@ -119,10 +119,13 @@
                             "hosts": [ "" ],
                             "http": [
                                 {
-                                    "retries": {
-                                        "attempts": 1,
-                                        "perTryTimeout": "1s"
-                                    }
+                                    "match": [
+                                        {
+                                            "uri": {
+                                                "exact": ""
+                                            }
+                                        }
+                                    ]
                                 }
                             ],
                         },
@@ -203,19 +206,17 @@
         watch: {
             outboundDestinationRuleNames() {
                 var me = this
-                if(!me.value.object.spec.http[1]) {
+                if(!me.value.object.spec.http[0]) {
                     var route = []
                     me.value.object.spec.http.push({route})
                 }
-                me.value.object.spec.http[1].route = []
+                me.value.object.spec.http[0].route = []
                 me.value.outboundDestinationRules.forEach(element => {
-                    me.value.object.spec.http[1].route.push({
-                        'destination': [
-                            {
-                                'host': element.object.spec.host,
-                                'subset': element.object.spec.subsets[0].name
-                            }
-                        ]
+                    me.value.object.spec.http[0].route.push({
+                        'destination': {
+                            'host': element.object.spec.host,
+                            'subset': element.object.spec.subsets[0].name
+                        }
                     })
                 })
             },

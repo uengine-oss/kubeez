@@ -445,7 +445,7 @@
                 var designer = me.getComponent('kube-modeling-designer')
                 
                 if(code.includes('describe') || code.includes('delete')) {
-                    code += ' ' + me.value.name
+                    code += ' ' + me.value.object.metadata.name
                 } else if(code.includes('create')) {
                     code = 'kubectl create -f- <<EOF \n'
                     var yaml = designer.yamlFilter(json2yaml.stringify(me.value.object))
@@ -454,7 +454,7 @@
                     code = 'kubectl apply -f- <<EOF \n'
                     var yaml = designer.yamlFilter(json2yaml.stringify(me.value.object))
                     code += yaml + "EOF"
-                } else {
+                } else if(code.includes('terminal')) {
                     code = ''
                 }
                 code += '\n'

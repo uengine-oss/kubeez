@@ -117,13 +117,12 @@
                         angle: 0,
                     },
                     object: {
-                        apiVersion: "networking.k8s.io/v1beta1",
+                        apiVersion: "extensions/v1beta1",
                         kind: "Ingress",
                         metadata: {
                             name: "",
                             annotations: {
                                 "kubernetes.io/ingress.class": "nginx",
-                                "nginx.ingress.kubernetes.io/rewrite-target": "/"
                             },
                         },
                         spec: {

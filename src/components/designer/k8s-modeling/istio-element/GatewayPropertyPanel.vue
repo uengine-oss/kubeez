@@ -36,7 +36,7 @@
                                 ></number-field>
                                 <v-text-field
                                     label="Server Name"
-                                    v-model="value.object.spec.servers[0].name"
+                                    v-model="value.object.spec.servers[0].port.name"
                                 ></v-text-field>
                                 <v-select
                                     label="Protocol"
