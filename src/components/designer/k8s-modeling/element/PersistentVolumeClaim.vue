@@ -135,8 +135,9 @@
                             "volumeName": ""
                         }
                     },
-                    connectableType: ["PersistentVolume"],
+                    connectableType: [ "PersistentVolume", "StorageClass" ],
                     outboundVolume: null,
+                    outboundStorageClass: null,
                     status: null,
                     
                 }
@@ -163,8 +164,14 @@
                 }catch(e){
                     return "";
                 }
+            },
+            outboundStorageClassName() {
+                try{
+                    return this.value.outboundStorageClass.object.metadata.name;
+                }catch(e){
+                    return "";
+                }
             }
-
         },
         data: function () {
             return {
@@ -183,16 +190,18 @@
             }
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistentVolume"){
-
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolume") {
                     me.value.outboundVolume = obj.element.targetElement;
                 }
-
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistentVolume"){
-
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolume") {
                     me.value.outboundVolume = null;
+                }
+
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "StorageClass") {
+                    me.value.outboundStorageClass = obj.element.targetElement;
+                }
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "StorageClass") {
+                    me.value.outboundStorageClass = null;
                 }
 
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
@@ -206,6 +215,9 @@
         watch: {
             "outboundVolumeName": function(volumeName){
                 this.value.object.spec.volumeName = volumeName;
+            },
+            outboundStorageClassName(val) {
+                this.value.object.spec.storageClassName = val;
             }
         },
 
