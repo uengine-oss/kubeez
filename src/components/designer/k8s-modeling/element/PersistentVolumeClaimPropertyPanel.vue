@@ -64,11 +64,21 @@
                                         <v-icon small @click="desDocOpen('#access-modes-1')">mdi-help-circle-outline</v-icon>
                                     </template>
                                 </v-select>
-                                <v-text-field
-                                    label="Storage"
-                                    v-model="storage"
-                                    type="number"
-                                ></v-text-field>
+                                <v-label>Storage</v-label>
+                                <v-row>
+                                    <v-col cols="6" class="py-0">
+                                        <v-text-field
+                                                v-model="storageVolume"
+                                                type="number">
+                                        </v-text-field>
+                                    </v-col>
+                                    <v-col class="py-0">
+                                        <v-select
+                                                :items="units"
+                                                v-model="storageUnit"
+                                        ></v-select>
+                                    </v-col>
+                                </v-row>
                                 <v-select
                                         label="Volume Mode"
                                         v-model="value.object.spec.volumeMode"
@@ -115,17 +125,28 @@
             status() {
                 return JSON.parse(JSON.stringify(this.value.status))
             },
-            storage: {
+            storageVolume: {
                 get() {
                     var val = this.value.object.spec.resources.requests.storage
-                    val = val.replace(/Gi/gi, '')
+                    val = val.replace(/Mi|Gi/gi, '')
                     return val
                 },
                 set(val) {
-                    var me = this
-                    me.value.object.spec.resources.requests.storage = val + "Gi"
+                    this.value.object.spec.resources.requests.storage = val + this.storageUnit;
                 }
-            }
+            },
+            storageUnit: {
+                get() {
+                    var val = this.value.object.spec.resources.requests.storage;
+                    val = val.replace(/[0-9]/g, '');
+                    return val;
+                },
+                set(val) {
+                    var storage = this.value.object.spec.resources.requests.storage;
+                    storage = storage.replace(/Mi|Gi/gi, val);
+                    this.value.object.spec.resources.requests.storage = storage;
+                }
+            },
         },
         data: function () {
             return {
@@ -133,9 +154,9 @@
                 volumeModeList: [ "Filesystem", "Block" ],
                 activeTab: 0,
                 tabItems: [ "status", "property" ],
+                units: [ 'Mi', 'Gi' ],
             }
         },
-
         watch: {
             status: {
                 deep: true,
