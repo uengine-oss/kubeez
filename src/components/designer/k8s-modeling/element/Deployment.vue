@@ -176,8 +176,14 @@
                             }
                         }
                     },
+                    advancedAttributePaths: {
+                        "metadata.annotataions": {
+                            "kubernetes.io/change-cause": ""
+                        },
+                    },
                     outboundVolumes: [],
                     outboundConfigMap: null,
+                    inboundHPA: null,
                     connectableType: [ "PersistentVolumeClaim", "ConfigMap" ],
                     status: null,
                     replicasStatus: "",
@@ -220,6 +226,13 @@
                     return "";
                 }
             },
+            inboundHPAName() {
+                try {
+                    return this.value.inboundHPA.object.metadata.name;
+                }catch(e){
+                    return "";
+                }
+            }
         },
         data: function () {
             return {
@@ -239,13 +252,22 @@
                 if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
                     me.value.outboundVolumes.push(obj.element.targetElement);
                 }
-
                 if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
                     me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
                 }
 
                 if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ConfigMap") {
                     me.value.outboundConfigMap = obj.element.targetElement;
+                }
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ConfigMap") {
+                    me.value.outboundConfigMap = null;
+                }
+
+                if(obj.state=="addRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "HorizontalPodAutoscaler") {
+                    me.value.inboundHPA = obj.element.sourceElement;
+                }
+                if(obj.state=="deleteRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "HorizontalPodAutoscaler") {
+                    me.value.inboundHPA = null;
                 }
 
                 if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
@@ -269,15 +291,18 @@
                 var me = this;
                 var i=0; 
                 me.value.object.spec.volumes = [];
+                me.value.object.spec.template.spec.containers[0].volumeMounts = [];
                 me.value.outboundVolumes.forEach(element => {
-                        me.value.object.spec.volumes.push(
-                            {
-                                "name": "volume" + (++i),
-                                "persistentVolumeClaim": {
-                                    "claimName": element.object.metadata.name
-                                }
+                        me.value.object.spec.volumes.push({
+                            "name": "volume" + (++i),
+                            "persistentVolumeClaim": {
+                                "claimName": element.object.metadata.name
                             }
-                        );
+                        });
+                        me.value.object.spec.template.spec.containers[0].volumeMounts.push({
+                            "mountPath": "/",
+                            "name": "volume" + i
+                        })
                     }
                 );
             },
@@ -289,6 +314,13 @@
                         "name": me.value.outboundConfigMap.object.metadata.name
                     }
                 });
+            },
+            inboundHPAName() {
+                var me = this;
+                me.value.object.spec.template.spec.containers[0].resources = {
+                    "limits": { "cpu": "500m" },
+                    "requests": { "cpu": "200m" }
+                };
             }
         },
 

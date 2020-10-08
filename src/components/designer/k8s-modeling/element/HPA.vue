@@ -126,8 +126,7 @@
                             "name": ""
                         },
                         "spec": {
-                            "scaleTargetRef": {
-                            },
+                            "scaleTargetRef": {},
                             "minReplicas": 1,
                             "maxReplicas": 10,
                             "metrics": [
@@ -145,7 +144,7 @@
                         }
                     },
                     status: null,
-                    outboundDeployment: {},
+                    outboundDeployment: null,
                     connectableType: [ "Deployment" ],
                 }
             },
@@ -181,9 +180,14 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
+
                 if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment") {
                     me.value.outboundDeployment = obj.element.targetElement
                 }
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment") {
+                    me.value.outboundDeployment = null
+                }
+
             })
         },
         watch: {
