@@ -87,13 +87,18 @@
                         "apiVersion": "v1",
                         "kind": "Namespace",
                         "metadata": {
-                            "name": ""
+                            "name": "",
                         },
                         "spec": {
                             "finalizers": [
                                 "kubernetes"
                             ]
                         }
+                    },
+                    advancedAttributePaths: {
+                        "metadata.labels": {
+                            "istio-injection": ""
+                        },
                     },
                     innerElement: []
                 }
