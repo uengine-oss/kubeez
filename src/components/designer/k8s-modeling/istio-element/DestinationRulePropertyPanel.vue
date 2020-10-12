@@ -133,7 +133,8 @@
                     delete data.spec.trafficPolicy
                     return data
                 },
-                set() {
+                set(val) {
+                    _.merge(this.value.object, val);
                 }
             },
             trafficPolicy: {
@@ -142,7 +143,8 @@
                     data.trafficPolicy = this.value.object.spec.trafficPolicy
                     return data
                 },
-                set() {
+                set(val) {
+                    _.merge(this.value.object, val);
                 }
             },
             maxRequestsPerConnection: {
