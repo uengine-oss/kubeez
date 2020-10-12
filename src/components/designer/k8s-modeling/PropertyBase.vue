@@ -11,7 +11,7 @@
                 },
                 set(val) {
                     var me = this;
-                    me.findAttribute(val)
+                    me.setAttribute(val);
                 }
             }
         },
@@ -23,40 +23,52 @@
         },
         mounted() {
             var me = this;
-            var keyArr = Object.keys(me.value.advancedAttributePaths);
-            var valArr = Object.values(me.value.advancedAttributePaths);
-            me.getPropList(keyArr, valArr);
+            me.getPropList();
         },
         methods: {
             getPropList(keyArr, valArr) {
                 var me = this;
+                var keyArr = keyArr || Object.keys(me.value.advancedAttributePaths);
+                var valArr = valArr || Object.values(me.value.advancedAttributePaths);
+               
                 valArr.forEach(function (val) {
                     if(typeof val == "object") {
-                        if(Array.isArray(val)) {
-                            return me.getPropList(keyArr, val);
-                        } else {
-                            var arr = Object.keys(val);
-                            arr.forEach(function (item) {
-                                keyArr = keyArr.concat(item)
-                            })
-                            return me.getPropList(keyArr, Object.values(val));
-                        }
+                        var arr = Object.keys(val);
+                        arr.forEach(function (item) {
+                            keyArr = keyArr.concat(me.getPath(item, "", me.value.advancedAttributePaths));
+                        })
+                        return me.getPropList(keyArr, Object.values(val));
                     } else {
                         me.propList = keyArr;
-                        return;
                     }
                 })
             },
-            findAttribute(val) {
+            getPath(searchKey, parentKey, obj) {
+                var me = this;
+                var res = "";
+                var parentKey = parentKey || "";
+
+                for (var key in obj) {
+                    if(key == searchKey) {
+                        res = parentKey + key;
+                    } else {
+                        if(typeof obj[key] == "object") {
+                            parentKey += key + '.';
+                            return me.getPath(searchKey, parentKey, obj[key]);
+                        }
+                    }
+                }
+                return res;
+            },
+            setAttribute(val) {
                 var me = this;
                 var attrList = Object.entries(me.value.advancedAttributePaths);
                 attrList.forEach(([key, value]) => {
-                    if(key == val) {
+                    if(key == val || val.includes(key)) {
                         _.set(me.value.object, key, value);
-                        console.log(me.value.object);
                     }
                 });
-            }
+            },
         }
     }
 </script>

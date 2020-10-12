@@ -160,9 +160,10 @@
                     },
                     advancedAttributePaths: {
                         "spec.containers[0].resources[0]": {
-                            "limits": [
-                                { "cpu": "100m", "mem": "512Mi" }
-                            ]
+                            "limits": { 
+                                "cpu": "100m", 
+                                "mem": "512Mi"
+                            }
                         },
                     },
                     outboundVolumes: [],
