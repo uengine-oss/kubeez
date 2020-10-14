@@ -64,16 +64,7 @@
                                     :label="'Port'"
                                     v-model="value.object.spec.containers[0].ports[0].containerPort"
                                 ></number-field>
-                                <v-btn 
-                                        fab dark left small color="primary" 
-                                        @click="isPropBox = !isPropBox">
-                                    <v-icon dark>mdi-plus</v-icon>
-                                </v-btn>
-                                <v-autocomplete
-                                        v-if="isPropBox" class="my-3" dense filled
-                                        v-model="propVal"
-                                        :items="propList"
-                                ></v-autocomplete>
+                                <attr-field v-model="value"></attr-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>
@@ -96,10 +87,9 @@
 
     import YamlEditor from "../KubeYamlEditor";
     import NumberField from "./NumberField";
-    import PropertyBase from "../PropertyBase";
+    import AdvancedAttr from "../AdvancedAttribute";
 
     export default {
-        mixins: [PropertyBase],
         name: 'property-panel',
         props: {
             value: Object,
@@ -108,6 +98,7 @@
         components: {
             "yaml-editor": YamlEditor,
             "number-field": NumberField,
+            "attr-field": AdvancedAttr,
         },
         computed: {
             descriptionText() {
@@ -133,7 +124,7 @@
         methods: {
             desDocOpen() {
                 window.open('https://kubernetes.io/docs/concepts/workloads/pods/pod/')
-            }, 
+            },
         }
     }
 </script>
