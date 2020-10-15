@@ -77,22 +77,19 @@
             me.getAttrList();
         },
         methods: {
-            getAttrList(keyArr, valArr) {
+            getAttrList(keyArr, obj) {
                 var me = this;
                 var keyArr = keyArr || Object.keys(me.value.advancedAttributePaths);
-                var valArr = valArr || Object.values(me.value.advancedAttributePaths);
-               
-                valArr.forEach(function (val) {
-                    if(typeof val == "object") {
-                        var arr = Object.keys(val);
-                        arr.forEach(function (item) {
-                            keyArr = keyArr.concat(me.getPath(item, "", me.value.advancedAttributePaths));
-                        })
-                        return me.getAttrList(keyArr, Object.values(val));
-                    } else {
-                        me.attrList = keyArr;
+                var obj = obj || me.value.advancedAttributePaths;
+
+                for (var key in obj) {
+                    var keyPath = me.getPath(key, "", me.value.advancedAttributePaths);
+                    keyArr = keyArr.concat(keyPath);
+                    if(typeof obj[key] == "object") {
+                        return me.getAttrList(keyArr, obj[key]);
                     }
-                })
+                }
+                me.attrList = keyArr;
             },
             getPath(searchKey, parentKey, obj) {
                 var me = this;
@@ -123,17 +120,11 @@
             },
             addAttribute() {
                 var me = this;
-                // var obj = {
-                //     key: me.attrKey,
-                //     value: me.attrVal
-                // }
-                // me.$emit("update", obj);
                 me.value.object.metadata.name = me.value.object.metadata.name + ","
                 me.$nextTick(function () {
                     _.set(me.value.object, me.attrKey, me.attrVal);
                     me.value.object.metadata.name = (me.value.object.metadata.name).replace(',', '')
                 });
-                console.log("add")
                 me.attrDialog = false;
             }
         }
