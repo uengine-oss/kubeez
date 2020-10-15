@@ -1,19 +1,10 @@
 ---
-  apiVersion: v1
-  kind: Namespace
-  metadata: 
-    name: kuber-ez
-  spec: 
-    finalizers: 
-      - kubernetes
----
   apiVersion: apps/v1
   kind: Deployment
   metadata: 
     name: api-server
     labels: 
       app: api-server
-    namespace: kuber-ez
   spec: 
     selector: 
       matchLabels: 
@@ -36,7 +27,6 @@
     name: front-end
     labels: 
       app: front-end
-    namespace: kuber-ez
   spec: 
     selector: 
       matchLabels: 
@@ -59,7 +49,6 @@
     name: webkubectl
     labels: 
       app: webkubectl
-    namespace: kuber-ez
   spec: 
     selector: 
       matchLabels: 
@@ -84,7 +73,6 @@
     name: front-end
     labels: 
       app: front-end
-    namespace: kuber-ez
   spec: 
     ports: 
       - port: 8081
@@ -99,7 +87,6 @@
     name: k8s-tunneling-server
     labels: 
       app: k8s-tunneling-server
-    namespace: kuber-ez
   spec: 
     ports: 
       - port: 8080
@@ -114,7 +101,6 @@
     name: webkubectl
     labels: 
       app: webkubectl
-    namespace: kuber-ez
   spec: 
     ports: 
       - port: 8082
@@ -129,7 +115,6 @@
     name: gateway
     annotations: 
       kubernetes.io/ingress.class: nginx
-    namespace: kuber-ez
   spec: 
     rules: 
       - host: kuberez.io
