@@ -238,7 +238,7 @@
             },
             outboundPodName(val) {
                 var me = this;
-                me.value.object.spec.selector.app = val;
+                me.value.object.spec.selector.app = me.value.outboundPod.object.metadata.name;
                 me.value.object.spec.ports[0].targetPort = me.value.outboundPod.object.spec.containers[0].ports[0].containerPort;
             },
             outboundReplicaSetName(val) {

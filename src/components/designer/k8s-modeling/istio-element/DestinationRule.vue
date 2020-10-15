@@ -182,14 +182,12 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
 
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement
-                    && obj.element.targetElement._type == "Service") {                    
-                    me.value.outboundService = obj.element.targetElement
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
+                    me.value.outboundService = obj.element.targetElement;
                 }
 
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement
-                    && obj.element.targetElement._type == "Service") {
-                    me.value.outboundService = ""
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
+                    me.value.outboundService = null;
                 }
 
             })
@@ -200,7 +198,10 @@
                 this.value.name = appName
             },
             outboundServiceName(val) {
-                this.value.object.spec.host = val
+                var me = this;
+                me.value.object.spec.subsets[0].labels.app = "";
+                me.value.object.spec.host = me.value.outboundService.object.metadata.name;
+                me.value.object.spec.subsets[0].labels.app = me.value.outboundService.object.spec.selector.app;
             }
         },
         methods: {
