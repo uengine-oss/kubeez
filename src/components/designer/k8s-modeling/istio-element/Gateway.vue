@@ -186,14 +186,6 @@
             name(appName) {
                 this.value.name = appName
             },
-            outboundVirtualServiceNames() {
-                var me = this
-                me.value.object.spec.servers[0].hosts = []
-
-                me.value.outboundVirtualServices.forEach(function(element) {
-                    me.value.object.spec.servers[0].hosts.push(element.object.spec.hosts[0])
-                })
-            },
         },
         methods: {
         },

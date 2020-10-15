@@ -31,7 +31,7 @@
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
                                 <number-field                                
-                                    :label="'Port'"
+                                    :label="'Server Port'"
                                     v-model="value.object.spec.servers[0].port.number"
                                 ></number-field>
                                 <v-text-field
@@ -39,10 +39,14 @@
                                     v-model="value.object.spec.servers[0].port.name"
                                 ></v-text-field>
                                 <v-select
-                                    label="Protocol"
+                                    label="Server Protocol"
                                     :items="protocolList"
                                     v-model="value.object.spec.servers[0].port.protocol"
                                 ></v-select>
+                                <v-text-field
+                                    label="Server Hosts"
+                                    v-model="value.object.spec.servers[0].hosts[0]"
+                                ></v-text-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>
