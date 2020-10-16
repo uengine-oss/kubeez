@@ -71,8 +71,7 @@
                     },
                     sourceMultiplicity: 3,
                     targetMultiplicity: 3,
-                    routeType: 'weight',
-                    weight: 0,
+                    index: null,
                 }
             },
             isOpen() {
@@ -81,31 +80,27 @@
                 }
                 return false
             },
-            name() {
-                if(this.value.routeType == 'weight') {
-                    return this.value.routeType + "\n" + this.value.weight + "%";
-                } else if(this.value.routeType == 'mirror') {
-                    return this.value.routeType
-                }
-            },
         },
         data() {
             return {
             }
         },
         watch: {
-            name(value) {
-                this.value.name = value
-            },
-            routeType() {
-                try {
-                    return this.value.weight
-                } catch(e) {
-                    return ""
-                }
-            }
+            // name(value) {
+            //     this.value.name = value
+            // },
         },
         mounted() {
+            var me = this;
+            var list = [];
+            if(me.value.targetElement._type == "DestinationRule") {
+                list = me.value.sourceElement.outboundDestinationRules
+            } else {
+                list = me.value.sourceElement.outboundServices
+            }
+            me.value.index = list.findIndex(function (el) {
+                return el.object.metadata.name == me.value.targetElement.object.metadata.name
+            })
         },
         methods: {
 

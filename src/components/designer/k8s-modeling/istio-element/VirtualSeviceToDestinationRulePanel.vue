@@ -18,16 +18,10 @@
             <v-list class="pt-0" dense flat>
                 <v-layout wrap v-if="activeTab == 0">
                     <v-card-text>
-                        <v-checkbox
-                            label="Mirror Traffic"
-                            v-model="isMirror"
-                        ></v-checkbox>
+                        <v-checkbox label="Mirror Traffic" v-model="isMirror"></v-checkbox>
                         <v-text-field
-                            v-if="!isMirror"
-                            label="weight"
-                            v-model="weight"
-                            type="number"
-                            suffix="%"
+                            v-if="!isMirror" label="weight"
+                            v-model="weight" type="number" suffix="%"
                         ></v-text-field>
                     </v-card-text>
                 </v-layout>
@@ -42,8 +36,10 @@
                                 <v-text-field
                                     label="PerTryTimeout"
                                     v-model="perTryTimeout"
-                                    type="number"
-                                    suffix="s">
+                                    type="number" suffix="s">
+                                </v-text-field>
+                                <v-text-field
+                                    label="RetryOn">
                                 </v-text-field>
                             </v-card-text>
                         </v-card>
@@ -52,7 +48,7 @@
                         <v-card flat>
                             <v-card-text>
                                 <yaml-editor
-                                    v-model="value.sourceElement.object.spec.http[0]">
+                                    v-model="value.sourceElement.object.spec.http[value.index]">
                                 </yaml-editor>
                             </v-card-text>
                         </v-card>
@@ -83,53 +79,50 @@
         computed: {
             isMirror: {
                 get() {
-                    if(this.value.routeType == 'weight') {
-                        return false
-                    } else {
+                    if(this.value.targetElement.routeType == 'mirror') {
                         return true
+                    } else {
+                        return false
                     }
                 },
                 set(val) {
                     var me = this
                     if(val) {
-                        me.value.routeType = "mirror"
+                        me.value.name = "mirror"
+                        me.value.targetElement.routeType = "mirror"
                     } else {
-                        me.value.routeType = "weight"
+                        me.value.name = "weight " + me.value.targetElement.weight + "%"
+                        me.value.targetElement.routeType = "weight"
                     }
-                    var obj = {
-                        "routeType": me.value.routeType
-                    }
-                    me.updateSourceElement('updateRouteType', obj)
+                    me.updateData();
                 }
             },
             weight: {
                 get() {
-                    return this.value.weight
+                    return this.value.targetElement.weight
                 },
                 set(val) {
-                    this.value.weight = val
-                    var obj = {
-                        "weight": val
-                    }
-                    this.updateSourceElement('updateWeight', obj)
+                    var me = this;
+                    me.value.targetElement.weight = val;
+                    me.updateData();
                 }
             },
             attempts: {
                 get() {
-                    return this.value.sourceElement.object.spec.http[0].retries.attempts
+                    return this.value.sourceElement.object.spec.http[this.value.index].retries.attempts
                 },
                 set(val) {
-                    this.value.sourceElement.object.spec.http[0].retries.attempts = val
+                    this.value.sourceElement.object.spec.http[this.value.index].retries.attempts = val
                 }
             },
             perTryTimeout: {
                 get() {
-                    var val = this.value.sourceElement.object.spec.http[0].retries.perTryTimeout
+                    var val = this.value.sourceElement.object.spec.http[this.value.index].retries.perTryTimeout
                     val = val.split('s')[0]
                     return val
                 },
                 set(val) {
-                    this.value.sourceElement.object.spec.http[0].retries.perTryTimeout = val + 's'
+                    this.value.sourceElement.object.spec.http[this.value.index].retries.perTryTimeout = val + 's'
                 }
             },
         },
@@ -139,17 +132,24 @@
                 tabs: [ "Weight", "Retry" ],
             }
         },
+        mounted() {
+            var me = this;
+        },
         watch: {
+            isMirror: {
+                deep: true,
+                handler(val) {
+                    console.log(val)
+                }
+            }
         },
         methods: {
-            updateSourceElement(state, value) {
-                var me = this
-                var obj = {
-                    state: state,
-                    value: value
-                }
-                obj.value.targetElement = me.value.targetElement
-                me.$EventBus.$emit(`${me.value.sourceElement.elementView.id}`, obj)
+            updateData() {
+                var me = this;
+                me.value.targetElement.object.metadata.name = me.value.targetElement.object.metadata.name + ","
+                me.$nextTick(function () {
+                    me.value.targetElement.object.metadata.name = (me.value.targetElement.object.metadata.name).replace(',', '')
+                });
             }
         }
     }

@@ -117,21 +117,12 @@
                         },
                         "spec": {
                             "hosts": [ "" ],
-                            "http": [
-                                {
-                                    "match": [
-                                        {
-                                            "uri": {
-                                                "exact": ""
-                                            }
-                                        }
-                                    ]
-                                }
-                            ],
+                            "http": [],
                         },
                     },
                     outboundDestinationRules: [],
-                    connectableType: [ "DestinationRule" ],
+                    outboundServices: [],
+                    connectableType: [ "DestinationRule", "Service" ],
                     relationComponent: "VirtualserviceToDestinationrule",
                     inboundGateway: null,
                 }
@@ -155,7 +146,7 @@
                 try {
                     var ruleNames = ""
                     this.value.outboundDestinationRules.forEach(element => {
-                        ruleNames += element.object.spec.subsets[0].name +  ","
+                        ruleNames += element.object.spec.subsets[0].name +  "," + element.object.metadata.name + "," + element.routeType + "," + element.weight
                     })
                     return ruleNames
                 } catch (e) {
@@ -164,11 +155,22 @@
             },
             gatewayName() {
                 try {
-                    return this.value.inboundGateway.object.metadata.name + ","
+                    return this.value.inboundGateway.object.metadata.name + "," + this.value.inboundGateway.object.spec.servers[0].hosts[0] 
                 } catch(e) {
                     return ""
                 }
             },
+            outboundServiceNames() {
+                try {
+                    var svcNames = "";
+                    this.value.outboundServices.forEach(element => {
+                        svcNames += element.object.metadata.name + ","
+                    });
+                    return svcNames;
+                } catch(e) {
+                    return "";
+                }
+            }
         },
         data: function () {
             return {};
@@ -186,18 +188,17 @@
                 if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRule") {
                     me.value.outboundDestinationRules.splice(me.value.outboundDestinationRules.indexOf(obj.element.targetElement), 1)
                 }
-
-                if(obj.state=="updateRouteType" && obj.value) {
-                    me.setRouteType(obj)
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {                    
+                    me.value.outboundServices.push(obj.element.targetElement)
                 }
-                if(obj.state=="updateWeight" && obj.value) {
-                    me.setWeight(obj)
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
+                    me.value.outboundServices.splice(me.value.outboundServices.indexOf(obj.element.targetElement), 1)
                 }
 
                 if(obj.state=="addRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "Gateway") {  
                     me.value.inboundGateway = obj.element.sourceElement
                 }
-                if(obj.state=="deleteRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "Gateway") {
+                if(obj.state=="deleteRelation" && obj.element && obj.element.sourceElements && obj.element.sourceElement._type == "Gateway") {
                     me.value.inboundGateway = null
                 }
             })
@@ -205,68 +206,81 @@
         },
         watch: {
             outboundDestinationRuleNames() {
-                var me = this
-                if(!me.value.object.spec.http[0]) {
-                    var route = []
-                    me.value.object.spec.http.push({route})
-                }
-                me.value.object.spec.http[0].route = []
+                var me = this;
+                me.value.object.spec.http = [];
                 me.value.outboundDestinationRules.forEach(element => {
-                    me.value.object.spec.http[0].route.push({
-                        'destination': {
-                            'host': element.object.spec.host,
-                            'subset': element.object.spec.subsets[0].name
-                        }
-                    })
-                })
+                    // console.log(element);
+                    me.setDestination(element);
+                });
             },
             gatewayName() {
                 var me = this
+                me.value.object.spec.hosts = []
                 me.value.object.spec.gateways = []
                 if(me.value.inboundGateway) {
+                    me.value.object.spec.hosts.push(me.value.inboundGateway.object.spec.servers[0].hosts[0])
                     me.value.object.spec.gateways.push(me.value.inboundGateway.object.metadata.name)
                 }
+            },
+            outboundServiceNames(val) {
+                var me = this;
+                me.value.object.spec.http = [];
+                me.value.outboundServices.forEach(element => {
+                    me.value.object.spec.http.push({
+                        "match": [{
+                            "uri": {
+                                "prefix": "/"
+                            }
+                        }],
+                        "route": [{
+                            "destination": {
+                                "host": element.object.metadata.name,
+                                "port": {
+                                    "number": element.object.spec.ports[0].port
+                                }
+                            }
+                        }],
+                        "retries": {
+                            "attempts": 3,
+                            "perTryTimeout": "2s",
+                            "retryOn": ""
+                        }
+                    });
+                });
             }
         },
         methods: {
-            setRouteType(obj) {
-                var me = this
-                var index = me.value.outboundDestinationRules.findIndex(function(val) {
-                    return val == obj.value.targetElement
-                })
-                if(obj.value.routeType == 'mirror') {
-                    me.value.outboundDestinationRules.splice(index, 1)
-                    me.value.object.spec.http[1].route.splice(index, 1)
-                    me.value.outboundDestinationRules.push(obj.value.targetElement)
-                    me.value.object.spec.http[1].route.push({
-                        'mirror': [
-                            {
-                                'host': obj.value.targetElement.object.spec.host,
-                                'subset': obj.value.targetElement.object.spec.subsets[0].name
+            setDestination(element) {
+                var me = this;
+                if(element.routeType == 'mirror') {
+                    me.value.object.spec.http.push({
+                        "mirror": {
+                            "host": element.object.spec.host,
+                            "subset": element.object.spec.subsets[0].name
+                        },
+                        "retries": {
+                            "attempts": 3,
+                            "perTryTimeout": "2s",
+                            "retryOn": ""
+                        }
+                    });
+                } else if(element.routeType == 'weight') {
+                    me.value.object.spec.http.push({
+                        "route": [{
+                            "destination": {
+                                "host": element.object.spec.host,
+                                "subset": element.object.spec.subsets[0].name
                             }
-                        ]
-                    })
-                } else if(obj.value.routeType == 'weight') {
-                    me.value.outboundDestinationRules.splice(index, 1)
-                    me.value.object.spec.http[1].route.splice(index, 1)
-                    me.value.outboundDestinationRules.push(obj.value.targetElement)
-                    me.value.object.spec.http[1].route.push({
-                        'destination': [
-                            {
-                                'host': obj.value.targetElement.object.spec.host,
-                                'subset': obj.value.targetElement.object.spec.subsets[0].name
-                            }
-                        ]
-                    })
+                        }],
+                        'weight': Number(element.weight),
+                        "retries": {
+                            "attempts": 3,
+                            "perTryTimeout": "2s",
+                            "retryOn": ""
+                        }
+                    });
                 }
             },
-            setWeight(obj) {
-                var me = this
-                var index = me.value.outboundDestinationRules.findIndex(function(val) {
-                    return val == obj.value.targetElement
-                })
-                me.value.object.spec.http[1].route[index].weight = Number(obj.value.weight)
-            }
         },
     }
 </script>
