@@ -32,13 +32,17 @@
             </v-container>
         </v-content>
 
-        <iframe
-                v-if="terminal"
-                id="eventTerminal"
-                :src="terminalUrl"
-                @load="onLoad"
-                style="width: 100%; left: 0; bottom: 0; display: block; position: fixed"
-        ></iframe>
+        <div v-if="terminal">
+            <v-btn color="error" @click="terminalOff" style="position: fixed; height: 5%; top: 60%; right: 1%;">
+                <v-icon>mdi-close</v-icon>
+            </v-btn>
+            <iframe
+                    id="eventTerminal"
+                    :src="terminalUrl"
+                    @load="onLoad"
+                    style="width: 100%; left: 0; bottom: 0; display: block; position: fixed"
+            ></iframe>
+        </div>
         
         <v-overlay
                 :value="overlay"
@@ -151,9 +155,14 @@
                 me.$http.post("api/kube-token", item).then(function (response) {
                     me.$EventBus.$emit('terminalOn', response.data.token)
                 }).catch(function (err) {
-                    alert("Failed to load Terminal")
+                    alert("To use Shell Terminal, A Cluster must be selected using Cluster Managing Menu.")
                 })
             },
+            terminalOff() {
+                var me = this;
+                me.terminalUrl = '';
+                me.terminal = false;
+            }
         }
     }
 </script>
