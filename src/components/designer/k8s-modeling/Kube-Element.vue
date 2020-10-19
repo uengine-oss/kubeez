@@ -444,8 +444,14 @@
                 var code = 'kubectl ' + event.option.name.toLowerCase()
                 var designer = me.getComponent('kube-modeling-designer')
                 
-                if(code.includes('describe') || code.includes('delete')) {
-                    code += ' ' + me.value.object.metadata.name
+                if(code.includes('describe') || code.includes('delete') || code.includes('get')) {
+                    code += ' ' + me.value.object.metadata.name + ' -n '
+                    var namespace = me.value.object.metadata.namespace
+                    if(namespace != undefined) {
+                        code += namespace
+                    } else {
+                        code += 'default'
+                    }
                 } else if(code.includes('create')) {
                     code = 'kubectl create -f- <<EOF \n'
                     var yaml = designer.yamlFilter(json2yaml.stringify(me.value.object))
@@ -454,9 +460,8 @@
                     code = 'kubectl apply -f- <<EOF \n'
                     var yaml = designer.yamlFilter(json2yaml.stringify(me.value.object))
                     code += yaml + "EOF"
-                } else if(code.includes('terminal')) {
-                    code = ''
                 }
+
                 code += '\n'
                 me.$EventBus.$emit('sendCode', code)
             },
