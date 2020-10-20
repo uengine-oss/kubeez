@@ -65,7 +65,7 @@
                                 <template-field
                                     v-model="value.object"
                                 ></template-field>
-                                <attr-field v-model="value" @update="updateData"></attr-field>
+                                <attr-field v-model="value"></attr-field>
                             </v-card-text>
                         </v-card>
                     </v-flex>
