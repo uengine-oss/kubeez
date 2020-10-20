@@ -443,16 +443,19 @@
                 var me = this
                 var code = 'kubectl ' + event.option.name.toLowerCase()
                 var designer = me.getComponent('kube-modeling-designer')
+                var namespace = me.value.object.metadata.namespace
                 
                 if(code.includes('describe') || code.includes('delete') || code.includes('get')) {
                     code += ' ' + me.value.object.metadata.name + ' -n '
-                    var namespace = me.value.object.metadata.namespace
                     if(namespace != undefined) {
                         code += namespace
                     } else {
                         code += 'default'
                     }
                 } else if(code.includes('create')) {
+                    if(namespace == undefined) {
+                        me.value.object.metadata.namespace = 'default'
+                    }
                     code = 'kubectl create -f- <<EOF \n'
                     var yaml = designer.yamlFilter(json2yaml.stringify(me.value.object))
                     code += yaml + "EOF"
