@@ -542,7 +542,19 @@
                     }, 300)
 
             },
-
+            "value.definition": {
+                deep: true,
+                handler: _.debounce(function() {
+                    var me = this;
+                    var reqUrl = "";
+                    me.value.definition.forEach(function (item) {
+                        reqUrl = me.getReqUrl(item) + item.object.metadata.name;
+                        if(item.object.metadata.name) {
+                            me.getStatusData(reqUrl, item);
+                        }
+                    })
+                }, 500)
+            },
             "projectName":
                 _.debounce(
                     function (newVal) {
@@ -1111,10 +1123,10 @@
                     var codeValue = {
                         'key': item.elementView.id,
                         'name': name + '.yaml',
-                        'code': me.yamlFilter(json2yaml.stringify(item.object)),
+                        'code': json2yaml.stringify(item.object),
                         'file': me.fileType('.yaml')
-                    }                        
-                    
+                    }
+
                     var index = treeList.findIndex(function (val) {
                         if(val.name == codeValue.name) {
                             val.code += codeValue.code
@@ -1193,7 +1205,6 @@
 
                         me.$http.put(reqUrl, params).then(function (res) {
                             console.log(res.status)
-                            me.getStatusData(reqUrl, item)
                         }).catch(function (err) {
                             console.log(err)
                             alert("Update failed")
@@ -1201,8 +1212,6 @@
                     } else {
                         me.$http.post(reqUrl, params).then(function (res) {
                             console.log(res.status)
-                            reqUrl += item.object.metadata.name
-                            me.getStatusData(reqUrl, item)
                         }).catch(function (err) {
                             console.log(err)
                             alert("Deploy failed")
@@ -1260,20 +1269,18 @@
                 return reqUrl
             },
             getStatusData(reqUrl, element) {
-                var me = this
-                reqUrl += '?apiServer=' + me.clusterInfo.apiServer + '&token=' + me.clusterInfo.token
-                
-                setInterval(function() {
-                    me.$http.get(reqUrl).then(function (res) {
-                        var obj = {
-                            state: "get",
-                            element: res.data
-                        }
-                        me.$EventBus.$emit(`${element.elementView.id}`, obj)
-                    }).catch(function (err) {
-                        // console.log(err)
-                    })
-                }, 1000)
+                var me = this;
+                reqUrl += '?apiServer=' + me.clusterInfo.apiServer + '&token=' + me.clusterInfo.token;
+
+                me.$http.get(reqUrl).then(function (res) {
+                    var obj = {
+                        state: "get",
+                        element: res.data
+                    }
+                    me.$EventBus.$emit(`${element.elementView.id}`, obj)
+                }).catch(function (err) {
+                    // console.log(err)
+                })
             },
             onSearchBox() {
                 var me = this
