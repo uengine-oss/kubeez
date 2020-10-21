@@ -228,7 +228,7 @@
             },
             inboundHPAName() {
                 try {
-                    return this.value.inboundHPA.object.metadata.name;
+                    return this.value.inboundHPA.object.metadata.name + ',';
                 }catch(e){
                     return "";
                 }
@@ -315,12 +315,15 @@
                     }
                 });
             },
-            inboundHPAName() {
+            inboundHPAName(val) {
                 var me = this;
-                me.value.object.spec.template.spec.containers[0].resources = {
-                    "limits": { "cpu": "500m" },
-                    "requests": { "cpu": "200m" }
-                };
+                me.value.object.spec.template.spec.containers[0].resources = {};
+                if(val.length > 0) {
+                    me.value.object.spec.template.spec.containers[0].resources = {
+                        "limits": { "cpu": "500m" },
+                        "requests": { "cpu": "200m" }
+                    };
+                }
             }
         },
 
