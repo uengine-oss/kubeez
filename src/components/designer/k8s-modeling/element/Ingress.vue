@@ -154,8 +154,7 @@
                 try {
                     var serviceNames = "";
                     this.value.outboundServices.forEach((element) => {
-                      // serviceNames += element.host + element.path + ' ' + element.targetElement.name + ","
-                      serviceNames += element.host + element.path + " " + element.name + ",";
+                        serviceNames += element.host + element.path + element.name + ",";
                     });
                     return serviceNames;
                 } catch (e) {
@@ -173,9 +172,9 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 if (obj.state == "addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
-                    obj.element.targetElement.routeType = obj.element.routeType;
-                    obj.element.targetElement.host = obj.element.host;
-                    obj.element.targetElement.path = obj.element.path;
+                    obj.element.targetElement.routeType = "path";
+                    obj.element.targetElement.host = "";
+                    obj.element.targetElement.path = "/";
                     me.value.outboundServices.push(obj.element.targetElement);
                 }
 
@@ -186,10 +185,6 @@
                 if (obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
                     me.value.status = obj.element.status;
                 }
-
-                if (obj.state == "updateType" && obj.targetElement) {
-                    me.setRoute(obj);
-                }
             });
         },
         watch: {
@@ -197,61 +192,40 @@
                 var me = this;
                 me.value.object.spec.rules = [];
                 me.value.outboundServices.forEach((element) => {
-                    if (element.routeType == "path" && me.findHost(element.host) != -1 && me.value.object.spec.rules.length > 0) {
-                        var index = me.findHost(element.host);
-                        me.value.object.spec.rules[index].http.paths.push({
-                            path: element.path,
-                            backend: {
-                                serviceName: element.object.metadata.name,
-                                servicePort: element.object.spec.ports[0].port,
-                            },
-                        });
-                        element.host = me.value.object.spec.rules[index].host;
-                    } else {
-                        var obj = {
-                            host: "",
-                            http: { paths: [] },
-                        };
-                        obj.host = element.host;
-                        obj.http.paths.push({
-                            path: element.path,
-                            backend: {
-                                serviceName: element.object.metadata.name,
-                                servicePort: element.object.spec.ports[0].port,
-                            },
-                        });
-                        me.value.object.spec.rules.push(obj);
-                    }
+                    me.setService(element);
                 });
             },
         },
         methods: {
-            setRoute(obj) {
+            setService(element) {
                 var me = this;
-                var index = me.value.outboundServices.findIndex(function (val) {
-                    return val == obj.targetElement;
-                });
-                me.value.outboundServices.splice(index, 1);
-                me.value.outboundServices.push(obj.targetElement);
-                // me.value.object.spec.rules[index].host = obj.value.host;
-            },
-            findHost(host) {
-                var me = this;
-                var num = 0;
-                me.value.outboundServices.forEach(function (el) {
-                    if (el.host == host) {
-                        num++;
+                var obj = {};
+                if(element.routeType = "path" && me.value.object.spec.rules.length > 0 && element.host == "") {
+                    obj = {
+                        path: element.path,
+                        backend: {
+                            serviceName: element.object.metadata.name,
+                            servicePort: element.object.spec.ports[0].port,
+                        }
                     }
-                });
-                if (num > 1) {
-                    // return me.value.outboundServices.findIndex(function (el) {
-                    //     return el.host == host;
-                    // });
-                    return me.value.object.spec.rules.findIndex(function (el) {
-                        return el.host == host;
-                    });
+                    me.value.object.spec.rules[0].http.paths.push(obj);
+                } else {
+                    obj = {
+                        host: element.host,
+                        http: {
+                            paths: [{
+                                path: element.path,
+                                pathType: "Prefix",
+                                backend: {
+                                    serviceName: element.object.metadata.name,
+                                    servicePort: element.object.spec.ports[0].port,
+                                }
+                            }]
+                        },
+                    };
+                    me.value.object.spec.rules.push(obj);
                 }
-            },
+            }
         },
     };
 </script>

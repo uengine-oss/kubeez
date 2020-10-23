@@ -50,24 +50,22 @@
         computed: {
             path: {
                 get() {
-                    return this.value.path
+                    return this.value.targetElement.path;
                 },
                 set(val) {
-                    var me = this
-                    me.value.path = val
-                    me.value.targetElement.path = val
-                    me.updateSourceElement()
+                    var me = this;
+                    me.value.targetElement.path = val;
+                    me.updateData();
                 }
             },
             host: {
                 get() {
-                    return this.value.host
+                    return this.value.targetElement.host;
                 },
                 set(val) {
-                    var me = this
-                    me.value.host = val
-                    me.value.targetElement.host = val
-                    me.updateSourceElement()
+                    var me = this;
+                    me.value.targetElement.host = val;
+                    me.updateData();
                 }
             },
         },
@@ -81,32 +79,29 @@
         },
         mounted() {
             var me = this
-            if(me.value.routeType == 'path') {
+            if(me.value.targetElement.routeType == 'path') {
                 me.activeTab = 0
-            } else if(me.value.routeType == 'host') {
+            } else if(me.value.targetElement.routeType == 'host') {
                 me.activeTab = 1
             }
         },
         beforeDestroy() {
-            var me = this
-            var obj = {}
-            me.updateSourceElement()
         },
         methods: {
-            updateSourceElement() {
-                var me = this
-                var obj = {}
-                obj.state = 'updateType'
-                obj.targetElement = me.value.targetElement
-                me.$EventBus.$emit(`${me.value.sourceElement.elementView.id}`, obj)
+            updateData() {
+                var me = this;
+                me.value.targetElement.object.metadata.name = me.value.targetElement.object.metadata.name + ","
+                me.$nextTick(function () {
+                    me.value.targetElement.object.metadata.name = (me.value.targetElement.object.metadata.name).replace(',', '')
+                });
             },
             changeType(val) {
                 var me = this
                 me.activeTab = val
                 if(val == 0) {
-                    me.value.routeType = "path"
+                    me.value.targetElement.routeType = "path"
                 } else if(val == 1) {
-                    me.value.routeType = "host"
+                    me.value.targetElement.routeType = "host"
                 }
             }
         }
