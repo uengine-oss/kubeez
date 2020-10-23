@@ -226,10 +226,11 @@
                 var me = this;
                 me.value.object.spec.http = [];
                 me.value.outboundServices.forEach(element => {
+                    var path = element.path || "/";
                     me.value.object.spec.http.push({
                         "match": [{
                             "uri": {
-                                "prefix": "/"
+                                "prefix": path 
                             }
                         }],
                         "route": [{
