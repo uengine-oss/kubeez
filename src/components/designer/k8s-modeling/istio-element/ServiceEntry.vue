@@ -121,7 +121,6 @@
                             },
                         }
                     },
-                    connectableType: [ "WorkloadEntry" ],
                 }
             },
             name() {

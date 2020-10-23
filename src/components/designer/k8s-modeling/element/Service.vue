@@ -217,10 +217,6 @@
                 else if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
                     me.value.outboundReplicaSet = null;
                 }
-
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status
-                }
             })
             
         },

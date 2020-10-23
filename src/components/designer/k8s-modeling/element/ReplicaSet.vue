@@ -208,15 +208,6 @@
                 me.setReplicasStatus()
                 me.refresh()
             }
-
-            this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status
-                    me.setReplicasStatus()
-                    me.refresh()
-                }
-            })
         },
         watch: {
             name(appName){

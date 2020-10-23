@@ -186,11 +186,6 @@
                     me.value.outboundRole = null;
                 }
 
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = "created"
-                    var designer = me.getComponent('kube-modeling-designer')
-                    clearInterval(designer.getStatus)
-                }
             })
 
         },

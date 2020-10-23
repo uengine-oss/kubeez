@@ -203,12 +203,6 @@
                 if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "StorageClass") {
                     me.value.outboundStorageClass = null;
                 }
-
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status
-                    me.setStatus()
-                    me.refresh()
-                }
             })
             
         },
@@ -220,16 +214,7 @@
                 this.value.object.spec.storageClassName = val;
             }
         },
-
         methods: {
-            setStatus() {
-                var me = this
-                if(me.value.status.phase == 'Bound') {
-                    me.deploySuccess = true
-                } else {
-                    me.deploySuccess = false
-                }
-            },
         }
     }
 </script>

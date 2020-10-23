@@ -181,10 +181,6 @@
                 if (obj.state == "deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
                     me.value.outboundServices.splice(me.value.outboundServices.indexOf(obj.element.targetElement), 1);
                 }
-
-                if (obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status;
-                }
             });
         },
         watch: {

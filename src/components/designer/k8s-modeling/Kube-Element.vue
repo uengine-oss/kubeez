@@ -167,6 +167,20 @@
                         me.deleteActivity(obj)
                     }
                 })
+                me.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
+                    if (obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
+                        me.value.status = "created";
+                        if(obj.element.status) {
+                            me.value.status = obj.element.status;
+                            if(obj.element.kind == "Deployment" || obj.element.kind == "ReplicaSet") {
+                                me.setReplicasStatus();
+                            } else if(obj.element.kind == "Pod") {
+                                me.setStatus();
+                            }
+                        }
+                        me.refresh();
+                    }
+                })
             } else if (me.value.relationView) {
                 me.$EventBus.$on(`${me.value.relationView.id}`, function (obj) {
                     if (obj.state == "delete") {
@@ -439,7 +453,7 @@
                 event.pageY = event.pageY - 62
                 me.$refs.vueSimpleContextMenu.showMenu(event)
             },
-            async optionClicked(event) {
+            optionClicked(event) {
                 var me = this
                 var code = 'kubectl ' + event.option.name.toLowerCase()
                 var designer = me.getComponent('kube-modeling-designer')

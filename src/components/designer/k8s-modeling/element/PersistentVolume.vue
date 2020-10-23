@@ -172,29 +172,10 @@
                 me.setStatus()
                 me.refresh()
             }
-
-            this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status
-                    me.setStatus()
-                    me.refresh()
-                }
-            })
         },
-        watch: {
-           
+        watch: {           
         },
-
         methods: {
-            setStatus() {
-                var me = this
-                if(me.value.status.phase == 'Bound') {
-                    me.deploySuccess = true
-                } else {
-                    me.deploySuccess = false
-                }
-            },
         }
     }
 </script>

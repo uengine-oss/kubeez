@@ -268,14 +268,7 @@
                 }
                 if(obj.state=="deleteRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "HorizontalPodAutoscaler") {
                     me.value.inboundHPA = null;
-                }
-
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status
-                    me.setReplicasStatus()
-                    me.refresh()
-                }
-                
+                }                
             })
         },
 

@@ -160,16 +160,6 @@
         },
         mounted(){
             var me = this;
-
-            this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = "created"
-                    var designer = me.getComponent('kube-modeling-designer')
-                    clearInterval(designer.getStatus)
-                }
-            })
-
         },
         watch: {
         },

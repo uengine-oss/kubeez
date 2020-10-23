@@ -227,13 +227,6 @@
                 if (obj.state == "changeName") {
                     me.namespace = obj.element
                 }
-
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status
-                    me.setStatus()
-                    me.refresh()
-                }
-
             })
 
         },

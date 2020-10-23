@@ -549,7 +549,7 @@
                     var reqUrl = "";
                     me.value.definition.forEach(function (item) {
                         reqUrl = me.getReqUrl(item) + item.object.metadata.name;
-                        if(item.object.metadata.name) {
+                        if(item.object.metadata.name && item.status) {
                             me.getStatusData(reqUrl, item);
                         }
                     })
@@ -1200,21 +1200,14 @@
                         "data": item.object
                     }
                     
-                    if (item.status) {
-                        reqUrl += item.object.metadata.name
-
-                        me.$http.put(reqUrl, params).then(function (res) {
-                            console.log(res.status)
-                        }).catch(function (err) {
-                            console.log(err)
-                            alert("Update failed")
-                        })
-                    } else {
+                    if (!item.status) {
                         me.$http.post(reqUrl, params).then(function (res) {
-                            console.log(res.status)
+                            console.log(res.status);
+                            reqUrl += item.object.metadata.name;
+                            me.getStatusData(reqUrl, item);
                         }).catch(function (err) {
-                            console.log(err)
-                            alert("Deploy failed")
+                            console.log(err);
+                            alert("Deploy failed");
                         })
                     }
                 })

@@ -208,12 +208,6 @@
                     me.value.object.spec.template.spec.containers[0].volumeMounts[0].name = ""
                     me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
                 }
-
-                if(obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
-                    me.value.status = obj.element.status
-                    me.refresh()
-                }
-                
             })
 
         },
