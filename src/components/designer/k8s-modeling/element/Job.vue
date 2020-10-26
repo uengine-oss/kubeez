@@ -73,7 +73,7 @@
         </property-panel>
 
         <vue-context-menu
-            :elementId="value._type"
+            :elementId="value.elementView.id"
             :options="menuList"
             :ref="'vueSimpleContextMenu'"
             @option-clicked="optionClicked">
