@@ -29,6 +29,11 @@
                     <v-flex shrink style="width: 180px;">
                         <v-card flat>
                             <v-card-text>
+                                <v-text-field
+                                    label="Timeout"
+                                    v-model="timeout"
+                                    type="number" suffix="s">
+                                </v-text-field>
                                 <number-field
                                     :label="'Attempts'"
                                     v-model="attempts"
@@ -105,6 +110,16 @@
                     var me = this;
                     me.value.targetElement.weight = val;
                     me.updateData();
+                }
+            },
+            timeout: {
+                get() {
+                    var val = this.value.sourceElement.object.spec.http[this.value.index].timeout
+                    val = val.split('s')[0]
+                    return val
+                },
+                set(val) {
+                    this.value.sourceElement.object.spec.http[this.value.index].timeout = val + 's'
                 }
             },
             attempts: {

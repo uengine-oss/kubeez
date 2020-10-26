@@ -64,7 +64,7 @@
         </property-panel>
 
         <vue-context-menu
-            :elementId="value._type"
+            :elementId="value.elementView.id"
             :options="menuList"
             :ref="'vueSimpleContextMenu'"
             @option-clicked="optionClicked">
@@ -241,6 +241,7 @@
                                 }
                             }
                         }],
+                        "timeout": "3s",
                         "retries": {
                             "attempts": 3,
                             "perTryTimeout": "2s",
@@ -259,6 +260,7 @@
                             "host": element.object.spec.host,
                             "subset": element.object.spec.subsets[0].name
                         },
+                        "timeout": "3s",
                         "retries": {
                             "attempts": 3,
                             "perTryTimeout": "2s",
@@ -274,6 +276,7 @@
                             }
                         }],
                         'weight': Number(element.weight),
+                        "timeout": "3s",
                         "retries": {
                             "attempts": 3,
                             "perTryTimeout": "2s",
