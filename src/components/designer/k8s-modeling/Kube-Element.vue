@@ -473,10 +473,15 @@
                     code = 'kubectl create -f- <<EOF \n'
                     var yaml = designer.yamlFilter(json2yaml.stringify(me.value.object))
                     code += yaml + "EOF"
+                    me.value.status = "created";
                 } else if(code.includes('update')) {
+                    if(namespace == undefined) {
+                        me.value.object.metadata.namespace = 'default'
+                    }
                     code = 'kubectl apply -f- <<EOF \n'
                     var yaml = designer.yamlFilter(json2yaml.stringify(me.value.object))
                     code += yaml + "EOF"
+                    me.value.status = "created";
                 }
 
                 code += '\n'
