@@ -172,10 +172,17 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 if (obj.state == "addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
-                    obj.element.targetElement.routeType = "path";
-                    obj.element.targetElement.host = "";
-                    obj.element.targetElement.path = "/";
-                    me.value.outboundServices.push(obj.element.targetElement);
+                    var res = me.value.outboundServices.some((el) => {
+                        if(el.elementView.id == obj.element.targetElement.elementView.id) {
+                            return true;
+                        }
+                    })
+                    if(!res) {
+                        obj.element.targetElement.routeType = "path";
+                        obj.element.targetElement.host = "";
+                        obj.element.targetElement.path = "/";
+                        me.value.outboundServices.push(obj.element.targetElement);
+                    }
                 }
 
                 if (obj.state == "deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
@@ -199,6 +206,7 @@
                 if(element.routeType = "path" && me.value.object.spec.rules.length > 0 && element.host == "") {
                     obj = {
                         path: element.path,
+                        pathType: "Prefix",
                         backend: {
                             serviceName: element.object.metadata.name,
                             servicePort: element.object.spec.ports[0].port,

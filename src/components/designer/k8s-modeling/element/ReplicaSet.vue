@@ -174,7 +174,7 @@
                             }
                         }
                     },
-                    connectableType: ["Pod"],
+                    connectableType: [],
                     status: null,
                     replicasStatus: "",
                 }

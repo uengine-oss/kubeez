@@ -213,15 +213,18 @@
             }
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if (obj.state == "addRelation" && obj.element && obj.element.targetElement
-                    && obj.element.targetElement._type == "PersistentVolumeClaim") {
-                    // console.log("inner")
-                    me.value.outboundVolumes.push(obj.element.targetElement);
+                if (obj.state == "addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
+                    var res = me.value.outboundVolumes.some((el) => {
+                        if(el.elementView.id == obj.element.targetElement.elementView.id) {
+                            return true;
+                        }
+                    })
+                    if(!res) {
+                        me.value.outboundVolumes.push(obj.element.targetElement);
+                    }
                 }
 
-                if (obj.state == "deleteRelation" && obj.element && obj.element.targetElement
-                    && obj.element.targetElement._type == "PersistentVolumeClaim") {
-
+                if (obj.state == "deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
                     me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
                 }
                 if (obj.state == "changeName") {
@@ -244,10 +247,10 @@
                 this.value.object.spec.containers[0].name = appName;
             },
             outboundVolumeNames(names) {
-                this.value.object.spec.volumes = [];
                 var me = this;
                 var i = 0;
-                this.value.outboundVolumes.forEach(element => {
+                me.value.object.spec.volumes = [];
+                me.value.outboundVolumes.forEach(element => {
                         me.value.object.spec.volumes.push(
                             {
                                 "name": "volume" + (++i),

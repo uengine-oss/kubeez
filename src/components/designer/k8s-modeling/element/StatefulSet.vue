@@ -196,16 +196,18 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistentVolumeClaim"){
-
-                    me.value.outboundVolumes.push(obj.element.targetElement);
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
+                    var res = me.value.outboundVolumes.some((el) => {
+                        if(el.elementView.id == obj.element.targetElement.elementView.id) {
+                            return true;
+                        }
+                    })
+                    if(!res) {
+                        me.value.outboundVolumes.push(obj.element.targetElement);
+                    }
                 }
 
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement 
-                    && obj.element.targetElement._type == "PersistentVolumeClaim"){
-
-                    me.value.object.spec.template.spec.containers[0].volumeMounts[0].name = ""
+                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
                     me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
                 }
             })

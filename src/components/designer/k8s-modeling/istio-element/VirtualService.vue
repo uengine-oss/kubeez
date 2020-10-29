@@ -182,14 +182,28 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 // console.log(obj)
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRule") {                    
-                    me.value.outboundDestinationRules.push(obj.element.targetElement)
+                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRule") {   
+                    var res = me.value.outboundDestinationRules.some((el) => {
+                        if(el.elementView.id == obj.element.targetElement.elementView.id) {
+                            return true;
+                        }
+                    })
+                    if(!res) {
+                        me.value.outboundDestinationRules.push(obj.element.targetElement)
+                    }
                 }
                 if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRule") {
                     me.value.outboundDestinationRules.splice(me.value.outboundDestinationRules.indexOf(obj.element.targetElement), 1)
                 }
                 if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {                    
-                    me.value.outboundServices.push(obj.element.targetElement)
+                    var res = me.value.outboundServices.some((el) => {
+                        if(el.elementView.id == obj.element.targetElement.elementView.id) {
+                            return true;
+                        }
+                    })
+                    if(!res) {
+                        me.value.outboundServices.push(obj.element.targetElement)
+                    }
                 }
                 if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
                     me.value.outboundServices.splice(me.value.outboundServices.indexOf(obj.element.targetElement), 1)
