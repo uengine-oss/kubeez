@@ -56,3 +56,8 @@ kubectl create -f https://raw.githubusercontent.com/uengine-oss/kuber-ez/master/
 You can find examples of Kubernetes object models in https://github.com/uengine-oss/kuber-ez/blob/master/src/components/designer/k8s-modeling/element.
 Create a new copy of element and property panel component for the K8S object kind (e.g. Deployment.vue and DeploymentPropertyPanel.vue), and place them in the above folder.
 Then add the component to the 'elementTypes' array of https://github.com/uengine-oss/kuber-ez/blob/master/src/components/designer/k8s-modeling/KubeModeler.vue file.
+
+
+## Documentation
+
+https://github.com/uengine-oss/kuber-ez/wiki
