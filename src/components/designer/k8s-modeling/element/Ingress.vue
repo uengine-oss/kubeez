@@ -171,7 +171,7 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if (obj.state == "addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
+                if (obj.action == "addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
                     var res = me.value.outboundServices.some((el) => {
                         if(el.elementView.id == obj.element.targetElement.elementView.id) {
                             return true;
@@ -185,7 +185,7 @@
                     }
                 }
 
-                if (obj.state == "deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
+                if (obj.action == "deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
                     me.value.outboundServices.splice(me.value.outboundServices.indexOf(obj.element.targetElement), 1);
                 }
             });

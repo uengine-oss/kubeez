@@ -249,7 +249,7 @@
             }
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
                     var res = me.value.outboundVolumes.some((el) => {
                         if(el.elementView.id == obj.element.targetElement.elementView.id) {
                             return true;
@@ -259,21 +259,21 @@
                         me.value.outboundVolumes.push(obj.element.targetElement);
                     }
                 }
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
+                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
                     me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
                 }
 
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ConfigMap") {
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ConfigMap") {
                     me.value.outboundConfigMap = obj.element.targetElement;
                 }
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ConfigMap") {
+                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ConfigMap") {
                     me.value.outboundConfigMap = null;
                 }
 
-                if(obj.state=="addRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "HorizontalPodAutoscaler") {
+                if(obj.action=="addRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "HorizontalPodAutoscaler") {
                     me.value.inboundHPA = obj.element.sourceElement;
                 }
-                if(obj.state=="deleteRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "HorizontalPodAutoscaler") {
+                if(obj.action=="deleteRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "HorizontalPodAutoscaler") {
                     me.value.inboundHPA = null;
                 }                
             })

@@ -130,7 +130,7 @@
 
                     if (me.selected && !me.openPanel) {
                         var obj = {
-                            state: 'delete',
+                            action: 'delete',
                             element: me.value
                         }
 
@@ -163,12 +163,12 @@
 
             if (!me.value.relationView) {
                 me.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                    if (obj.state == "delete") {
+                    if (obj.action == "delete") {
                         me.deleteActivity(obj)
                     }
                 })
                 me.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                    if (obj.state == "get" && obj.element && obj.element.kind == me.value.object.kind) {
+                    if (obj.action == "getStatus" && obj.element && obj.element.kind == me.value.object.kind) {
                         me.value.status = "created";
                         if(obj.element.status) {
                             me.value.status = obj.element.status;
@@ -183,7 +183,7 @@
                 })
             } else if (me.value.relationView) {
                 me.$EventBus.$on(`${me.value.relationView.id}`, function (obj) {
-                    if (obj.state == "delete") {
+                    if (obj.action == "delete") {
                         me.deleteActivity(obj)
                     }
                 })
@@ -423,7 +423,7 @@
                 var me = this
                 console.log(value)
                 var obj = {
-                    state: 'delete',
+                    action: 'delete',
                     element: value
                 }
                 if (me.value.relationView) {
@@ -443,7 +443,7 @@
             deleteRelation: function(relationId) {
                 var me = this
                 var obj = {
-                    state: "delete",
+                    action: "delete",
                     element: me.value
                 }
                 me.$EventBus.$emit(relationId, obj)

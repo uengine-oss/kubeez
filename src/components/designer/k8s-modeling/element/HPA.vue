@@ -181,10 +181,10 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
 
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment") {
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment") {
                     me.value.outboundDeployment = obj.element.targetElement
                 }
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment") {
+                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment") {
                     me.value.outboundDeployment = null
                 }
 

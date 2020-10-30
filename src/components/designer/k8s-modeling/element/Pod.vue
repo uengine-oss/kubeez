@@ -213,7 +213,7 @@
             }
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if (obj.state == "addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
+                if (obj.action == "addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
                     var res = me.value.outboundVolumes.some((el) => {
                         if(el.elementView.id == obj.element.targetElement.elementView.id) {
                             return true;
@@ -224,22 +224,14 @@
                     }
                 }
 
-                if (obj.state == "deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
+                if (obj.action == "deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolumeClaim") {
                     me.value.outboundVolumes.splice(me.value.outboundVolumes.indexOf(obj.element.targetElement), 1);
                 }
-                if (obj.state == "changeName") {
+                if (obj.action == "changeName") {
                     me.namespace = obj.element
                 }
             })
 
-        },
-        beforeDestroy() {
-            var me = this
-            var obj = {
-                state: "deleteElement",
-                element: me.value.elementView.id
-            }
-            this.$EventBus.$emit(`${me.value.namespaceId}`, obj)
         },
         watch: {
             name(appName) {

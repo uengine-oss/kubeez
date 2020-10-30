@@ -190,17 +190,17 @@
             }
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolume") {
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolume") {
                     me.value.outboundVolume = obj.element.targetElement;
                 }
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolume") {
+                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "PersistentVolume") {
                     me.value.outboundVolume = null;
                 }
 
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "StorageClass") {
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "StorageClass") {
                     me.value.outboundStorageClass = obj.element.targetElement;
                 }
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "StorageClass") {
+                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "StorageClass") {
                     me.value.outboundStorageClass = null;
                 }
             })

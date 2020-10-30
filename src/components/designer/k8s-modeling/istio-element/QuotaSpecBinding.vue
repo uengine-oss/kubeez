@@ -174,19 +174,19 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "QuotaSpec") {                    
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "QuotaSpec") {                    
                     me.value.outboundQuotaSpecs.push(obj.element.targetElement)
                 }
 
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "QuotaSpec") {
+                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "QuotaSpec") {
                     me.value.outboundQuotaSpecs.splice(me.value.outboundQuotaSpecs.indexOf(obj.element.targetElement), 1)
                 }
 
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {                    
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {                    
                     me.value.outboundServices.push(obj.element.targetElement)
                 }
 
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
+                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
                     me.value.outboundServices.splice(me.value.outboundServices.indexOf(obj.element.targetElement), 1)
                 }
             })

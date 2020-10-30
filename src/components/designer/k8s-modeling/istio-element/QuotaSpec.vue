@@ -167,11 +167,11 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Quota") {                    
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Quota") {                    
                     me.value.outboundQuotas.push(obj.element.targetElement)
                 }
 
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Quota") {
+                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Quota") {
                     me.value.outboundQuotas.splice(me.value.outboundQuotas.indexOf(obj.element.targetElement), 1)
                 }
             })

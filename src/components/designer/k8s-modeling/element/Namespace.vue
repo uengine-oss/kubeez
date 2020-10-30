@@ -21,6 +21,12 @@
                                 'font-weight': 'bold',
                                 'font-size': '16',
                         }">
+            
+            <sub-controller
+                    :image="'subprocess.png'"
+                    @click.prevent.stop="handleClick($event)"
+            ></sub-controller>
+
             <sub-elements>
                 <!--title-->
                 <image-element
@@ -40,7 +46,13 @@
                 v-model="value"
                 :img="imgSrc">
         </property-panel>
-
+        
+        <vue-context-menu
+            :elementId="value.elementView.id"
+            :options="contextMenuList"
+            :ref="'vueSimpleContextMenu'"
+            @option-clicked="optionClicked">
+        </vue-context-menu>
     </div>
 </template>
 
@@ -110,6 +122,17 @@
                     return "Untitled";
                 }
             },
+            contextMenuList() {
+                try {
+                    var list = [ { name: "Terminal Open" } ]
+                    this.value.innerElement.forEach(function(element)  {
+                        console.log(element)
+                    })
+                    return list
+                } catch (e) {
+                    return [ { name: "Terminal Open" } ]
+                }
+            }
         },
         data: function () {
             return {
@@ -122,7 +145,7 @@
                 var me= this
                 this.value.name = appName
                 var obj = {
-                    state: 'changeName',
+                    action: 'changeName',
                     element: appName
                 }
                 this.value.innerElement.forEach(function(element)  {
@@ -144,7 +167,7 @@
                     me.value.aggregates.forEach(function (aggregate) {
                         console.log(aggregate.elementView.id)
                         var obj = {
-                            state: "deleteBounded",
+                            action: "deleteBounded",
                             element: me.value
                         }
                         me.$EventBus.$emit(aggregate.elementView.id, obj)

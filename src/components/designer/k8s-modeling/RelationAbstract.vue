@@ -84,13 +84,13 @@
             var me = this
             
             me.$EventBus.$on(`${me.value.relationView.id}`, function (obj) {
-                if (obj.state == 'delete' && obj.element.relationView) {
+                if (obj.action == 'delete' && obj.element.relationView) {
                     me.deleteRelation()
                 }
             })
 
             var obj = {
-                state: "addRelation",
+                action: "addRelation",
                 element: me.value
             }
             me.$EventBus.$emit(me.value.sourceElement.elementView.id, obj)
@@ -105,7 +105,7 @@
                     me.$EventBus.$off(`${me.value.relationView.id}`);
 
                     var obj = {
-                        state: "deleteRelation",
+                        action: "deleteRelation",
                         element: me.value
                     }
                     if (me.value.from) {

@@ -182,7 +182,7 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                 // console.log(obj)
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRule") {   
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRule") {   
                     var res = me.value.outboundDestinationRules.some((el) => {
                         if(el.elementView.id == obj.element.targetElement.elementView.id) {
                             return true;
@@ -192,10 +192,10 @@
                         me.value.outboundDestinationRules.push(obj.element.targetElement)
                     }
                 }
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRule") {
+                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRule") {
                     me.value.outboundDestinationRules.splice(me.value.outboundDestinationRules.indexOf(obj.element.targetElement), 1)
                 }
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {                    
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {                    
                     var res = me.value.outboundServices.some((el) => {
                         if(el.elementView.id == obj.element.targetElement.elementView.id) {
                             return true;
@@ -205,14 +205,14 @@
                         me.value.outboundServices.push(obj.element.targetElement)
                     }
                 }
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
+                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
                     me.value.outboundServices.splice(me.value.outboundServices.indexOf(obj.element.targetElement), 1)
                 }
 
-                if(obj.state=="addRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "Gateway") {  
+                if(obj.action=="addRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "Gateway") {  
                     me.value.inboundGateway = obj.element.sourceElement
                 }
-                if(obj.state=="deleteRelation" && obj.element && obj.element.sourceElements && obj.element.sourceElement._type == "Gateway") {
+                if(obj.action=="deleteRelation" && obj.element && obj.element.sourceElements && obj.element.sourceElement._type == "Gateway") {
                     me.value.inboundGateway = null
                 }
             })

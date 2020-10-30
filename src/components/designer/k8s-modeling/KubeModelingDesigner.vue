@@ -422,7 +422,7 @@
                 chartJson: {},
                 valuesYaml: '',
                 selectedCategoryIndex: null,
-
+                deployResult: null,
             }
         },
         beforeDestroy: function () {
@@ -1181,17 +1181,21 @@
                 }
                 me.treeList.push(folder)
             },
-            deployReady() {
+            async deployReady() {
                 var me = this
-                if (me.clusterInfo) {
-                    me.deploy()
+                if (localStorage.getItem('clusterAddress') && localStorage.getItem('kuberToken')) {
+                    await me.deploy();
+                    me.deployDialog = false;
+                    if(!me.deployResult) {
+                        alert("Deploy failed");
+                    }
                 } else {
-                    alert("클러스터 정보가 없습니다")
+                    alert("To use Shell Terminal, A Cluster must be selected using Cluster Managing Menu.");
+                    me.deployDialog = false;
                 }
             },
             deploy() {
                 var me = this
-
                 me.value.definition.forEach(function (item) {
                     var reqUrl = me.getReqUrl(item)
                     var params = {
@@ -1207,11 +1211,10 @@
                             me.getStatusData(reqUrl, item);
                         }).catch(function (err) {
                             console.log(err);
-                            alert("Deploy failed");
+                            me.deployResult = false;
                         })
                     }
                 })
-                me.deployDialog = false
             },
             deleteObj(item) {
                 var me = this
@@ -1267,7 +1270,7 @@
 
                 me.$http.get(reqUrl).then(function (res) {
                     var obj = {
-                        state: "get",
+                        action: "getStatus",
                         element: res.data
                     }
                     me.$EventBus.$emit(`${element.elementView.id}`, obj)

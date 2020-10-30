@@ -182,18 +182,18 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
 
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
                     me.value.outboundService = obj.element.targetElement;
                 }
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
+                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
                     me.value.outboundService = null;
                 }
 
-                if(obj.state=="addRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "VirtualService") {
+                if(obj.action=="addRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "VirtualService") {
                     me.value.routeType = 'weight';
                     me.value.weight = 100;
                 }
-                if(obj.state=="deleteRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "VirtualService") {
+                if(obj.action=="deleteRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "VirtualService") {
                     delete me.value.routeType;
                     delete me.value.weight;
                 }

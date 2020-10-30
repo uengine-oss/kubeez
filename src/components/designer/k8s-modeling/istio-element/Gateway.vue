@@ -169,7 +169,7 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
 
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "VirtualService") {
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "VirtualService") {
                     var res = me.value.outboundVirtualServices.some((el) => {
                         if(el.elementView.id == obj.element.targetElement.elementView.id) {
                             return true;
@@ -180,7 +180,7 @@
                     }
                 }
 
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "VirtualService") {
+                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "VirtualService") {
                     me.value.outboundVirtualServices.splice(me.value.outboundVirtualServices.indexOf(obj.element.targetElement), 1)
                 }
 

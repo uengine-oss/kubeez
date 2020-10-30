@@ -198,23 +198,23 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
                     me.value.outboundDeployment = obj.element.targetElement;
                 }
-                else if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
+                else if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
                     me.value.outboundPod = obj.element.targetElement;
                 }
-                else if(obj.state=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
+                else if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
                     me.value.outboundReplicaSet = obj.element.targetElement;
                 }
 
-                if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
+                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment"){
                     me.value.outboundDeployment = null;
                 }
-                else if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
+                else if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod"){
                     me.value.outboundPod = null;
                 }
-                else if(obj.state=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
+                else if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet"){
                     me.value.outboundReplicaSet = null;
                 }
             })
