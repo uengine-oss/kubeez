@@ -56,10 +56,6 @@
                                     label="Name"
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
-                                <v-text-field                                
-                                    label="App Name"
-                                    v-model="value.object.spec.selector.app"
-                                ></v-text-field>
                                 <number-field
                                     :label="'Port'"
                                     v-model="value.object.spec.ports[0].port"
