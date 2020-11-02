@@ -166,8 +166,6 @@
                     if (obj.action == "delete") {
                         me.deleteActivity(obj)
                     }
-                })
-                me.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
                     if (obj.action == "getStatus" && obj.element && obj.element.kind == me.value.object.kind) {
                         me.value.status = "created";
                         if(obj.element.status) {
@@ -178,6 +176,10 @@
                                 me.setStatus();
                             }
                         }
+                        me.refresh();
+                    }
+                    if(obj.action == "delStatus") {
+                        me.value.status = null;
                         me.refresh();
                     }
                 })

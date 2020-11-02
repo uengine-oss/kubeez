@@ -257,9 +257,8 @@
             </v-card>
         </modal>
 
-        <v-snackbar v-model="snackbar" :color="color" :multi-line="mode === 'multi-line'" :timeout="timeout"
-                    :vertical="mode === 'vertical'">
-            {{ text }}
+        <v-snackbar v-model="snackbar" :color="snackbarColor">
+            {{ snackbarText }}
             <v-btn dark @click="snackbar = false">
                 Close
             </v-btn>
@@ -397,10 +396,8 @@
                 imageBase: 'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/symbol/',
                 //스낵바 옵션
                 snackbar: false,
-                color: 'error',
-                mode: 'multi-line',
-                timeout: 6000,
-                text: '수정중입니다.',
+                snackbarColor: 'error',
+                snackbarText: '',
                 // data structure
                 treeList: [],
                 openCode: [],
@@ -411,8 +408,8 @@
                 drawer: false,
                 //deploy
                 deployDialog: false,
-                getStatus: null,
-                // 
+                deployRes: '',
+                // param
                 parmType: '',
                 parmProjectId: '',
                 parmUid: '',
@@ -422,7 +419,6 @@
                 chartJson: {},
                 valuesYaml: '',
                 selectedCategoryIndex: null,
-                deployResult: null,
             }
         },
         beforeDestroy: function () {
@@ -1181,22 +1177,20 @@
                 }
                 me.treeList.push(folder)
             },
-            async deployReady() {
+            deployReady() {
                 var me = this
                 if (localStorage.getItem('clusterAddress') && localStorage.getItem('kuberToken')) {
-                    await me.deploy();
-                    me.deployDialog = false;
-                    if(!me.deployResult) {
-                        alert("Deploy failed");
-                    }
+                    me.deploy();
                 } else {
                     alert("To use Shell Terminal, A Cluster must be selected using Cluster Managing Menu.");
-                    me.deployDialog = false;
                 }
+                me.deployDialog = false;
             },
             deploy() {
-                var me = this
-                me.value.definition.forEach(function (item) {
+                var me = this;
+                me.deployRes = '';
+                me.$EventBus.$emit('progressValue', true);
+                me.value.definition.forEach(function (item, idx, arr) {
                     var reqUrl = me.getReqUrl(item)
                     var params = {
                         "apiServer": me.clusterInfo.apiServer,
@@ -1209,28 +1203,38 @@
                             console.log(res.status);
                             reqUrl += item.object.metadata.name;
                             me.getStatusData(reqUrl, item);
+                            me.deployed(idx, arr);
                         }).catch(function (err) {
                             console.log(err);
-                            me.deployResult = false;
+                            me.deployRes += ' false';
+                            me.deployed(idx, arr);
+                        })
+                    } else {
+                        reqUrl += item.object.metadata.name;
+                        me.$http.put(reqUrl, params).then(function (res) {
+                            console.log(res.status);
+                            me.getStatusData(reqUrl, item);
+                            me.deployed(idx, arr);
+                        }).catch(function (err) {
+                            me.deployed(idx, arr);
+                            // console.log(err);
                         })
                     }
                 })
             },
-            deleteObj(item) {
-                var me = this
-                var reqUrl = me.getReqUrl(item)
-                var params = {
-                    "apiServer": me.clusterInfo.apiServer,
-                    "token": me.clusterInfo.token,
-                    "data": item.object
+            deployed(idx, arr) {
+                var me = this;
+                var res = me.deployRes;
+                if (idx == arr.length - 1) {
+                    me.$EventBus.$emit('progressValue', false);
+                    me.snackbar = true;
+                    me.snackbarColor = 'success';
+                    me.snackbarText = 'Deploy to server completed successfully'
+                    if(res.includes('false')) {
+                        me.snackbarColor = 'error';
+                        me.snackbarText = 'Deploy to server completed with errors'
+                    }
                 }
-                
-                me.$http.delete(reqUrl, params).then(function (res) {
-                    item.status = null
-                    console.log(res.status)
-                }).catch(function (err) {
-                    console.log(err)
-                })
             },
             getReqUrl(item) {
                 var me = this
@@ -1276,6 +1280,10 @@
                     me.$EventBus.$emit(`${element.elementView.id}`, obj)
                 }).catch(function (err) {
                     // console.log(err)
+                    var obj = {
+                        action: "delStatus",
+                    }
+                    me.$EventBus.$emit(`${element.elementView.id}`, obj)
                 })
             },
             onSearchBox() {
