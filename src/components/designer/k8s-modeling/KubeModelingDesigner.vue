@@ -1232,7 +1232,7 @@
                     me.snackbarText = 'Deploy to server completed successfully'
                     if(res.includes('false')) {
                         me.snackbarColor = 'error';
-                        me.snackbarText = 'Deploy to server completed with errors'
+                        me.snackbarText = 'Deploy Failed'
                     }
                 }
             },
