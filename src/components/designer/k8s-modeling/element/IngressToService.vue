@@ -91,8 +91,12 @@
             return {}
         },
         watch: {
-            name(value) {
-                this.value.name = value
+            name: {
+                deep: true,
+                handler: function(value) {
+                    // console.log(value)
+                    this.value.name = value;
+                }
             },
         },
         mounted() {

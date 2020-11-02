@@ -55,6 +55,7 @@
                 set(val) {
                     var me = this;
                     me.value.targetElement.path = val;
+                    me.value.name = me.value.targetElement.host + val;
                     me.updateData();
                 }
             },
@@ -65,6 +66,7 @@
                 set(val) {
                     var me = this;
                     me.value.targetElement.host = val;
+                    me.value.name = val + me.value.targetElement.path;
                     me.updateData();
                 }
             },
