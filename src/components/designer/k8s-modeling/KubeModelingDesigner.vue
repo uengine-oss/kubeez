@@ -1252,10 +1252,8 @@
                 var me = this;
                 if(me.terminalOn) {
                     me.$EventBus.$emit('terminalOff');
-                    me.terminalOn = false;
                 } else {
                     me.$EventBus.$emit('terminalOn');
-                    me.terminalOn = true;
                 }
             },
             deployReady() {
