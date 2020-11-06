@@ -6,34 +6,34 @@ import Router from 'vue-router'
 Vue.use(Router)
 
 import KubeModeler from './components/designer/k8s-modeling/KubeModeler'
+import ListPage from './components/KuberEzList/ListPage'
 
 Vue.component('kube-modeler', KubeModeler)
-
-
+Vue.component('list-page', ListPage)
 
 export default new Router({
     mode: 'history',
     base: process.env.BASE_URL,
     routes: [
+        // {
+        //     path: '/',
+        //     name: 'KuberEzListPage',
+        //     component: ListPage
+        // },
         {
             path: '/',
-            name: 'EventStormingCanvas',
+            name: 'KubeModelingCanvas',
             component: KubeModeler
         },
         {
             path: '/dash',
-            name: 'EventStormingCanvas',
+            name: 'KubeModelingCanvas',
             component: KubeModeler
         },
         // {
-        //     path: '/view',
-        //     name: 'ViewModelingDesigner',
-        //     component: ViewModelingDesigner
+        //     path: '/kubernetes/:userUid/:projectType/:projectId/:projectVersion',
+        //     name: 'KubeModelingCanvas',
+        //     component: KubeModeler
         // },
-        // {
-        //     path: '/storming/:userUid/:projectType/:projectId/:projectVersion',
-        //     name: 'EventStormingCanvas',
-        //     component: EventModeler
-        // }
     ]
 })

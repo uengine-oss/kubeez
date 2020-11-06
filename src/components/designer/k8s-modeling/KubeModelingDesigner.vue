@@ -8,8 +8,8 @@
                        :dragPageMovable="dragPageMovable" :enableContextmenu="false" :enableRootContextmenu="false"
                        :enableHotkeyCtrlC="false" :enableHotkeyCtrlV="false"
                        :enableHotkeyDelete="false" :enableHotkeyCtrlZ="false" :enableHotkeyCtrlD="false"
-                       :enableHotkeyCtrlG="false" :slider="true" :movable="!isRead" :resizable="true" :selectable="true"
-                       :connectable="!isRead" v-if="value" v-on:canvasReady="bindEvents" :autoSliderUpdate="true"
+                       :enableHotkeyCtrlG="false" :slider="true" :movable="!readOnly" :resizable="true" :selectable="true"
+                       :connectable="!readOnly" v-if="value" v-on:canvasReady="bindEvents" :autoSliderUpdate="true"
                        v-on:connectShape="onConnectShape" :imageBase="imageBase">
                 <!--엘리먼트-->
                 <div v-for="(element, index) in value.definition" :key="'definition'+index">
@@ -47,6 +47,14 @@
                             @click="clusterDialog = true">
                         <v-icon>settings</v-icon>
                         {{ clusterInfo ? clusterInfo.name : '' }}
+                    </v-btn>
+
+                    <v-btn
+                            style="margin-right: 5px; margin-top: 15px;"
+                            color="pink" dark
+                            @click="terminal()">
+                        <v-icon>{{ files.shell }}</v-icon>
+                        TERMINAL
                     </v-btn>
                     
                     <v-btn
@@ -344,8 +352,10 @@
     var FileSaver = require('file-saver');
     var JSZip = require('jszip')
 
+    import StorageBase from "../modeling/StorageBase";
 
     export default {
+        mixins: [StorageBase],
         name: 'kube-modeling-designer',
         components: {
             saveAs,
@@ -410,22 +420,37 @@
                 deployDialog: false,
                 deployRes: '',
                 // param
+                params: null,
                 parmType: '',
                 parmProjectId: '',
                 parmUid: '',
                 //edit
-                isRead: false,
+                readOnly: false,
                 //helm chart
                 chartJson: {},
                 valuesYaml: '',
                 selectedCategoryIndex: null,
             }
         },
-        beforeDestroy: function () {
+        beforeDestroy: async function () {
             var me = this
 
             //일정 시간 마다 가져오는 함수 멈추기
             clearInterval(me.connetServer);
+
+            var lists = localStorage.getItem('localLists')
+            if (lists) {
+                lists = JSON.parse(lists)
+                var index = lists.findIndex(list => list.projectId == me.params.projectId)
+                if (localStorage.getItem(me.params.projectId)) {
+                    lists[index].img = resolve
+                    lists[index].projectName = me.projectName
+                } else {
+                    lists.splice(index, 1)
+                }
+
+                await me.putObject(`localstorage://localLists`, lists)
+            }
 
             localStorage.removeItem('projectId')
             localStorage.removeItem('sharedMultiTimeStamp')
@@ -455,8 +480,9 @@
             var me = this
             window.io = io
 
-            var userUid = localStorage.getItem('uid')
-
+            me.params = me.$route.params;
+            me.paramKeys = Object.keys(me.params);
+            
             me.load();
         },
         mounted: function () {
@@ -568,17 +594,62 @@
         },
         methods: {
 
-            load(){
+            load() {
                 var me = this;
-                localStorage.setItem('projectId', me.parmProjectId)
-                me.projectName = localStorage.getItem('localSaveProjectName') != null ? localStorage.getItem('localSaveProjectName') : 'local'
+                localStorage.setItem('projectId', me.params.projectId)
 
-                me.isRead = false
                 if (localStorage.getItem('localLoadData') != null) {
                     me.value = JSON.parse(localStorage.getItem('localLoadData'));
-
                 }
 
+                return new Promise(async function (resolve, reject) {
+                    me.readOnly = false
+                    me.projectName = localStorage.getItem('localSaveProjectName') != null ? localStorage.getItem('localSaveProjectName') : 'local'
+
+                    var lists = null
+                    var proId = me.params.projectId
+                    var value = null
+
+                    lists = await me.getObject(`localstorage://localLists`)
+                    value = await me.getObject(`localstorage://${proId}`)
+                    
+                    if (lists) {
+                        var index = lists.findIndex(list => list.projectId == me.params.projectId)
+                        if (index == -1) {
+                            var obj = {
+                                author: 'anyone',
+                                comment: "",
+                                date: new Date().getTime(),
+                                lastModifiedDate: new Date().getTime(),
+                                projectName: me.projectName,
+                                projectId: me.params.projectId,
+                                type: me.canvasType,
+                            }
+                            lists.push(obj)
+                            me.putObject(`localstorage://localLists`, lists)
+                        } else {
+                            me.projectName = lists[index] ? lists[index].projectName : ''
+                            me.information = lists[index] ? lists[index] : null
+                        }
+                    } else if (!lists && !me.paramKeys.includes('classId')) {
+                        lists = []
+                        var obj = {
+                            author: 'anyone',
+                            comment: "",
+                            date: new Date().getTime(),
+                            lastModifiedDate: new Date().getTime(),
+                            projectName: me.projectName,
+                            projectId: me.params.projectId,
+                            type: me.canvasType,
+                        }
+                        lists.push(obj)
+                        me.putObject(`localstorage://localLists`, lists)
+                    }
+
+                    var resovleData = value ? value : {'definition': {}, 'relations': {}}
+
+                    resolve(resovleData)
+                })
             },
 
             save() {
@@ -1177,14 +1248,27 @@
                 }
                 me.treeList.push(folder)
             },
+            terminal() {
+                var me = this;
+                if(me.terminalOn) {
+                    me.$EventBus.$emit('terminalOff');
+                    me.terminalOn = false;
+                } else {
+                    me.$EventBus.$emit('terminalOn');
+                    me.terminalOn = true;
+                }
+            },
             deployReady() {
                 var me = this
                 if (localStorage.getItem('clusterAddress') && localStorage.getItem('kuberToken')) {
                     me.deploy();
+                    me.deployDialog = false;
                 } else {
-                    alert("To use Shell Terminal, A Cluster must be selected using Cluster Managing Menu.");
+                    me.deployDialog = false;
+                    me.snackbar = true;
+                    me.snackbarColor = 'error';
+                    me.snackbarText = 'To use Shell Terminal, A Cluster must be selected using Cluster Managing Menu.'
                 }
-                me.deployDialog = false;
             },
             deploy() {
                 var me = this;
@@ -1200,19 +1284,19 @@
                     
                     if (!item.status) {
                         me.$http.post(reqUrl, params).then(function (res) {
-                            console.log(res.status);
+                            // console.log(res.status);
                             reqUrl += item.object.metadata.name;
                             me.getStatusData(reqUrl, item);
                             me.deployed(idx, arr);
                         }).catch(function (err) {
-                            console.log(err);
+                            // console.log(err);
                             me.deployRes += ' false';
                             me.deployed(idx, arr);
                         })
                     } else {
                         reqUrl += item.object.metadata.name;
                         me.$http.put(reqUrl, params).then(function (res) {
-                            console.log(res.status);
+                            // console.log(res.status);
                             me.getStatusData(reqUrl, item);
                             me.deployed(idx, arr);
                         }).catch(function (err) {
@@ -1229,10 +1313,10 @@
                     me.$EventBus.$emit('progressValue', false);
                     me.snackbar = true;
                     me.snackbarColor = 'success';
-                    me.snackbarText = 'Deploy to server completed successfully'
+                    me.snackbarText = 'Deploy to server completed successfully.'
                     if(res.includes('false')) {
                         me.snackbarColor = 'error';
-                        me.snackbarText = 'Deploy Failed'
+                        me.snackbarText = 'Deploy Failed.'
                     }
                 }
             },

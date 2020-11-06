@@ -32,6 +32,13 @@
             </v-container>
         </v-content>
 
+        <v-snackbar v-model="snackbar" :color="snackbarColor">
+            {{ snackbarText }}
+            <v-btn dark @click="snackbar = false">
+                Close
+            </v-btn>
+        </v-snackbar>
+
         <div v-if="terminal">
             <v-btn color="error" @click="terminalOff" style="position: fixed; height: 5%; top: 60%; right: 1%;">
                 <v-icon>mdi-close</v-icon>
@@ -73,7 +80,11 @@
             iframeLoading: true,
                         
             overlay: false,
-            progressValue: false
+            progressValue: false,
+            // snackbar
+            snackbar: false,
+            snackbarColor: 'error',
+            snackbarText: '',
         }),
         computed: {
         },
@@ -98,22 +109,19 @@
                 me.overlay = false
             }
 
-            me.$EventBus.$on('terminalOn', function (val) {
-                if(!me.terminal) {
-                    var token = val;
-                    me.terminalUrl = "terminal/?token=" + token
-                    me.terminal = true;
-                }
+            me.$EventBus.$on('terminalOn', function () {
+                me.getTerminalToken();
             })
-            me.$EventBus.$on('terminalOff', function (val) {
-                me.terminalUrl = ''
-                me.terminal = false
+            me.$EventBus.$on('terminalOff', function () {
+                me.terminalUrl = '';
+                me.terminal = false;
             })
             me.$EventBus.$on('sendCode', function (val) {
                 if(me.terminal) {
                     $('iframe').get(0).contentWindow.wt.term.term.send(val)
                 } else {
-                    me.getTerminalToken()
+                    me.snackbar = true;
+                    me.snackbarText = "Open the terminal before clicking on the command.";
                 }
             })
 
@@ -140,7 +148,7 @@
                 this.iframeLoading = false;
             },
             wikiOpen() {
-                window.open('http://uengine.org/eventstorming/#/')
+                window.open('https://github.com/uengine-oss/kuber-ez')
             },
             getTerminalToken() {
                 var me = this
@@ -153,15 +161,16 @@
 
                 me.$http.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
                 me.$http.post("api/kube-token", item).then(function (response) {
-                    me.$EventBus.$emit('terminalOn', response.data.token)
+                    me.terminalUrl = "terminal/?token=" + response.data.token;
+                    me.terminal = true;
                 }).catch(function (err) {
-                    alert("To use Shell Terminal, A Cluster must be selected using Cluster Managing Menu.")
+                    me.snackbar = true;
+                    me.snackbarText = "To use Shell Terminal, A Cluster must be selected using Cluster Managing Menu.";
                 })
             },
             terminalOff() {
                 var me = this;
-                me.terminalUrl = '';
-                me.terminal = false;
+                me.$EventBus.$emit('terminalOff');
             }
         }
     }

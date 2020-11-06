@@ -34,7 +34,7 @@
                 editUserImg:[],
                 deploySuccess: false,
                 menuList : [
-                    { name: "Terminal Open" },
+                    // { name: "Terminal Open" },
                     { name: "Get " + this.value._type },
                     { name: "Describe " + this.value._type },
                     { name: "Delete " + this.value._type },
@@ -484,6 +484,13 @@
                     var yaml = designer.yamlFilter(json2yaml.stringify(me.value.object))
                     code += yaml + "EOF"
                     me.value.status = "created";
+                } else if(code.includes('log')) {
+                    code += ' ' + me.value._type + '/' + me.value.object.metadata.name + ' -n '
+                    if(namespace != undefined) {
+                        code += namespace
+                    } else {
+                        code += 'default'
+                    }
                 }
 
                 code += '\n'

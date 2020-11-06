@@ -9,6 +9,4 @@ if (typeof window !== 'undefined' && window.Vue) {
     install(window.Vue)
 }
 
-export { KuberEz }
-
 export default install

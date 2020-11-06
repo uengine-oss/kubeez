@@ -236,6 +236,15 @@
         },
         data: function () {
             return {
+                menuList : [
+                    // { name: "Terminal Open" },
+                    { name: "Get " + this.value._type },
+                    { name: "Describe " + this.value._type },
+                    { name: "Delete " + this.value._type },
+                    { name: "Create " + this.value._type },
+                    { name: "Update " + this.value._type },
+                    { name: "Logs" }
+                ],
             };
         },
         created: function () {
