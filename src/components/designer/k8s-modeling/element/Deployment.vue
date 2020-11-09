@@ -299,10 +299,10 @@
             outboundVolumeNames(names) {
                 var me = this;
                 var i=0; 
-                me.value.object.spec.volumes = [];
+                me.value.object.spec.template.spec.volumes = [];
                 me.value.object.spec.template.spec.containers[0].volumeMounts = [];
                 me.value.outboundVolumes.forEach(element => {
-                        me.value.object.spec.volumes.push({
+                        me.value.object.spec.template.spec.volumes.push({
                             "name": "volume" + (++i),
                             "persistentVolumeClaim": {
                                 "claimName": element.object.metadata.name
