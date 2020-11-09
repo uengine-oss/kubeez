@@ -1099,7 +1099,7 @@
                     var yaml = ''
                     
                     me.value.definition.forEach(function (item) {
-                        yaml += json2yaml.stringify(item.object)
+                        yaml += '--- \n' + me.yamlFilter(json2yaml.stringify(item.object))
                     })
 
                     var codeValue = {
@@ -1190,7 +1190,7 @@
                     var codeValue = {
                         'key': item.elementView.id,
                         'name': name + '.yaml',
-                        'code': json2yaml.stringify(item.object),
+                        'code': '--- \n' + me.yamlFilter(json2yaml.stringify(item.object)),
                         'file': me.fileType('.yaml')
                     }
 
