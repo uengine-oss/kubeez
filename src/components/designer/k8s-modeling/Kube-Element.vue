@@ -461,7 +461,7 @@
                 var designer = me.getComponent('kube-modeling-designer')
                 var namespace = me.value.object.metadata.namespace
                 
-                if(code.includes('describe') || code.includes('delete') || code.includes('get')) {
+                if(code.includes('describe') || code.includes('get')) {
                     code += ' ' + me.value.object.metadata.name + ' -n '
                     if(namespace != undefined) {
                         code += namespace
@@ -490,6 +490,18 @@
                         code += namespace
                     } else {
                         code += 'default'
+                    }
+                } else if(code.includes('delete')) {
+                    var res = confirm('정말 삭제하시겠습니까?');
+                    if(res) {
+                        code += ' ' + me.value.object.metadata.name + ' -n '
+                        if(namespace != undefined) {
+                            code += namespace
+                        } else {
+                            code += 'default'
+                        }
+                    } else {
+                        return;
                     }
                 }
 
