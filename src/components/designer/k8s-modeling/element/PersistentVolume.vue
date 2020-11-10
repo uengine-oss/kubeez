@@ -169,7 +169,6 @@
             var me = this;
 
             if(me.value.status) {
-                me.setStatus()
                 me.refresh()
             }
         },

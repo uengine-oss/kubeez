@@ -228,7 +228,7 @@
             },
             inboundHPAName() {
                 try {
-                    return this.value.inboundHPA.object.metadata.name + ',';
+                    return this.value.inboundHPA + ',';
                 }catch(e){
                     return "";
                 }
@@ -280,7 +280,7 @@
                 }
 
                 if(obj.action=="addRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "HorizontalPodAutoscaler") {
-                    me.value.inboundHPA = obj.element.sourceElement;
+                    me.value.inboundHPA = obj.element.sourceElement.object.metadata.name;
                 }
                 if(obj.action=="deleteRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "HorizontalPodAutoscaler") {
                     me.value.inboundHPA = null;
@@ -309,7 +309,7 @@
                             }
                         });
                         me.value.object.spec.template.spec.containers[0].volumeMounts.push({
-                            "mountPath": "/",
+                            "mountPath": "/data",
                             "name": "volume" + i
                         })
                     }

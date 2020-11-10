@@ -160,7 +160,7 @@
             },
             outboundVolumeName(){
                 try{
-                    return this.value.outboundVolume.object.metadata.name;
+                    return this.value.outboundVolume.object.metadata.name + ',';
                 }catch(e){
                     return "";
                 }
@@ -185,7 +185,6 @@
             var me = this;
 
             if(me.value.status) {
-                me.setStatus()
                 me.refresh()
             }
 
@@ -207,8 +206,11 @@
             
         },
         watch: {
-            "outboundVolumeName": function(volumeName){
-                this.value.object.spec.volumeName = volumeName;
+            outboundVolumeName(val) {
+                var me = this;
+                me.value.object.spec.accessModes = me.value.outboundVolume.object.spec.accessModes;
+                me.value.object.spec.volumeName = me.value.outboundVolume.object.metadata.name;
+                me.value.object.spec.volumeMode = me.value.outboundVolume.object.spec.volumeMode;
             },
             outboundStorageClassName(val) {
                 this.value.object.spec.storageClassName = val;

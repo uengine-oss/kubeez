@@ -59,13 +59,10 @@
                                     :label="'Http1 Max Pending Requests'"
                                     v-model="value.object.spec.trafficPolicy.connectionPool.http.http1MaxPendingRequests">
                                 </number-field>
-                                <v-radio-group 
-                                        label="Max Requests Per Connection"
-                                        v-model="maxRequestsPerConnection"
-                                        row dense>
-                                    <v-radio label="0" value="0" />
-                                    <v-radio label="1" value="1" />
-                                </v-radio-group>
+                                <number-field
+                                    :label="'Max Requests Per Connection'"
+                                    v-model="value.object.spec.trafficPolicy.connectionPool.http.maxRequestsPerConnection">
+                                </number-field>
                                 <number-field
                                     :label="'Max Connections'"
                                     v-model="value.object.spec.trafficPolicy.connectionPool.tcp.maxConnections">
@@ -144,7 +141,7 @@
                     return data
                 },
                 set(val) {
-                    _.merge(this.value.object, val);
+                    // _.merge(this.value.object, val);
                 }
             },
             maxRequestsPerConnection: {
@@ -162,8 +159,7 @@
                     return val
                 },
                 set(val) {
-                    var me = this
-                    me.value.object.spec.trafficPolicy.outlierDetection.baseEjectionTime = val + 's'
+                    this.value.object.spec.trafficPolicy.outlierDetection.baseEjectionTime = val + 's'
                 }
             },
             interval: {
@@ -173,8 +169,7 @@
                     return val
                 },
                 set(val) {
-                    var me = this
-                    me.value.object.spec.trafficPolicy.outlierDetection.interval = val + 's'
+                    this.value.object.spec.trafficPolicy.outlierDetection.interval = val + 's'
                 }
             },
         },

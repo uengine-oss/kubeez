@@ -1127,6 +1127,10 @@
                 yaml_text = lines.join('\n')
                 yaml_text = yaml_text.replace(/ null/g, ' ')
                 yaml_text = yaml_text.replace(/\"/g, '')
+                // PersistentVolumeClaim의 storageClassName 값이 없으면 "" 처리
+                if(yaml_text.includes('PersistentVolumeClaim') && yaml_text.includes('storageClassName: \n')) {
+                    yaml_text = yaml_text.replace('storageClassName: \n', 'storageClassName: "" \n')
+                }
                 return yaml_text
             },
             async generateZip() {
