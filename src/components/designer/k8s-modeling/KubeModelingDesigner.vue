@@ -1348,10 +1348,11 @@
 
                 reqUrl = `${API_HOST}` + '/' + apiVersion + '/namespaces/' + namespace + '/' + type + '/'
                 
-                if (type == 'persistentvolumes' || type == 'clusterroles' || type == 'clusterrolebindings') {
+                // namespace가 없이 배포되는 object resources
+                if (type == 'persistentvolumes' || type == 'clusterroles' || type == 'clusterrolebindings' || type == 'namespaces' || type == 'storageclasses') {
                     reqUrl = `${API_HOST}` + '/' + apiVersion + '/' + type + '/'
                 }
-
+                
                 return reqUrl
             },
             getStatusData(reqUrl, element) {
