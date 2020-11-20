@@ -54,6 +54,7 @@
                             <v-card-text>
                                 <v-text-field                                
                                     label="Name"
+                                    :rules="[rules.required, rules.char]"
                                     v-model="value.object.metadata.name"
                                 ></v-text-field>
                                 <number-field
@@ -117,6 +118,12 @@
                 activeTab: 0,
                 tabItems: [ "status", "property" ],
                 isYamlEdit: false,
+                rules: {
+                    required: value => !!value || 'Required',
+                    char: value => {
+                        return /^[a-z0-9\-]*$/.test(value) || 'Invalid Name'
+                    },
+                }
             }
         },
         watch: {
