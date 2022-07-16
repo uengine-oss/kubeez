@@ -1,5 +1,5 @@
 # kuber-ez
-Kuber-ez is a web-based tool for kubernetes manifest composition and operation tool in a visual way that requires minimal understanding of Yaml and CLI 
+Kuber-ez (Kubeez) is a web-based tool for kubernetes manifest composition and operation tool in a visual way that requires minimal understanding of Yaml and CLI 
 
 ## YouTube:
 - Basic object editing: https://youtu.be/rVi2VNK2udM
@@ -60,5 +60,6 @@ Then add the component to the 'elementTypes' array of https://github.com/uengine
 
 ## Documentation
 
-https://github.com/uengine-oss/kuber-ez/wiki
+https://intro.msaez.io/tool/infrastructure-modeling
+
 
