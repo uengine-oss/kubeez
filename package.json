@@ -67,7 +67,7 @@
     "vue-moveable": "^1.6.1",
     "vue-router": "^3.0.1",
     "vue-simple-context-menu": "^3.1.10",
-    "vue-webrtc": "^1.2.0",
+    "vue-webrtc": "^3.0.1",
     "vue-youtube-embed": "^2.2.2",
     "vuedraggable": "^2.23.2",
     "vuejs-jwt": "^1.1.0",
