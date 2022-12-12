@@ -21,7 +21,7 @@
     "dotenv": "^8.0.0",
     "element-ui": "^2.13.2",
     "es6-error": "^4.1.1",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "file-saver": "^2.0.1",
     "firebase": "^7.7.0",
     "fs": "0.0.1-security",
