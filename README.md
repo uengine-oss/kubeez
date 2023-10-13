@@ -6,7 +6,7 @@ Kuber-ez (Kubeez) is a web-based tool for kubernetes manifest composition and op
 - Istio object editing: https://youtu.be/t0utOq4dosc
 
 ## Online:
-http://msaez.io or http://msaez.io/#/kubernetes/anonymous/kuberLocal/kuberInit/-init
+http://www.msaez.io or http://www.msaez.io/#/kubernetes/anonymous/kuberLocal/kuberInit/-init
 
 ## Snapshots:
 
