@@ -1,9 +1,9 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
-import axios from 'axios'
+import Vue from 'vue';
+import Vuex from 'vuex';
+import axios from 'axios';
 
-Vue.prototype.$http = axios
-Vue.use(Vuex)
+Vue.prototype.$http = axios;
+Vue.use(Vuex);
 
 export default new Vuex.Store({
     state: {
@@ -51,9 +51,6 @@ export default new Vuex.Store({
         workflow: {'width': 100, 'height': 100}
     },
     getters: {
-        getAuth(state) {
-            return state.storeAuthorized
-        },
         getWidth: (state) => (type) => {
             return eval("state." + type.charAt(0).toLowerCase() + type.slice(1) + ".width")
         },
@@ -73,4 +70,4 @@ export default new Vuex.Store({
         },
 
     }
-})
+});

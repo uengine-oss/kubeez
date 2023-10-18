@@ -19,36 +19,37 @@ import TreeView from 'vue-json-tree-view'
 import 'vue-simple-context-menu/dist/vue-simple-context-menu.css'
 import VueSimpleContextMenu from 'vue-simple-context-menu'
 
-//view
-import EditYaml from './components/edityamlpage.vue'
-import textReader from './components/yaml.vue'
 
 Vue.use(VueFriendlyIframe);
-Vue.use(VueWindow)
-Vue.use(Mustache)
-Vue.use(CodeMirror)
+Vue.use(VueWindow);
+Vue.use(Mustache);
+Vue.use(CodeMirror);
 Vue.use(Opengraph);
 Vue.use(KubeModeling);
 // Vue.use(i18n);
-Vue.use(VModal)
-Vue.use(TreeView)
+Vue.use(VModal);
+Vue.use(TreeView);
+Vue.use(VueJWT, options);
+Vue.use(VueYouTubeEmbed, {
+    global: true,
+    componentId: "youtube-media"
+});
+
 
 // component
-Vue.component('EditYaml', EditYaml)
-Vue.component('text-reader', textReader)
 Vue.component('vue-context-menu', VueSimpleContextMenu)
-
-// Vue.use(Metaworks4);
 
 var options = {'keyName' : 'accessToken'};
 
-
-Vue.use(VueJWT, options)
-Vue.use(VueYouTubeEmbed, { global: true, componentId: "youtube-media" })
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-Vue.prototype.$EventBus = new Vue()
-Vue.prototype.$ModelingBus = new Vue()
+Vue.prototype.$EventBus = new Vue();
+Vue.prototype.$ModelingBus = new Vue();
+Vue.prototype.$manifestsPerTemplate = {};
+Vue.prototype.$innerWidth = window.innerWidth;
+Vue.prototype.$innerHeight = window.innerHeight;
+
+Vue.config.productionTip = false;
 
 
 // TrackJS.install({
@@ -59,31 +60,11 @@ Vue.prototype.$ModelingBus = new Vue()
 
 // TrackJS.track('Testing TrackJS!');
 
-window.$Mustache = Mustache
-
-// TrackJS -- Error Logging
-
+window.$Mustache = Mustache;
 // window.API_HOST = "http://localhost:8080";
 window.API_HOST = "http://api.kuberez.io";
-window.vueFilePath = process.env.VUE_APP_FILE_PATH
+window.vueFilePath = process.env.VUE_APP_FILE_PATH;
 
-
-// // console.log(templateFiles.keys())
-
-
-// // console.log(rootPathList)
-Vue.prototype.$manifestsPerTemplate = {};
-
-// console.log(Vue.prototype.$manifestsPerTemplate)
-
-Vue.prototype.$innerWidth = window.innerWidth;
-Vue.prototype.$innerHeight = window.innerHeight;
-// var springBootFiles = require.context('../public/static/templates/spring-boot', true)
-// Vue.prototype.$manifestsPerTemplate = {"spring-boot": springBootFiles.keys()}
-// // console.log(Vue.prototype.$manifestsPerTemplate)
-
-
-Vue.config.productionTip = false
 
 new Vue({
     router,

@@ -1,10 +1,7 @@
 module.exports = {
     configureWebpack: {
         devServer: {
-            // host: 'es2cd.io',
-            port: '8081'
+            port: '8080'
         },
-        devtool: "source-map"
     },
-  transpileDependencies: ["vuetify"]
 };

@@ -1,15 +1,13 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import Vue from 'vue';
+import Router from 'vue-router';
 
+Vue.use(Router);
 
+import KubeModeler from './components/designer/k8s-modeling/KubeModeler';
+import ListPage from './components/KuberEzList/ListPage';
 
-Vue.use(Router)
-
-import KubeModeler from './components/designer/k8s-modeling/KubeModeler'
-import ListPage from './components/KuberEzList/ListPage'
-
-Vue.component('kube-modeler', KubeModeler)
-Vue.component('list-page', ListPage)
+Vue.component('kube-modeler', KubeModeler);
+Vue.component('list-page', ListPage);
 
 export default new Router({
     mode: 'history',
@@ -25,15 +23,10 @@ export default new Router({
             name: 'KubeModelingCanvas',
             component: KubeModeler
         },
-        {
-            path: '/dash',
-            name: 'KubeModelingCanvas',
-            component: KubeModeler
-        },
         // {
         //     path: '/kubernetes/:userUid/:projectType/:projectId/:projectVersion',
         //     name: 'KubeModelingCanvas',
         //     component: KubeModeler
         // },
     ]
-})
+});
