@@ -2,11 +2,11 @@
 </template>
 
 <script>
-    import Element from './Kube-Element'
+    import Element from './KubernetesModelElement'
 
     export default {
         mixins: [Element],
-        name: 'relation-abstract',
+        name: 'kube-relation-abstract',
         props: {
             value: Object
         },

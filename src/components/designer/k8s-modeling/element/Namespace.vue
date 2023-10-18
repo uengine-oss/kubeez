@@ -1,31 +1,41 @@
 <template>
     <div>
         <group-element
-                selectable
-                :movable="!value.editing"
-                :resizable="!value.editing"
-                :deletable="editMode"
+                :selectable="!isReadOnly"
+                :movable="!isReadOnly"
+                :resizable="!isReadOnly"
+                :deletable="!isReadOnly"
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
                 :label.sync="name"
                 :width.sync="value.elementView.width"
                 :height.sync="value.elementView.height"
+                :customMoveActionExist="isCustomMoveExist"
+                v-on:customMoveAction="delayedMove"
+                v-on:moveShape="onMoveShape"
                 v-on:selectShape="selectedActivity"
                 v-on:deSelectShape="deSelectedActivity"
-                v-on:dblclick="showProperty"
+                v-on:dblclick="openPanel"
                 v-on:addToGroup="onAddToGroup"
                 v-on:removeShape="onRemoveShape(value)"
-                :_style="{stroke:'black',
-                'vertical-align': 'top',
-                                'font-weight': 'bold',
-                                'font-size': '16',
-                        }">
-            
-            <sub-controller
-                    :image="'subprocess.png'"
-                    @click.prevent.stop="handleClick($event)"
-            ></sub-controller>
+                :image.sync="refreshedImg"
+                :_style="{
+                    'vertical-align': 'top',
+                    'font-weight': 'bold',
+                    'font-size': '16',
+        }">
+            <geometry-rect
+                    :_style="{
+                        'fill-r': 1,
+                        'fill-cx': .1,
+                        'fill-cy': .1,
+                        'stroke-width': 1.4,
+                        'stroke': '#000000',
+                        'fill-opacity': 0,
+                        r: '1'
+                    }"
+            ></geometry-rect>
 
             <sub-elements>
                 <!--title-->
@@ -35,30 +45,36 @@
                         :sub-left="5"
                         :sub-width="25"
                         :sub-height="25"
-                >
-
-                </image-element>
+                ></image-element>
             </sub-elements>
+            <sub-controller
+                    :image="'terminal.png'"
+                    @click.prevent.stop="handleClick($event)"
+            ></sub-controller>
         </group-element>
 
         <property-panel
-                v-if="openPanel"
+                v-if="propertyPanel"
                 v-model="value"
-                :img="imgSrc">
-        </property-panel>
-        
+                :img="imgSrc"
+                :validationLists="filteredElementValidationResults"
+                :readOnly="isReadOnly"
+                @close="closePanel"
+        ></property-panel>
+
         <vue-context-menu
-            :elementId="value.elementView.id"
-            :options="contextMenuList"
-            :ref="'vueSimpleContextMenu'"
-            @option-clicked="optionClicked">
+                :elementId="value.elementView.id"
+                :options="contextMenuList"
+                :ref="'vueSimpleContextMenu'"
+                @option-clicked="optionClicked">
         </vue-context-menu>
+
     </div>
 </template>
 
 <script>
     import PropertyPanel from './NamespacePropertyPanel'
-    import Element from '../Kube-Element'
+    import Element from "../KubernetesModelElement";
     import GroupElement from "../../../opengraph/shape/GroupElement";
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
@@ -81,7 +97,7 @@
             imgSrc() {
                 return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ns.svg`
             },
-            createNew(elementId, x, y, width, height) {
+            createNew(elementId, x, y, width, height, object) {
                 return {
                     _type: this.className(),
                     name: '',
@@ -93,9 +109,8 @@
                         'width': width,
                         'height': height,
                         'style': JSON.stringify({}),
-                        'angle': 0,
                     },
-                    object: {
+                    object: object ? object : {
                         "apiVersion": "v1",
                         "kind": "Namespace",
                         "metadata": {
@@ -126,7 +141,7 @@
                 try {
                     var list = [ { name: "Terminal Open" } ]
                     this.value.innerElement.forEach(function(element)  {
-                        console.log(element)
+                        // console.log(element)
                     })
                     return list
                 } catch (e) {
@@ -143,20 +158,25 @@
         watch: {
             name: _.debounce(function(appName) {
                 var me= this
-                this.value.name = appName
                 var obj = {
-                    action: 'changeName',
+                    state: 'changeName',
                     element: appName
                 }
                 this.value.innerElement.forEach(function(element)  {
                     me.$EventBus.$emit(element, obj)
                 })
             }, 300),
+            "value": {
+                deep: true,
+                handler: _.debounce(function (newVal, oldVal) {
+                    var me = this
+                    me.validate(false)
+                }, 200)
+            },
         },
         mounted: function () {
             var me = this
             me.$EventBus.$on(`${me.value.elementView.id}`, function(message) {
-                console.log(message)
                 me.value.innerElement.splice(me.value.innerElement.indexOf(message.element), 1);
             })
         },
@@ -167,7 +187,7 @@
                     me.value.aggregates.forEach(function (aggregate) {
                         console.log(aggregate.elementView.id)
                         var obj = {
-                            action: "deleteBounded",
+                            state: "deleteBounded",
                             element: me.value
                         }
                         me.$EventBus.$emit(aggregate.elementView.id, obj)
@@ -181,7 +201,7 @@
             },
             deleteInNameSpace(boundedName) {
                 var me = this
-                var designer = this.getComponent('kube-modeling-designer')
+                var designer = this.getComponent('kubernetes-model-canvas')
 
                 designer.value.definition.forEach(function (item, idx) {
                     if (item != null) {
@@ -193,7 +213,30 @@
                     }
                 })
                 // me.$EventBus.$emit('storage')
-            }
+            },
+            validate(executeRelateToValidate, panelValue){
+                var me = this
+                var executeValidate = executeRelateToValidate == false ? false :true
+                var validateValue = me.propertyPanel && panelValue ? panelValue : me.value
+
+                // Common
+                this.$super(Element).validate()
+
+                //Element
+                if(validateValue.name){
+                    var validationResultIndex = me.elementValidationResults.findIndex(x=> (x.code == me.ESE_NOT_NAME))
+                    if( validationResultIndex != -1 ){
+                        me.elementValidationResults.splice(validationResultIndex,1)
+                    }
+                }else{
+                    var validationResultIndex = me.elementValidationResults.findIndex(x=> (x.code == me.ESE_NOT_NAME) )
+                    if( validationResultIndex == -1 ){
+                        me.elementValidationResults.push(me.validationFromCode(me.ESE_NOT_NAME))
+                    }
+                }
+
+                me.modelCanvasComponent.changedTemplateCode = true
+            },
         }
     }
 </script>

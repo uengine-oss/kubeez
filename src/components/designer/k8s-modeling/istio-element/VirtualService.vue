@@ -2,21 +2,22 @@
     <div>
         <geometry-element
                 selectable
-                :movable="editMode"
-                :resizable="editMode"
-                connectable
-                :deletable=editMode
+                movable
+                resizable
+                :connectable="!isReadOnly"
+                :deletable="!isReadOnly"
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
                 :width.sync="value.elementView.width"
                 :height.sync="value.elementView.height"
                 :angle.sync="value.elementView.angle"
+                :customMoveActionExist="isCustomMoveExist"
+                v-on:customMoveAction="delayedMove"
+                v-on:moveShape="onMoveShape"
                 v-on:selectShape="selectedActivity"
                 v-on:deSelectShape="deSelectedActivity"
-                v-on:dblclick="showProperty"
-                v-on:rotateShape="onRotateShape"
-                v-on:labelChanged="onLabelChanged"
+                v-on:dblclick="openPanel"
                 v-on:addedToGroup="onAddedToGroup"
                 v-on:removeShape="onRemoveShape(value)"
                 :label.sync="name"
@@ -42,8 +43,13 @@
             ></geometry-rect>
 
             <sub-controller
-                    :image="'subprocess.png'"
+                    :image="'terminal.png'"
                     @click.prevent.stop="handleClick($event)"
+            ></sub-controller>
+
+            <sub-controller
+                    :image="'subprocess.png'"
+                    @click.prevent.stop="drawFrame(yamlSrc)"
             ></sub-controller>
 
             <sub-elements>
@@ -56,24 +62,35 @@
                         :text="'VirtualService'">
                 </text-element>
             </sub-elements>
+            <k8s-sub-controller
+                    v-for="(connectableType, index) in filterConnectionTypes"
+                    :key="index"
+                    :element="value"
+                    :image="connectableType.src"
+                    :type="connectableType.component"
+                    :customRelation="value.relationComponent"
+            ></k8s-sub-controller>
         </geometry-element>
 
         <property-panel
-                v-if="openPanel"
-                v-model="value">
-        </property-panel>
+                v-if="propertyPanel"
+                v-model="value"
+                :img="imgSrc"
+                :readOnly="isReadOnly"
+                @close="closePanel"
+        ></property-panel>
 
         <vue-context-menu
-            :elementId="value.elementView.id"
-            :options="menuList"
-            :ref="'vueSimpleContextMenu'"
-            @option-clicked="optionClicked">
-        </vue-context-menu>
+                :elementId="value.elementView.id"
+                :options="menuList"
+                :ref="'vueSimpleContextMenu'"
+                @option-clicked="optionClicked"
+        ></vue-context-menu>
     </div>
 </template>
 
 <script>
-    import Element from '../Kube-Element'
+    import Element from "../KubernetesModelElement";
     import PropertyPanel from './VirtualServicePropertyPanel'
 
     export default {
@@ -93,7 +110,10 @@
             className() {
                 return 'VirtualService'
             },
-            createNew(elementId, x, y, width, height) {
+            imgSrc() {
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+            },
+            createNew(elementId, x, y, width, height, object) {
                 return {
                     _type: this.className(),
                     name: '',
@@ -109,22 +129,27 @@
                         'style': JSON.stringify({}),
                         'angle': 0,
                     },
-                    object: {
+                    object: object ? object : {
                         "apiVersion": "networking.istio.io/v1alpha3",
                         "kind": "VirtualService",
                         "metadata": {
                             "name": ""
                         },
                         "spec": {
-                            "hosts": [ "" ],
-                            "http": [],
+                            "hosts": [ "*" ],
+                            "http": [{
+                                "name": "",
+                                "route": []
+                            }],
                         },
                     },
                     outboundDestinationRules: [],
+                    outboundDestinationRuleMirror: null,
                     outboundServices: [],
-                    connectableType: [ "DestinationRule", "Service" ],
+                    connectableType: [ "DestinationRuleSubset", "Service" ],
                     relationComponent: "VirtualserviceToDestinationrule",
                     inboundGateway: null,
+                    druleName: ""
                 }
             },
             name() {
@@ -144,27 +169,38 @@
             },
             outboundDestinationRuleNames() {
                 try {
-                    var ruleNames = ""
-                    this.value.outboundDestinationRules.forEach(element => {
-                        ruleNames += element.object.spec.subsets[0].name +  "," + element.object.metadata.name + "," + element.routeType + "," + element.weight
-                    })
+                    var me = this;
+                    var ruleNames = "";
+                    me.value.outboundDestinationRules.forEach(element => {
+                        ruleNames += element.name + "," + element.host
+                        me.setDestination(element);
+                    });
                     return ruleNames
+                } catch (e) {
+                    return ""
+                }
+            },
+            outboundDestinationRuleMirrorName() {
+                try {
+                    return this.value.outboundDestinationRuleMirror.name + ",";
                 } catch (e) {
                     return ""
                 }
             },
             gatewayName() {
                 try {
-                    return this.value.inboundGateway.object.metadata.name + "," + this.value.inboundGateway.object.spec.servers[0].hosts[0] 
+                    return this.value.inboundGateway.object.metadata.name + "," + this.value.inboundGateway.object.spec.servers[0].hosts[0];
                 } catch(e) {
                     return ""
                 }
             },
             outboundServiceNames() {
                 try {
+                    var me = this;
                     var svcNames = "";
-                    this.value.outboundServices.forEach(element => {
+                    me.value.outboundServices.forEach(element => {
                         svcNames += element.object.metadata.name + ","
+                        me.setService(element);
                     });
                     return svcNames;
                 } catch(e) {
@@ -173,131 +209,196 @@
             }
         },
         data: function () {
-            return {};
+            return {
+                yamlSrc: `${window.location.protocol + "//" + window.location.host}/static/kubernetes/istio-canary.yaml`
+            };
         },
         created: function () {
         },
         mounted: function () {
             var me = this;
 
+            if(me.value.object.spec.http.length == 0) {
+                me.value.object.spec.http.push({
+                    "route": []
+                });
+            }
+
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                // console.log(obj)
-                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRule") {   
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRuleSubset") {
                     var res = me.value.outboundDestinationRules.some((el) => {
                         if(el.elementView.id == obj.element.targetElement.elementView.id) {
                             return true;
                         }
                     })
-                    if(!res) {
+                    me.value.druleName = obj.element.targetElement.parentElName;
+                    if(!res && obj.element.targetElement.routeType == 'weight') {
                         me.value.outboundDestinationRules.push(obj.element.targetElement)
+                    } else if(obj.element.targetElement.routeType == 'mirror') {
+                        if(res) {
+                            me.value.outboundDestinationRules.splice(obj.element.targetElement.index, 1)
+                            me.value.object.spec.http[0].route.splice(obj.element.targetElement.index, 1)
+                        }
+                        me.value.outboundDestinationRuleMirror = obj.element.targetElement
                     }
                 }
-                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRule") {
-                    me.value.outboundDestinationRules.splice(me.value.outboundDestinationRules.indexOf(obj.element.targetElement), 1)
+                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "DestinationRuleSubset") {
+                    if(obj.element.targetElement.routeType == 'mirror') {
+                        me.value.outboundDestinationRuleMirror = null
+                    } else {
+                        me.value.object.spec.http[0].route.splice(obj.element.targetElement.index, 1)
+                        me.value.outboundDestinationRules.splice(me.value.outboundDestinationRules.indexOf(obj.element.targetElement), 1)
+                    }
                 }
-                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {                    
+
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
                     var res = me.value.outboundServices.some((el) => {
                         if(el.elementView.id == obj.element.targetElement.elementView.id) {
                             return true;
                         }
                     })
                     if(!res) {
+                        obj.element.targetElement.index = me.value.object.spec.http[0].route.length
                         me.value.outboundServices.push(obj.element.targetElement)
+                    } else {
+                        me.value.outboundServices.splice(obj.element.targetElement.index, 1)
+                        me.value.object.spec.http[0].route.splice(obj.element.targetElement.index, 1)
                     }
                 }
                 if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
+                    me.value.object.spec.http[0].route.splice(obj.element.targetElement.index, 1)
                     me.value.outboundServices.splice(me.value.outboundServices.indexOf(obj.element.targetElement), 1)
                 }
 
-                if(obj.action=="addRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "Gateway") {  
-                    me.value.inboundGateway = obj.element.sourceElement
+                if(obj.action=="addRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "Gateway") {
+                    if(!me.value.object.spec.http[0].match) {
+                        me.value.object.spec.http[0].match = [{
+                            "uri": {
+                                "prefix": "/"
+                            }
+                        }];
+                    }
+                    if(!me.value.object.spec.http[0].rewrite) {
+                        me.value.object.spec.http[0].rewrite = {
+                            "uri": "/"
+                        };
+                    }
+                    me.value.inboundGateway = obj.element.sourceElement;
                 }
-                if(obj.action=="deleteRelation" && obj.element && obj.element.sourceElements && obj.element.sourceElement._type == "Gateway") {
-                    me.value.inboundGateway = null
+                if(obj.action=="deleteRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "Gateway") {
+                    me.value.inboundGateway = null;
+                    delete me.value.object.spec.gateways;
                 }
             })
 
         },
         watch: {
-            outboundDestinationRuleNames() {
+            outboundDestinationRuleNames(val) {
                 var me = this;
-                me.value.object.spec.http = [];
-                me.value.outboundDestinationRules.forEach(element => {
-                    // console.log(element);
-                    me.setDestination(element);
-                });
+            },
+            outboundDestinationRuleMirrorName(val) {
+                var me = this
+                if(me.value.outboundDestinationRuleMirror) {
+                    var obj = {
+                        "host": me.value.outboundDestinationRuleMirror.host,
+                        "subset": me.value.outboundDestinationRuleMirror.name
+                    }
+                    me.value.object.spec.http[0].mirror = obj
+                } else if(!me.value.outboundDestinationRuleMirror) {
+                    delete me.value.object.spec.http[0].mirror
+                }
+            },
+            outboundServiceNames() {
+                var me = this;
             },
             gatewayName() {
-                var me = this
-                me.value.object.spec.hosts = []
+                var me = this;
                 me.value.object.spec.gateways = []
                 if(me.value.inboundGateway) {
-                    me.value.object.spec.hosts.push(me.value.inboundGateway.object.spec.servers[0].hosts[0])
-                    me.value.object.spec.gateways.push(me.value.inboundGateway.object.metadata.name)
+                    me.value.object.spec.gateways.push(me.value.inboundGateway.object.metadata.name);
+                } else {
+                    delete me.value.object.spec.gateways
                 }
             },
-            outboundServiceNames(val) {
-                var me = this;
-                me.value.object.spec.http = [];
-                me.value.outboundServices.forEach(element => {
-                    var path = element.path || "/";
-                    me.value.object.spec.http.push({
-                        "match": [{
-                            "uri": {
-                                "prefix": path 
-                            }
-                        }],
-                        "route": [{
-                            "destination": {
-                                "host": element.object.metadata.name,
-                                "port": {
-                                    "number": element.object.spec.ports[0].port
-                                }
-                            }
-                        }],
-                        "timeout": "3s",
-                        "retries": {
-                            "attempts": 3,
-                            "perTryTimeout": "2s",
-                            "retryOn": ""
-                        }
-                    });
-                });
-            }
         },
         methods: {
-            setDestination(element) {
+            setDestination(el) {
                 var me = this;
-                if(element.routeType == 'mirror') {
-                    me.value.object.spec.http.push({
-                        "mirror": {
-                            "host": element.object.spec.host,
-                            "subset": element.object.spec.subsets[0].name
-                        },
-                        "timeout": "3s",
-                        "retries": {
-                            "attempts": 3,
-                            "perTryTimeout": "2s",
-                            "retryOn": ""
-                        }
-                    });
-                } else if(element.routeType == 'weight') {
-                    me.value.object.spec.http.push({
-                        "route": [{
+                if(el.routeType == 'weight') {
+                    if(me.value.object.spec.http[0].route.length > 0) {
+                        me.value.object.spec.http[0].route[el.index] = {
                             "destination": {
-                                "host": element.object.spec.host,
-                                "subset": element.object.spec.subsets[0].name
-                            }
-                        }],
-                        'weight': Number(element.weight),
-                        "timeout": "3s",
-                        "retries": {
-                            "attempts": 3,
-                            "perTryTimeout": "2s",
-                            "retryOn": ""
+                                "host": el.host,
+                                "subset": el.name
+                            },
+                            "weight": Number(el.weight)
                         }
-                    });
+                    } else {
+                        me.value.object.spec.http[0].route.push({
+                            "destination": {
+                                "host": el.host,
+                                "subset": el.name
+                            },
+                            "weight": Number(el.weight)
+                        })
+                    }
                 }
+            },
+            setService(el) {
+                var me = this;
+                if(me.value.object.spec.http[0].route.length > 0) {
+                    me.value.object.spec.http[0].route[el.index] = {
+                        "destination": {
+                            "host": el.object.metadata.name,
+                        }
+                    }
+                } else {
+                    me.value.object.spec.http[0].route.push({
+                        "destination": {
+                            "host": el.object.metadata.name,
+                        }
+                    })
+                }
+            },
+            setDestinationHost(host) {
+                var me = this;
+                me.value.outboundDestinationRules.forEach(element => {
+                    element.host = host;
+                });
+            },
+            isConnected(to, from) {
+                if(!from.connectableType) {
+                    return false
+                }
+                var connectable = from.connectableType.some((type) => {
+                    if(type == to._type) {
+                        return true
+                    }
+                })
+                var res = false
+                if(connectable) {
+                    if(to._type == "Service" && from.object.spec.http[0].route.length > 0) {
+                        res = from.object.spec.http[0].route.some((svc) => {
+                            if(svc.destination.host == to.object.metadata.name) {
+                                return true
+                            }
+                        })
+                    } else if(to._type == "DestinationRuleSubset") {
+                        if(from.object.spec.http[0].mirror) {
+                            if(from.object.spec.http[0].mirror.destination.subset == to.name && drule.destination.host == to.host) {
+                                res = true
+                            }
+                        }
+                        if(from.object.spec.http[0].route.length > 0) {
+                            res = from.object.spec.http[0].route.some((drule) => {
+                                if(drule.destination.subset == to.name && drule.destination.host == to.host) {
+                                    return true
+                                }
+                            })
+                        }
+                    }
+                }
+                return res
             },
         },
     }

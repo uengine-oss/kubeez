@@ -1,81 +1,83 @@
 <template>
     <div>
-        <geometry-element
+        <group-element
                 selectable
-                :movable="editMode"
-                :resizable="editMode"
-                connectable
-                :deletable=editMode
+                movable
+                resizable
+                :deletable="!isReadOnly"
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
+                :label.sync="name"
                 :width.sync="value.elementView.width"
                 :height.sync="value.elementView.height"
-                :angle.sync="value.elementView.angle"
+                :customMoveActionExist="isCustomMoveExist"
+                v-on:customMoveAction="delayedMove"
+                v-on:moveShape="onMoveShape"
                 v-on:selectShape="selectedActivity"
                 v-on:deSelectShape="deSelectedActivity"
-                v-on:dblclick="showProperty"
-                v-on:rotateShape="onRotateShape"
-                v-on:labelChanged="onLabelChanged"
                 v-on:addedToGroup="onAddedToGroup"
+                v-on:dblclick="openPanel"
                 v-on:removeShape="onRemoveShape(value)"
-                :label.sync="name"
+                :image.sync="refreshedImg"
                 :_style="{
-                'label-angle':value.elementView.angle,
-                'font-weight': 'bold','font-size': '16'
-                }"
-                v-on:contextmenu.prevent.stop="handleClick($event)"
-        >
-
-            <!--v-on:dblclick="$refs['dialog'].open()"-->
-            <geometry-rect
-                    :_style="{
-                        'fill-r': 1,
-                        'fill-cx': .1,
-                        'fill-cy': .1,
-                        'stroke-width': 1.4,
-                        'stroke': '#F1A746',
-                        fill: '#F1A746',
-                        'fill-opacity': 1,
-                        r: '1'
-                    }"
-            ></geometry-rect>
+                    stroke:'black',
+                    'vertical-align': 'top',
+                    'font-weight': 'bold',
+                    'font-size': '16',
+                }">
 
             <sub-controller
-                    :image="'subprocess.png'"
+                    :image="'terminal.png'"
                     @click.prevent.stop="handleClick($event)"
             ></sub-controller>
 
             <sub-elements>
                 <!--title-->
+                <image-element
+                        :image="imgSrc"
+                        :sub-top="5"
+                        :sub-left="5"
+                        :sub-width="25"
+                        :sub-height="25"
+                ></image-element>
                 <text-element
                         :sub-width="'100%'"
-                        :sub-height="25"
+                        :sub-height="'180%'"
                         :sub-top="0"
                         :sub-left="0"
                         :text="'DestinationRule'">
                 </text-element>
             </sub-elements>
-        </geometry-element>
+        </group-element>
 
         <property-panel
-                v-if="openPanel"
+                v-if="propertyPanel"
                 v-model="value"
-                :img="imgSrc">
-        </property-panel>
+                :img="imgSrc"
+                :readOnly="isReadOnly"
+                @close="closePanel"
+                @setSubSet="setSubSet"
+        ></property-panel>
 
         <vue-context-menu
-            :elementId="value.elementView.id"
-            :options="menuList"
-            :ref="'vueSimpleContextMenu'"
-            @option-clicked="optionClicked">
+                :elementId="value.elementView.id"
+                :options="menuList"
+                :ref="'vueSimpleContextMenu'"
+                @option-clicked="optionClicked">
         </vue-context-menu>
     </div>
 </template>
 
 <script>
-    import Element from '../Kube-Element'
+    import Element from "../KubernetesModelElement";
     import PropertyPanel from './DestinationRulePropertyPanel'
+
+    var jsondiffpatch = require('jsondiffpatch').create({
+        objectHash: function (obj, index) {
+            return '$$index:' + index;
+        },
+    });
 
     export default {
         mixins: [Element],
@@ -86,7 +88,7 @@
         props: {},
         computed: {
             imgSrc() {
-                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+                return `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
             },
             defaultStyle() {
                 return {}
@@ -94,7 +96,10 @@
             className() {
                 return 'DestinationRule'
             },
-            createNew(elementId, x, y, width, height) {
+            imgSrc() {
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+            },
+            createNew(elementId, x, y, width, height, object) {
                 return {
                     _type: this.className(),
                     name: '',
@@ -110,7 +115,7 @@
                         'style': JSON.stringify({}),
                         'angle': 0,
                     },
-                    object: {
+                    object: object ? object : {
                         "apiVersion": "networking.istio.io/v1alpha3",
                         "kind": "DestinationRule",
                         "metadata": {
@@ -120,33 +125,36 @@
                             "host": "",
                             "subsets": [
                                 {
-                                    "name": "version1",
+                                    "name": "v1",
                                     "labels": {
                                         "version": "v1"
                                     }
                                 }
-                            ],
-                            "trafficPolicy": {
-                                "connectionPool": {
-                                    "http": {
-                                        "http1MaxPendingRequests": 1,
-                                        "maxRequestsPerConnection": 1
-                                    },
-                                    "tcp": {
-                                        "maxConnections": 1
-                                    }
-                                },
-                                "outlierDetection": {
-                                    "baseEjectionTime": "30s",
-                                    "consecutiveErrors": 5,
-                                    "interval": "10s",
-                                    "maxEjectionPercent": 10
-                                }
-                            }
+                            ]
                         }
                     },
-                    connectableType: [ "Service" ],
-                    outboundService: "",
+                    "trafficPolicy": {
+                        "connectionPool": {
+                            "http": {
+                                "http1MaxPendingRequests": 1,
+                                "maxRequestsPerConnection": 1
+                            },
+                            "tcp": {
+                                "maxConnections": 1
+                            }
+                        },
+                        "outlierDetection": {
+                            "baseEjectionTime": "30s",
+                            "consecutiveErrors": 5,
+                            "interval": "10s",
+                            "maxEjectionPercent": 10
+                        }
+                    },
+                    advancedAttributePaths: {},
+                    subsets: [],
+                    outboundDeployments: [],
+                    outboundPods: [],
+                    outboundReplicaSets: [],
                 }
             },
             name() {
@@ -164,55 +172,194 @@
                     this.value.object.metadata.namespace = newVal
                 }
             },
-            outboundServiceName() {
-                try{
-                    return this.value.outboundService.object.metadata.name
-                } catch(e) {
+            outboundDeploymentNames() {
+                try {
+                    var names = "";
+                    this.value.outboundDeployments.forEach(element => {
+                        names += element.object.metadata.name + "," + element.object.spec.selector.matchLabels.app;
+                    });
+                    return names;
+                } catch (e) {
                     return ""
+                }
+            },
+            outboundPodNames() {
+                try {
+                    var names = "";
+                    this.value.outboundPods.forEach(element => {
+                        names += element.object.metadata.name + ",";
+                    });
+                    return names;
+                } catch (e) {
+                    return "";
+                }
+            },
+            outboundReplicaSetNames() {
+                try {
+                    var names = "";
+                    this.value.outboundReplicaSets.forEach(element => {
+                        names += element.object.metadata.name + ",";
+                    });
+                    return names;
+                } catch (e) {
+                    return "";
                 }
             }
         },
         data: function () {
-            return {};
+            return {
+                compInfo: {
+                    component: "destinationRuleSubset",
+                    label: "subset",
+                    src: `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-drule.svg`,
+                    x: 0,
+                    y: 0
+                }
+            };
         },
         created: function () {
         },
         mounted: function () {
-            var me = this;
+            var me = this;            
+            me.setSubSet(me.value.object.spec.subsets.length);
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
+                if (obj.action == "addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment") {
+                    var res = me.value.outboundDeployments.some((el) => {
+                        if (el.elementView.id == obj.element.targetElement.elementView.id) {
+                            return true;
+                        }
+                    })
+                    if (!res) {
+                        me.value.outboundDeployments.push(obj.element.targetElement);
+                    }
+                }
+                if (obj.action == "deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Deployment") {
+                    me.value.outboundDeployments.splice(me.value.outboundDeployments.indexOf(obj.element.targetElement), 1);
+                    var idx = obj.element.sourceElement.index;
+                    delete me.value.object.spec.subsets[idx].labels.app;
+                }
+                if (obj.action == "addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod") {
+                    var res = me.value.outboundPods.some((el) => {
+                        if (el.elementView.id == obj.element.targetElement.elementView.id) {
+                            return true;
+                        }
+                    })
+                    if (!res) {
+                        me.value.outboundPods.push(obj.element.targetElement);
+                    }
+                }
+                if (obj.action == "deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Pod") {
+                    me.value.outboundPods.splice(me.value.outboundPods.indexOf(obj.element.targetElement), 1);
+                    var idx = obj.element.sourceElement.index;
+                    delete me.value.object.spec.subsets[idx].labels.app;
+                }
+                if (obj.action == "addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet") {
+                    var res = me.value.outboundReplicaSets.some((el) => {
+                        if (el.elementView.id == obj.element.targetElement.elementView.id) {
+                            return true;
+                        }
+                    })
+                    if (!res) {
+                        me.value.outboundReplicaSets.push(obj.element.targetElement);
+                    }
+                }
+                if (obj.action == "deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "ReplicaSet") {
+                    me.value.outboundReplicaSets.splice(me.value.outboundReplicaSets.indexOf(obj.element.targetElement), 1);
+                    var idx = obj.element.sourceElement.index;
+                    delete me.value.object.spec.subsets[idx].labels.app;
+                }
 
-                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
-                    me.value.outboundService = obj.element.targetElement;
+                if (obj.action == "deleteSubset" && obj.element && obj.element._type == "DestinationRuleSubset") {
+                    me.deleteSubset(obj.element.index);
                 }
-                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Service") {
-                    me.value.outboundService = null;
+                if (obj.action == "showProperty" && obj.element && obj.element._type == "DestinationRuleSubset") {
+                    me.selected = true;
+                    me.showProperty();
                 }
-
-                if(obj.action=="addRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "VirtualService") {
-                    me.value.routeType = 'weight';
-                    me.value.weight = 100;
+                if (obj.action == "closeProperty" && obj.element && obj.element._type == "DestinationRuleSubset") {
+                    me.selected = false;
+                    me.closePanel();
                 }
-                if(obj.action=="deleteRelation" && obj.element && obj.element.sourceElement && obj.element.sourceElement._type == "VirtualService") {
-                    delete me.value.routeType;
-                    delete me.value.weight;
-                }
-
             })
-
         },
         watch: {
             name(appName) {
                 this.value.name = appName
             },
-            outboundServiceName(val) {
+            outboundDeploymentNames(val) {
                 var me = this;
-                me.value.object.spec.subsets[0].labels.app = "";
-                me.value.object.spec.host = me.value.outboundService.object.metadata.name;
-                me.value.object.spec.subsets[0].labels.app = me.value.outboundService.object.spec.selector.app;
-            }
+                me.value.outboundDeployments.forEach(deploy => {
+                    me.value.subsets.forEach(sb => {
+                        if (deploy.subsetId == sb) {
+                            me.value.object.spec.subsets[sb.index].labels.app = deploy.object.metadata.name;
+                        }
+                    });
+                });
+            },
+            outboundPodNames(val) {
+                var me = this;
+                me.value.outboundPods.forEach(deploy => {
+                    me.value.subsets.forEach(sb => {
+                        if (deploy.subsetId == sb) {
+                            me.value.object.spec.subsets[sb.index].labels.app = deploy.object.metadata.name;
+                        }
+                    });
+                });
+            },
+            outboundReplicaSetNames(val) {
+                var me = this;
+                me.value.outboundReplicaSets.forEach(deploy => {
+                    me.value.subsets.forEach(sb => {
+                        if (deploy.subsetId == sb) {
+                            me.value.object.spec.subsets[sb.index].labels.app = deploy.object.metadata.name;
+                        }
+                    });
+                });
+            },
         },
         methods: {
+            setSubSet(val) {
+                var me = this;
+                var len = me.value.subsets.length;
+                
+                if (val > len) {
+                    var count = val - len;
+                    for(var i=0; i<count; i++) {
+                        me.compInfo.x = me.value.elementView.x - 100;
+                        if (len > 0 && count === 1) {
+                            me.compInfo.x += 100 * len;
+                        } else if (len > 0 && count > 1) {
+                            me.compInfo.x += 100 * (len+count-i);
+                        }
+                        me.compInfo.y = me.value.elementView.y;
+                        
+                        var el = me.modelCanvasComponent.addElement(me.compInfo, me.value);
+                        el.name = "v"+(len+count-i);
+                        el.version = "v"+(len+count-i);
+                        me.value.subsets.push(el.elementView.id);
+                    }
+                }
+            },
+            deleteSubset(index) {
+                var me = this;
+                me.value.subsets.splice(index, 1);
+                me.value.object.spec.subsets.splice(index, 1);
+            },
+            isConnected(to, from) {
+                if(!from.connectableType) {
+                    return false
+                }
+                var connectable = from.connectableType.some((type) => {
+                    if(type == to._type) {
+                        return true
+                    }
+                })
+                if(connectable) {
+                    return true
+                }
+                return false
+            },
         },
     }
 </script>

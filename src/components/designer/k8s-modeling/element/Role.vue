@@ -2,24 +2,26 @@
     <div>
         <geometry-element
                 selectable
-                :movable="editMode"
-                :resizable="editMode"
-                connectable
-                :deletable=editMode
+                movable
+                resizable
+                :connectable="!isReadOnly"
+                :deletable="!isReadOnly"
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
                 :width.sync="value.elementView.width"
                 :height.sync="value.elementView.height"
                 :angle.sync="value.elementView.angle"
+                :customMoveActionExist="isCustomMoveExist"
+                v-on:customMoveAction="delayedMove"
+                v-on:moveShape="onMoveShape"
                 v-on:selectShape="selectedActivity"
                 v-on:deSelectShape="deSelectedActivity"
-                v-on:dblclick="showProperty"
-                v-on:rotateShape="onRotateShape"
-                v-on:labelChanged="onLabelChanged"
+                v-on:dblclick="openPanel"
                 v-on:addedToGroup="onAddedToGroup"
                 v-on:removeShape="onRemoveShape(value)"
                 :label.sync="name"
+                :image.sync="refreshedImg"
                 :_style="{
                     'label-angle':value.elementView.angle,
                     'font-weight': 'bold','font-size': '16'
@@ -42,7 +44,7 @@
             ></geometry-rect>
 
             <sub-controller
-                    :image="'subprocess.png'"
+                    :image="'terminal.png'"
                     @click.prevent.stop="handleClick($event)"
             ></sub-controller>
 
@@ -65,10 +67,14 @@
             </sub-elements>
         </geometry-element>
 
-         <property-panel
-            v-if="openPanel"
-            v-model="value"
-            :img="imgSrc">
+        <property-panel
+                v-if="propertyPanel"
+                v-model="value"
+                :img="imgSrc"
+                :validationLists="filteredElementValidationResults"
+                :readOnly="isReadOnly"
+                @close="closePanel"
+        >
         </property-panel>
 
         <vue-context-menu
@@ -81,7 +87,7 @@
 </template>
 
 <script>
-    import Element from '../Kube-Element'
+    import Element from "../KubernetesModelElement";
     import PropertyPanel from './RolePropertyPanel'
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
@@ -103,7 +109,7 @@
             imgSrc() {
                 return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/role.svg`
             },
-            createNew(elementId, x, y, width, height) {
+            createNew(elementId, x, y, width, height, object) {
                 return {
                     _type: this.className(),
                     name: '',
@@ -118,7 +124,7 @@
                         'style': JSON.stringify({}),
                         'angle': 0,
                     },
-                    object: {
+                    object: object ? object: {
                         "apiVersion": "rbac.authorization.k8s.io/v1",
                         "kind": "Role",
                         "metadata": {
@@ -128,8 +134,8 @@
                         "rules": [
                             {
                                 "apiGroups": [ "" ],
-                                "resources": [],
-                                "verbs": []
+                                "resources": [ "" ],
+                                "verbs": [ "" ]
                             }
                         ]
                     },
@@ -156,14 +162,41 @@
         data: function () {
             return {};
         },
-        created: function () {
-        },
-        mounted(){
-            var me = this;
-        },
+        created: function () { },
+        mounted(){ },
         watch: {
+            "value": {
+                deep: true,
+                handler: _.debounce(function (newVal, oldVal) {
+                    var me = this
+                    me.validate(false)
+                }, 200)
+            },
         },
         methods: {
+            validate(executeRelateToValidate, panelValue){
+                var me = this
+                var executeValidate = executeRelateToValidate == false ? false :true
+                var validateValue = me.propertyPanel && panelValue ? panelValue : me.value
+
+                // Common
+                this.$super(Element).validate()
+
+                //Element
+                if(validateValue.name){
+                    var validationResultIndex = me.elementValidationResults.findIndex(x=> (x.code == me.ESE_NOT_NAME))
+                    if( validationResultIndex != -1 ){
+                        me.elementValidationResults.splice(validationResultIndex,1)
+                    }
+                }else{
+                    var validationResultIndex = me.elementValidationResults.findIndex(x=> (x.code == me.ESE_NOT_NAME) )
+                    if( validationResultIndex == -1 ){
+                        me.elementValidationResults.push(me.validationFromCode(me.ESE_NOT_NAME))
+                    }
+                }
+
+                me.modelCanvasComponent.changedTemplateCode = true
+            },
         }
     }
 </script>

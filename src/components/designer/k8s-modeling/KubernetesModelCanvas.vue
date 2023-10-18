@@ -1,9 +1,6 @@
 <template xmlns:v-on="http://www.w3.org/1999/xhtml">
-
     <div class="canvas-panel">
-
         <v-layout right>
-
             <opengraph ref="opengraph" focus-canvas-on-select wheelScalable :labelEditable="true"
                        :dragPageMovable="dragPageMovable" :enableContextmenu="false" :enableRootContextmenu="false"
                        :enableHotkeyCtrlC="false" :enableHotkeyCtrlV="false"
@@ -88,66 +85,30 @@
                 </v-row>
             </v-flex>
 
-            <!-- <v-card class="search-tool" max-height="45">
-                <span class="search-tool-icon">
-                    <v-icon @click="onSearchBox()" large>search</v-icon>
-                </span>
-            </v-card>
-             -->
-            <!-- <v-card class="tools" style="top:150px; text-align: center;" max-height="400">
-                <span class="bpmn-icon-hand-tool" v-bind:class="{ icons : !dragPageMovable, hands : dragPageMovable }"
-                        v-on:click="toggleGrip">
-                </span>
-
-                <v-tooltip right v-for="(item, key) in filterElementTypes" :key="key">
+            <v-card class="tools" style="top:100px; text-align: center;">
+                <v-tooltip right v-for="(category, categoryIndex) in elementTypes" :key="categoryIndex">
                     <template v-slot:activator="{ on }">
                         <span
-                                class="icons draggable"
+                                @mouseover="changeCategory(categoryIndex)"
                                 align="center"
-                                :_component="item.component"
-                                :_width="item.width"
-                                :_height="item.height">
-                            <img height="30px" width="30px" :src="item.src" v-on="on">
+                                :_component="category[0].component"
+                                :_width="category[0].width"
+                                :_height="category[0].height"
+                                :_description="category[0].description"
+                                :_label="category[0].label"
+                        >
+                            <img height="30px" width="30px" :src="category[0].src" v-on="on">
                         </span>
-                    </template>
-                    <span>{{item.label}}</span>
-                </v-tooltip>
-            </v-card> -->
-
-            <v-card class="tools"
-                    style="top:100px; text-align: center;"
-
-            >
-                <v-tooltip right v-for="(category, categoryIndex) in elementTypes" :key="categoryIndex">
-
-                    <template v-slot:activator="{ on }">
-                         <span
-                                 @mouseover="changeCategory(categoryIndex)"
-                                 align="center"
-                                 :_component="category[0].component"
-                                 :_width="category[0].width"
-                                 :_height="category[0].height"
-                                 :_description="category[0].description"
-                                 :_label="category[0].label"
-                         >
-                             <img height="30px" width="30px" :src="category[0].src" v-on="on">
-                         </span>
                     </template>
 
                     <span>{{ category[0].component }}</span>
 
                 </v-tooltip>
-
-
             </v-card>
 
-            <div
-                    v-for="(category, categoryIndex) in elementTypes" :key="categoryIndex">
-
+            <div v-for="(category, categoryIndex) in elementTypes" :key="categoryIndex">
                 <div v-if="selectedCategoryIndex == categoryIndex">
-           
                     <v-tooltip right v-for="(item, key) in category" :key="key">
-
                         <template v-slot:activator="{ on }" v-if="key>0">
                             <span
                                     class="draggable"
@@ -163,7 +124,6 @@
                             >
                                 <img valign="middle" style="vertical-align:middle; border: 2 solid grey; -webkit-box-shadow: 5px 5px 20px 0px rgba(0,0,0,0.75); -moz-box-shadow: 5px 5px 20px 0px rgba(0,0,0,0.40); box-shadow: 5px 5px 20px 0px rgba(0,0,0,0.40);" onmouseover="this.height=this.height*1.5;this.width=this.width*1.5;this.left=this.left-this.width*0.5;this.right=this.right-this.width*0.5;" onmouseout="this.height=this.height/1.5;this.width=this.width/1.5;this.left=this.left+this.width*0.5;this.right=this.right+this.width*0.5;" height="40px" width="40px" :src="item.src" v-on="on" border=2>
                                 <v-chip v-on="on">{{item.label}}</v-chip>
-
                             </span>
                         </template>
 
@@ -187,16 +147,11 @@
                                 >
                                     <v-img :src="item.src"></v-img>
                                 </v-list-item-avatar>
-
                             </v-list-item>
-
                         </v-card>
                     </v-tooltip>
-
                 </div>
             </div>
-
-
         </v-layout>
 
         <v-card v-if="isSearch" class="searchBox" width="200" max-height="50">
@@ -344,25 +299,19 @@
 <script>
     import { saveAs } from 'file-saver'
     import * as io from 'socket.io-client'
-    import yaml from 'js-yaml'
     import json2yaml from 'json2yaml'
 
-    var fs = require('fs');
     var _ = require('lodash');
-    var FileSaver = require('file-saver');
     var JSZip = require('jszip')
 
     import StorageBase from "../modeling/StorageBase";
 
     export default {
         mixins: [StorageBase],
-        name: 'kube-modeling-designer',
+        name: 'kubernetes-model-canvas',
         components: {
             saveAs,
             io
-        },
-        props: {
-            elementTypes: Array
         },
         data() {
             return {
@@ -430,6 +379,391 @@
                 chartJson: {},
                 valuesYaml: '',
                 selectedCategoryIndex: null,
+
+                elementTypes: [
+                    [
+                        {
+                            'component': 'Workload',
+                            'label': 'Workload',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/deploy-palette.svg`,
+                        },
+                        {
+                            'component': 'namespace',
+                            'label': 'Namespace',
+                            'width': '400',
+                            'height': '400',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ns-palette.svg`,
+                            'description': 'Kubernetes supports multiple virtual clusters backed by the same physical cluster. These virtual clusters are called namespaces.'
+                        },
+                        {
+                            'component': 'deployment',
+                            'label': 'Deployment',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/deploy-palette.svg`,
+                            'description': 'A Deployment provides declarative updates for Pods ReplicaSets. You describe a desired state in a Deployment, and the Deployment Controller changes the actual state to the desired state at a controlled rate. You can define Deployments to create new ReplicaSets, or to remove existing Deployments and adopt all their resources with new Deployments.'
+                        },
+                        {
+                            'component': 'replicaSet',
+                            'label': 'ReplicaSet',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/rs-palette.svg`,
+                            'description': "A ReplicaSet's purpose is to maintain a stable set of replica Pods running at any given time. As such, it is often used to guarantee the availability of a specified number of identical Pods."
+
+                        },
+                        {
+                            'component': 'pod',
+                            'label': 'Pod',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pod-palette.svg`,
+                            'description': "Pods are the smallest deployable units of computing that you can create and manage in Kubernetes."
+                        },
+                        {
+                            'component': 'statefulSet',
+                            'label': 'StatefulSet',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sts-palette.svg`,
+                            'description': "StatefulSet is the workload API object used to manage stateful applications. Manages the deployment and scaling of a set of Pods, and provides guarantees about the ordering and uniqueness of these Pods."
+                        },
+                        {
+                            'component': 'daemonSet',
+                            'label': 'DaemonSet',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ds-palette.svg`,
+                            'description': "A DaemonSet ensures that all (or some) Nodes run a copy of a Pod. As nodes are added to the cluster, Pods are added to them. As nodes are removed from the cluster, those Pods are garbage collected. Deleting a DaemonSet will clean up the Pods it created."
+                        },
+                    ],
+                    [
+                        {
+                            'component': 'Routing',
+                            'label': 'Routing',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/svc-palette.svg`
+                        },
+                        {
+                            'component': 'service',
+                            'label': 'Service',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/svc-palette.svg`,
+                            'description': "An abstract way to expose an application running on a set of Pods as a network service."
+                        },
+                        {
+                            'component': 'ingress',
+                            'label': 'Ingress',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/ing-palette.svg`,
+                            'description': "An API object that manages external access to the services in a cluster, typically HTTP. Ingress may provide load balancing, SSL termination and name-based virtual hosting."
+                        },
+                    ],
+                    [
+                        {
+                            'component': 'Persistence',
+                            'label': 'Persistence',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pv-palette.svg`
+                        },
+                        {
+                            'component': 'persistentVolume',
+                            'label': 'PersistentVolume',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pv-palette.svg`
+                        },
+                        {
+                            'component': 'persistentVolumeClaim',
+                            'label': 'PersistentVolumeClaim',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/pvc-palette.svg`
+                        },
+                        {
+                            'component': 'storageClass',
+                            'label': 'StorageClass',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sc-palette.svg`
+                        },
+                    ],
+                    [
+                        {
+                            'component': 'Autoscaler',
+                            'label': 'Autoscaler',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/hpa-palette.svg`
+                        },
+                        {
+                            'component': 'horizontalPodAutoscaler',
+                            'label': 'Horizontal Pod Autoscaler',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/hpa-palette.svg`
+                        }
+                    ],
+                    [
+                        {
+                            'component': 'Job',
+                            'label': 'Job',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/job-palette.svg`
+                        },
+                        {
+                            'component': 'job',
+                            'label': 'Job',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/job-palette.svg`
+                        },
+                        {
+                            'component': 'cronJob',
+                            'label': 'CronJob',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/cronjob-palette.svg`
+                        },
+                    ], [
+                        {
+                            'component': 'Configuration',
+                            'label': 'Configuration',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/cm-palette.svg`
+                        },
+
+                        {
+                            'component': 'configMap',
+                            'label': 'ConfigMap',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/cm-palette.svg`
+                        },
+                        {
+                            'component': 'secret',
+                            'label': 'Secret',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/secret-palette.svg`
+                        },
+                    ], [
+                        {
+                            'component': 'Role Based Access Control',
+                            'label': 'Role',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/role-palette.svg`
+                        },
+                        {
+                            'component': 'role',
+                            'label': 'Role',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/role-palette.svg`
+                        },
+                        {
+                            'component': 'roleBinding',
+                            'label': 'RoleBinding',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/rb-palette.svg`
+                        },
+                        {
+                            'component': 'clusterRole',
+                            'label': 'ClusterRole',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/c-role-palette.svg`
+                        },
+                        {
+                            'component': 'clusterRoleBinding',
+                            'label': 'ClusterRoleBinding',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/crb-palette.svg`
+                        },
+                        {
+                            'component': 'serviceAccount',
+                            'label': 'ServiceAccount',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/sa-palette.svg`
+                        },
+                    ], [
+                        {
+                            'component': 'Istio',
+                            'label': 'Istio',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-gateway.svg`
+                        },
+                        // {
+                        //     'component': 'istio-canary-frame',
+                        //     'label': 'Istio Canary',
+                        //     'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-vsvc.svg`
+                        // },
+                        {
+                            'component': 'gateway',
+                            'label': 'Gateway',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-gateway.svg`
+                        },
+                        {
+                            'component': 'virtualService',
+                            'label': 'VirtualService',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-vsvc.svg`
+                        },
+                        {
+                            'component': "destinationRule",
+                            'label': "DestinationRule",
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-drule.svg`
+                        },
+                        {
+                            'component': 'serviceEntry',
+                            'label': 'ServiceEntry',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-svcentry.svg`
+                        },
+                        {
+                            'component': 'sidecar',
+                            'label': 'Sidecar',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-sidecar.svg`
+                        },
+                        {
+                            'component': 'quota',
+                            'label': 'Quota',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+                        },
+                        {
+                            'component': 'rule',
+                            'label': 'Rule',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+                        },
+                        {
+                            'component': 'quotaSpec',
+                            'label': 'QuotaSpec',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+                        },
+                        {
+                            'component': 'quotaSpecBinding',
+                            'label': 'QuotaSpecBinding',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+                        },
+                        {
+                            'component': 'memquota',
+                            'label': 'MemQuota',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+                        },
+                    ], [
+                        {
+                            'component': 'Knative',
+                            'label': 'Knative',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/knative/logo.svg`
+                        },
+                        {
+                            'component': 'knativeService',
+                            'label': 'Service',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/knative/logo.svg`
+                        }
+                    ],
+                    [
+                        {
+                            'component': 'argo',
+                            'label': 'Argo',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/argo/argo-icon-color.svg`
+                        },
+                        {
+                            'component': 'application',
+                            'label': 'Application',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/argo/argo-icon-color.svg`
+                        },
+                        {
+                            'component': 'workflow',
+                            'label': 'Workflow',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/argo/argo-icon-color.svg`
+                        },
+                        {
+                            'component': 'workflow',
+                            'label': 'Workflow - Steps',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/argo/argo-icon-color.svg`
+                        },
+                        {
+                            'component': 'workflow',
+                            'label': 'Workflow - Dag',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/argo/argo-icon-color.svg`
+                        },
+                        {
+                            'component': 'rollout',
+                            'label': 'Rollout',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/argo/argo-icon-color.svg`
+                        },
+                        {
+                            'component': 'eventSource',
+                            'label': 'EventSource',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/argo/argo-icon-color.svg`
+                        },
+                        {
+                            'component': 'sensor',
+                            'label': 'Sensor',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/argo/argo-icon-color.svg`
+                        },
+                        {
+                            'component': 'workflowTemplate',
+                            'label': 'WorkflowTemplate',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/argo/argo-icon-color.svg`
+                        }
+                    ],
+                    [
+                        {
+                            'component': 'User Defined CRD',
+                            'label': 'New CRD',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/crd-palette.svg`
+                        },
+                        {
+                            'component': 'customResourceDefinition',
+                            'label': 'CustomResourceDefinition',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/crd-palette.svg`
+                        },
+                        {
+                            'component': 'newCrd',
+                            'label': 'User Defined CRD',
+                            'width': '100',
+                            'height': '100',
+                            'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/data_object.png`
+                        },
+                    ],
+                ],
             }
         },
         beforeDestroy: async function () {
@@ -462,19 +796,6 @@
                     return this.projectName
                 }
             },
-            // filterElementTypes () {
-            //     var me = this
-            //     var result = me.elementTypes.filter(function (el) {
-            //         var name = el.label.toLowerCase()
-            //         var keyword = me.searchKeyword.toLowerCase()
-            //         return name.indexOf(keyword) != -1
-            //     })
-            //     if(result.length == 0) {
-            //         result = me.elementTypes
-            //     }
-            //     return result
-            // }
-
         },
         created: function () {
             var me = this

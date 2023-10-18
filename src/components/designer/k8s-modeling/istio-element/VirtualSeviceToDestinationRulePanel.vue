@@ -1,63 +1,34 @@
 <template>
     <!-- width 390 -->
     <v-layout wrap>
-        <v-navigation-drawer absolute permanent right v-bind:style="{width: 800}">
+        <v-navigation-drawer absolute permanent right style="width: 300px;">
             <!--  상단 이미지 및 선택 타이틀 이름-->
             <v-list class="pa-1">
                 <v-list-item>
-                    <v-tabs v-model="activeTab">
-                        <v-tab
-                            v-for="(tab, idx) in tabs"
-                            :key="idx">
-                            <v-list-item-title>{{ tab }}</v-list-item-title>
-                        </v-tab>
-                    </v-tabs>
+                    <v-list-item-title class="headline">Route Type</v-list-item-title>
+                    <v-btn icon @click.native="closePanel()">
+                        <v-icon color="grey lighten-1">mdi-close</v-icon>
+                    </v-btn>
                 </v-list-item>
             </v-list>
 
             <v-list class="pt-0" dense flat>
-                <v-layout wrap v-if="activeTab == 0">
+                <v-layout wrap>
                     <v-card-text>
-                        <v-checkbox label="Mirror Traffic" v-model="isMirror"></v-checkbox>
+                        <v-checkbox 
+                            label="Mirror Traffic" 
+                            v-model="isMirror" 
+                            :disabled="readOnly"
+                        ></v-checkbox>
                         <v-text-field
-                            v-if="!isMirror" label="weight"
-                            v-model="weight" type="number" suffix="%"
+                            v-if="!isMirror" 
+                            label="weight"
+                            v-model="weight" 
+                            type="number" 
+                            suffix="%"
+                            :disabled="readOnly"
                         ></v-text-field>
                     </v-card-text>
-                </v-layout>
-                <v-layout wrap v-else>
-                    <v-flex shrink style="width: 180px;">
-                        <v-card flat>
-                            <v-card-text>
-                                <v-text-field
-                                    label="Timeout"
-                                    v-model="timeout"
-                                    type="number" suffix="s">
-                                </v-text-field>
-                                <number-field
-                                    :label="'Attempts'"
-                                    v-model="attempts"
-                                ></number-field>
-                                <v-text-field
-                                    label="PerTryTimeout"
-                                    v-model="perTryTimeout"
-                                    type="number" suffix="s">
-                                </v-text-field>
-                                <v-text-field
-                                    label="RetryOn">
-                                </v-text-field>
-                            </v-card-text>
-                        </v-card>
-                    </v-flex>
-                    <v-flex grow style="width: 320px;">
-                        <v-card flat>
-                            <v-card-text>
-                                <yaml-editor
-                                    v-model="value.sourceElement.object.spec.http[value.index]">
-                                </yaml-editor>
-                            </v-card-text>
-                        </v-card>
-                    </v-flex>
                 </v-layout>
             </v-list>
 
@@ -68,18 +39,13 @@
 
 
 <script>
-    import yaml from "js-yaml";
-
-    import NumberField from "../element/NumberField";
+    import KubernetesPanel from "../KubernetesPanel";
 
     export default {
         name: 'relation-panel',
-        props: {
-            value: Object,
-            titleName: String,
-        },
+        mixins: [KubernetesPanel],
         components: {
-            "number-field": NumberField,
+            
         },
         computed: {
             isMirror: {
@@ -96,6 +62,7 @@
                         me.value.name = "mirror"
                         me.value.targetElement.routeType = "mirror"
                     } else {
+                        me.delete();
                         me.value.name = "weight " + me.value.targetElement.weight + "%"
                         me.value.targetElement.routeType = "weight"
                     }
@@ -109,42 +76,13 @@
                 set(val) {
                     var me = this;
                     me.value.targetElement.weight = val;
+                    me.value.name = "weight " + me.value.targetElement.weight + "%";
                     me.updateData();
                 }
-            },
-            timeout: {
-                get() {
-                    var val = this.value.sourceElement.object.spec.http[this.value.index].timeout
-                    val = val.split('s')[0]
-                    return val
-                },
-                set(val) {
-                    this.value.sourceElement.object.spec.http[this.value.index].timeout = val + 's'
-                }
-            },
-            attempts: {
-                get() {
-                    return this.value.sourceElement.object.spec.http[this.value.index].retries.attempts
-                },
-                set(val) {
-                    this.value.sourceElement.object.spec.http[this.value.index].retries.attempts = val
-                }
-            },
-            perTryTimeout: {
-                get() {
-                    var val = this.value.sourceElement.object.spec.http[this.value.index].retries.perTryTimeout
-                    val = val.split('s')[0]
-                    return val
-                },
-                set(val) {
-                    this.value.sourceElement.object.spec.http[this.value.index].retries.perTryTimeout = val + 's'
-                }
-            },
+            }
         },
         data() {
             return {
-                activeTab: 0,
-                tabs: [ "Weight", "Retry" ],
             }
         },
         mounted() {
@@ -154,17 +92,26 @@
             isMirror: {
                 deep: true,
                 handler(val) {
-                    console.log(val)
+                    // console.log(val);
                 }
             }
         },
         methods: {
             updateData() {
                 var me = this;
-                me.value.targetElement.object.metadata.name = me.value.targetElement.object.metadata.name + ","
-                me.$nextTick(function () {
-                    me.value.targetElement.object.metadata.name = (me.value.targetElement.object.metadata.name).replace(',', '')
-                });
+                var obj = {
+                    action: "addRelation",
+                    element: me.value
+                }
+                me.$EventBus.$emit(`${me.value.from}`, obj);
+            },
+            delete() {
+                var me = this
+                var obj = {
+                    action: "deleteRelation",
+                    element: me.value
+                }
+                me.$EventBus.$emit(`${me.value.from}`, obj);
             }
         }
     }

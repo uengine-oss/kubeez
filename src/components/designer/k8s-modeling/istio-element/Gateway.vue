@@ -2,21 +2,22 @@
     <div>
         <geometry-element
                 selectable
-                :movable="editMode"
-                :resizable="editMode"
-                connectable
-                :deletable=editMode
+                movable
+                resizable
+                :connectable="!isReadOnly"
+                :deletable="!isReadOnly"
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
                 :width.sync="value.elementView.width"
                 :height.sync="value.elementView.height"
                 :angle.sync="value.elementView.angle"
+                :customMoveActionExist="isCustomMoveExist"
+                v-on:customMoveAction="delayedMove"
+                v-on:moveShape="onMoveShape"
                 v-on:selectShape="selectedActivity"
                 v-on:deSelectShape="deSelectedActivity"
-                v-on:dblclick="showProperty"
-                v-on:rotateShape="onRotateShape"
-                v-on:labelChanged="onLabelChanged"
+                v-on:dblclick="openPanel"
                 v-on:addedToGroup="onAddedToGroup"
                 v-on:removeShape="onRemoveShape(value)"
                 :label.sync="name"
@@ -42,7 +43,7 @@
             ></geometry-rect>
 
             <sub-controller
-                    :image="'subprocess.png'"
+                    :image="'terminal.png'"
                     @click.prevent.stop="handleClick($event)"
             ></sub-controller>
 
@@ -56,24 +57,34 @@
                         :text="'Gateway'">
                 </text-element>
             </sub-elements>
+            <k8s-sub-controller
+                    v-for="(connectableType, idx) in filterConnectionTypes"
+                    :element="value" :key="idx"
+                    :image="connectableType.src"
+                    :type="connectableType.component">
+            </k8s-sub-controller>
         </geometry-element>
 
         <property-panel
-                v-if="openPanel"
-                v-model="value">
+                v-if="propertyPanel"
+                v-model="value"
+                :img="imgSrc"
+                :readOnly="isReadOnly"
+                @close="closePanel"
+        >
         </property-panel>
 
         <vue-context-menu
-            :elementId="value.elementView.id"
-            :options="menuList"
-            :ref="'vueSimpleContextMenu'"
-            @option-clicked="optionClicked">
+                :elementId="value.elementView.id"
+                :options="menuList"
+                :ref="'vueSimpleContextMenu'"
+                @option-clicked="optionClicked">
         </vue-context-menu>
     </div>
 </template>
 
 <script>
-    import Element from '../Kube-Element'
+    import Element from "../KubernetesModelElement";
     import PropertyPanel from './GatewayPropertyPanel'
 
     export default {
@@ -90,7 +101,10 @@
             className() {
                 return 'Gateway'
             },
-            createNew(elementId, x, y, width, height) {
+            imgSrc() {
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
+            },
+            createNew(elementId, x, y, width, height, object) {
                 return {
                     _type: this.className(),
                     name: '',
@@ -106,7 +120,7 @@
                         'style': JSON.stringify({}),
                         'angle': 0,
                     },
-                    object: {
+                    object: object ? object : {
                         "apiVersion": "networking.istio.io/v1alpha3",
                         "kind": "Gateway",
                         "metadata": {
@@ -123,12 +137,12 @@
                                         "name": "",
                                         "protocol": ""
                                     },
-                                    "hosts": [ "*" ]
+                                    "hosts": ["*"]
                                 }
                             ]
                         }
                     },
-                    connectableType: [ "VirtualService" ],
+                    connectableType: ["VirtualService"],
                     outboundVirtualServices: [],
                 }
             },
@@ -151,10 +165,10 @@
                 try {
                     var svcNames = ""
                     this.value.outboundVirtualServices.forEach(element => {
-                        svcNames += element.object.spec.hosts[0] +  ","
+                        svcNames += element.object.spec.hosts[0] + ","
                     })
                     return svcNames
-                } catch(e) {
+                } catch (e) {
                     return ""
                 }
             }
@@ -169,18 +183,24 @@
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
 
-                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "VirtualService") {
-                    var res = me.value.outboundVirtualServices.some((el) => {
-                        if(el.elementView.id == obj.element.targetElement.elementView.id) {
-                            return true;
+                if (obj.action == "addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "VirtualService") {
+
+                    if (me.value.outboundVirtualServices.length > 0) {
+                        var isConnection = false
+                        me.value.outboundVirtualServices.some(function (VirtualServices) {
+                            if (VirtualServices.elementView.id == obj.element.targetElement.elementView.id) {
+                                isConnection = true
+                                return true;
+                            }
+                        })
+
+                        if(!isConnection){
+                            me.value.outboundVirtualServices.push(obj.element.targetElement)
                         }
-                    })
-                    if(!res) {
-                        me.value.outboundVirtualServices.push(obj.element.targetElement)
                     }
                 }
 
-                if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "VirtualService") {
+                if (obj.action == "deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "VirtualService") {
                     me.value.outboundVirtualServices.splice(me.value.outboundVirtualServices.indexOf(obj.element.targetElement), 1)
                 }
 
@@ -188,11 +208,26 @@
 
         },
         watch: {
-            name(appName) {
-                this.value.name = appName
-            },
         },
         methods: {
+            isConnected(to, from) {
+                if(!from.connectableType) {
+                    return false
+                }
+                var connectable = from.connectableType.some((type) => {
+                    if(type == to._type) {
+                        return true
+                    }
+                })
+                if(connectable) {
+                    if(to.object.spec.gateways) {
+                        if(from.object.metadata.name == to.object.spec.gateways[0]) {
+                            return true
+                        }
+                    }
+                }
+                return false
+            },
         },
     }
 </script>

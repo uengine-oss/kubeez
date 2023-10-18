@@ -1,13 +1,16 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-
 Vue.use(Router);
 
-import KubeModeler from './components/designer/k8s-modeling/KubeModeler';
 import ListPage from './components/KuberEzList/ListPage';
-
-Vue.component('kube-modeler', KubeModeler);
 Vue.component('list-page', ListPage);
+
+////////////////////////
+const KubernetesModelCanvas = () =>
+    import(
+        /* webpackChunkName: "KubernetesModelCanvas" */ "./components/designer/k8s-modeling/KubernetesModelCanvas"
+    );
+////////////////////////
 
 export default new Router({
     mode: 'history',
@@ -20,13 +23,8 @@ export default new Router({
         // },
         {
             path: '/',
-            name: 'KubeModelingCanvas',
-            component: KubeModeler
+            name: 'KubernetesModelCanvas',
+            component: KubernetesModelCanvas
         },
-        // {
-        //     path: '/kubernetes/:userUid/:projectType/:projectId/:projectVersion',
-        //     name: 'KubeModelingCanvas',
-        //     component: KubeModeler
-        // },
     ]
 });

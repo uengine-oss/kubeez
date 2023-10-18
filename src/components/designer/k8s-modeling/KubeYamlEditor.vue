@@ -1,25 +1,38 @@
 <template>
-    <div>
-        <v-switch 
-            v-model="isJson" class="justify-end" dense
-            style="padding:0; margin:0; height:30px; padding-right:15px;" 
-            :label="isJson ? 'Json' : 'Yaml'"
-        ></v-switch>
-        <codemirror
-            v-if="!isJson"
-            ref="myCm"
-            :options="{
-                theme: 'darcula',
-                lineNumbers: true,
-                lineWrapping: true,
-            }"
-            v-model="yamlText"
-        ></codemirror>
-        <vue-json-editor
-            v-else
-            v-model="value"
-            :expandedOnStart="true"
-        ></vue-json-editor>
+    <div v-if="!commandView">
+        <div>
+            <v-switch
+                    v-model="isJson" class="justify-end"
+                    style="padding:0 15px 0 0; margin:0; float:left;"
+                    :label="isJson ? 'Yaml' : 'Json'"
+            ></v-switch>
+            <v-checkbox
+                    v-model="autoFormat" 
+                    @change="formatYaml"
+                    label="Auto format"
+            ></v-checkbox>
+        </div>
+        <v-card :disabled="readOnly">
+            <MonacoEditor 
+                    v-if="!isJson && autoFormat"
+                    v-model="yamlText"
+                    class="editor"
+                    theme="vs-dark"
+                    language="yaml"
+            ></MonacoEditor>
+            <MonacoEditor 
+                    v-if="!isJson && !autoFormat"
+                    v-model="temp_text"
+                    class="editor"
+                    theme="vs-dark"
+                    language="plaintext"
+            ></MonacoEditor>
+            <vue-json-editor
+                    v-if="isJson"
+                    v-model="value"
+                    :expandedOnStart="true"
+            ></vue-json-editor>
+        </v-card>
     </div>
 </template>
 
@@ -28,61 +41,95 @@
     import yaml from "js-yaml";
     import json2yaml from 'json2yaml'
     import vueJsonEditor from 'vue-json-editor';
+    import MonacoEditor from 'vue-monaco';
 
-    import {codemirror} from "vue-codemirror";
-
+    // import 'codemirror/mode/yaml/yaml'
+    // import 'codemirror/lib/codemirror.css'
+    // import 'codemirror/theme/base16-light.css'
 
     export default {
-        name: 'yaml-editor',
+        name: 'kube-yaml-editor',
         props: {
-            value: Object
+            value: Object,
+            commandView: Boolean,
+            readOnly: {
+                type: Boolean,
+                default: function () {
+                    return false
+                }
+            }
         },
         components: {
-            codemirror,
             vueJsonEditor,
+            MonacoEditor,
         },
         computed: {
-            codemirror: function () {
-                return this.$refs.myCm.codemirror;
-            },
+            // codemirror: function () {
+            //     return this.$refs.myCm.codemirror;
+            // },
         },
         data: function () {
             return {
-                yamlText: json2yaml.stringify(this.value),
-                cursor_pos: '',
+                yamlText: this.yamlFilter(json2yaml.stringify(this.value)),
+                // cursor_pos: '',
                 temp_text: '',
                 isJson: false,
+                autoFormat: true,
             }
         },
         watch: {
             value: {
                 deep: true,
                 handler: function () {
-                    this.yamlText = json2yaml.stringify(this.value)
+                    this.yamlText = this.yamlFilter(json2yaml.stringify(this.value));
                 }
             },
             yamlText: {
                 deep: true,
                 handler: function () {
                     var me = this
-                    try {
-                        me.temp_text = me.yamlText
-                        me.cursor_pos = me.codemirror.getCursor("start")
-                        this.$nextTick(function () {
-                            me.codemirror.setCursor(me.cursor_pos)
-                            me.codemirror.refresh()
-                        });
-                    } catch (e) {
-                    }
-                    var some = yaml.load(this.yamlText);
-                    this.$emit("input", some);
+                    // try {
+                    //     me.cursor_pos = me.codemirror.getCursor("start")
+                    //     this.$nextTick(function () {
+                    //         me.codemirror.setCursor(me.cursor_pos)
+                    //         me.codemirror.refreshImg()
+                    //     });
+                    // } catch (e) {
+                    // }
+                    var some = yaml.load(me.yamlText);
+                    me.$emit("input", some);
                 }
             }
 
         },
-        methods: {}
+        methods: {
+            yamlFilter(yaml_text) {
+                var me = this
+
+                let lines = yaml_text.split('\n');
+                lines.splice(0, 1);
+                for (let i in lines) {
+                    lines[i] = lines[i].substring(2, lines[i].length);
+                }
+                yaml_text = lines.join('\n');
+                yaml_text = yaml_text.replace(/ null/g, ' ');
+
+                me.$EventBus.$emit('yamlText', yaml_text)
+                return yaml_text;
+            },
+            formatYaml() {
+                var me = this;
+                if(me.autoFormat) {
+                    var some = yaml.load(me.temp_text);
+                    me.$emit("input", some);
+                    me.temp_text = '';
+                } else {
+                    me.temp_text = me.yamlText;
+                }
+            }
+        }
     }
-    </script>
+</script>
 
 
 <style lang="scss" rel="stylesheet/scss" scoped>
@@ -124,7 +171,8 @@
         cursor: pointer;
     }
 
-    .vue-codemirror {
+    .editor {
         width: 370px;
+        height: 100vh;
     }
 </style>

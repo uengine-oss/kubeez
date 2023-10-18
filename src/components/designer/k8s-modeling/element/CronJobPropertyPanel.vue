@@ -1,124 +1,85 @@
 <template>
-    <!-- width 390 -->
-    <v-layout wrap>
-        <v-navigation-drawer absolute permanent right v-bind:style="{width: 800}">
-            <!--  상단 이미지 및 선택 타이틀 이름-->
-            <v-list class="pa-1">
-                <v-list-item>
-                    <v-list-item-avatar>
-                        <img :src="img">
-                    </v-list-item-avatar>
-                    <v-tabs
-                            v-model="activeTab"
-                            v-if="value.status">
-                        <v-tab
-                            v-for="(tab, idx) in tabItems"
-                            :key="idx">
-                            <v-list-item-title>{{ tab }}</v-list-item-title>
-                        </v-tab>
-                    </v-tabs>
-                    <v-list-item-title
-                            v-else
-                            class="headline">
-                        {{ value._type }}
-                    </v-list-item-title>
-                    <v-tooltip left>
-                        <template v-slot:activator="{ on }">
-                            <v-btn icon v-on="on" @click="desDocOpen()">
-                                <v-icon color="grey lighten-1">mdi-information</v-icon>
-                            </v-btn>
-                        </template>
-                        <span>{{ descriptionText }}</span>
-                    </v-tooltip>
-                </v-list-item>
-            </v-list>
+    <kubernetes-common-panel
+            v-model="value"
+            :img="img"
+            :readOnly="isReadOnlyModeling"
+            :validation-lists="validationLists"
+            @openDesDoc="desDocOpen"
+            @close="closePanel"
+    >
+        <template slot="headline">
+            <v-list-item-title class="headline">
+                {{ value._type }}
+            </v-list-item-title>
+        </template>
 
-            <v-list class="pt-0" dense flat>
-                <v-layout v-if="value.status && activeTab == 0" wrap>
-                    <v-flex>
-                        <v-card flat>
-                            <v-card-text>
-                                <tree-view
-                                        :data="status"
-                                        :options="{
-                                                rootObjectKey: 'status'
-                                            }"
-                                ></tree-view>
-                            </v-card-text>
-                        </v-card>
-                    </v-flex>
-                </v-layout>
-                <v-layout v-else wrap>
-                    <v-flex shrink style="width: 200px;">
-                        <v-card flat>
-                            <v-card-text>
-                                <v-text-field
-                                    label="Name"
-                                    v-model="value.object.metadata.name"
-                                ></v-text-field>
-                                <v-text-field
-                                    label="Image"
-                                    v-model="value.object.spec.jobTemplate.spec.template.spec.containers[0].image"
-                                ></v-text-field>
-                                <v-select                                
-                                    label="restartPolicy"
-                                    v-model="value.object.spec.jobTemplate.spec.template.spec.restartPolicy"
-                                    :items="restartPolicyList"
-                                ></v-select>
-                                <v-label>Schedule</v-label>
-                                <v-cron-field
-                                    v-model="value.object.spec.schedule"
-                                ></v-cron-field>
-                            </v-card-text>
-                        </v-card>
-                    </v-flex>
-                    <v-flex>
-                        <yaml-editor
-                            v-model="value.object">
-                        </yaml-editor>
-                    </v-flex>
-                </v-layout>
-            </v-list>
+        <template slot="descriptionText">
+            <span>{{ descriptionText }}</span>
+        </template>
 
-        </v-navigation-drawer>
-    </v-layout>
+        <template slot="edit-property">
+            <v-text-field
+                    label="Image"
+                    :disabled="isReadOnlyModeling"
+                    v-model="value.object.spec.jobTemplate.spec.template.spec.containers[0].image"
+            ></v-text-field>
+            <v-select
+                    label="restartPolicy"
+                    :disabled="isReadOnlyModeling"
+                    v-model="value.object.spec.jobTemplate.spec.template.spec.restartPolicy"
+                    :items="restartPolicyList"
+            ></v-select>
+            <v-label>Schedule</v-label>
+            <v-cron-field
+                    v-model="value.object.spec.schedule"
+                    :readOnly="isReadOnlyModeling"
+            ></v-cron-field>
+        </template>
+    </kubernetes-common-panel>
 
 </template>
 
 
 <script>
-    import yaml from "js-yaml";
-
-    import YamlEditor from "../KubeYamlEditor";
     import CronField from './CronField.vue';
+    import KubeCommonPanel from "../KubeCommonPanel.vue";
+    import KubernetesPanel from "../KubernetesPanel";
 
     export default {
-        name: 'property-panel',
-        props: {
-            value: Object,
-            img: String,
-        },
+        name: 'cronjob-property-panel',
+        mixins: [KubernetesPanel],
         components: {
-            "yaml-editor": YamlEditor,
             CronField,
+            KubeCommonPanel
         },
         computed: {
             descriptionText() {
                 return 'CronJob'
             },
             status() {
-                return JSON.parse(JSON.stringify(this.value.status))
+                if(this.value && this.value.status) {
+                    return JSON.parse(JSON.stringify(this.value.status))
+                } else {
+                    return null
+                }
             },
 
         },
         data: function () {
             return {
-                restartPolicyList: [ 'Always', 'OnFailure', 'Never' ],
+                restartPolicyList: ['Always', 'OnFailure', 'Never'],
                 activeTab: 0,
-                tabItems: [ "status", "property" ],
+                tabItems: ["status", "property"],
             }
         },
         watch: {
+            'value.object.metadata.name': {
+                deep: true,
+                handler: function(val) {
+                    this.value.name = val;
+                    this.value.object.spec.jobTemplate.spec.template.spec.containers[0].name = val;
+                }
+            },
             status: {
                 deep: true,
                 handler: function () {
@@ -133,43 +94,3 @@
     }
 </script>
 
-
-<style lang="scss" rel="stylesheet/scss">
-    .v-icon.outlined {
-        border: 1px solid currentColor;
-        border-radius: 0%;
-    }
-
-    .md-sidenav .md-sidenav-content {
-        width: 400px;
-    }
-
-    .md-sidenav.md-right .md-sidenav-content {
-        width: 600px;
-    }
-
-    .flip-list-move {
-        transition: transform 0.5s;
-    }
-
-    .no-move {
-        transition: transform 0s;
-    }
-
-    .ghost {
-        opacity: 0.5;
-        background: #c8ebfb;
-    }
-
-    .list-group {
-        min-height: 20px;
-    }
-
-    .list-group-item {
-        cursor: move;
-    }
-
-    .list-group-item i {
-        cursor: pointer;
-    }
-</style>

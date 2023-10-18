@@ -2,21 +2,22 @@
     <div>
         <geometry-element
                 selectable
-                :movable="editMode"
-                :resizable="editMode"
-                connectable
-                :deletable=editMode
+                movable
+                resizable
+                :connectable="!isReadOnly"
+                :deletable="!isReadOnly"
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
                 :width.sync="value.elementView.width"
                 :height.sync="value.elementView.height"
                 :angle.sync="value.elementView.angle"
+                :customMoveActionExist="isCustomMoveExist"
+                v-on:customMoveAction="delayedMove"
+                v-on:moveShape="onMoveShape"
                 v-on:selectShape="selectedActivity"
                 v-on:deSelectShape="deSelectedActivity"
-                v-on:dblclick="showProperty"
-                v-on:rotateShape="onRotateShape"
-                v-on:labelChanged="onLabelChanged"
+                v-on:dblclick="openPanel"
                 v-on:addedToGroup="onAddedToGroup"
                 v-on:removeShape="onRemoveShape(value)"
                 :label.sync="name"
@@ -42,7 +43,7 @@
             ></geometry-rect>
 
             <sub-controller
-                    :image="'subprocess.png'"
+                    :image="'terminal.png'"
                     @click.prevent.stop="handleClick($event)"
             ></sub-controller>
 
@@ -56,12 +57,21 @@
                         :text="'QuotaSpec'">
                 </text-element>
             </sub-elements>
+            <k8s-sub-controller
+                    v-for="connectableType in filterConnectionTypes"
+                    :element="value"
+                    :image="connectableType.src"
+                    :type="connectableType.component">
+            </k8s-sub-controller>
         </geometry-element>
 
-         <property-panel
-            v-if="openPanel"
-            v-model="value"
-            :img="imgSrc">
+        <property-panel
+                v-if="propertyPanel"
+                v-model="value"
+                :img="imgSrc"
+                :readOnly="isReadOnly"
+                @close="closePanel"
+        >
         </property-panel>
 
         <vue-context-menu
@@ -74,7 +84,7 @@
 </template>
 
 <script>
-    import Element from '../Kube-Element'
+    import Element from "../KubernetesModelElement";
     import PropertyPanel from './QuotaSpecPropertyPanel'
 
     export default {
@@ -167,8 +177,13 @@
             var me = this;
 
             this.$EventBus.$on(`${me.value.elementView.id}`, function (obj) {
-                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Quota") {                    
-                    me.value.outboundQuotas.push(obj.element.targetElement)
+                if(obj.action=="addRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Quota") {
+                    var duplicate = me.value.outboundQuotas.find(item => item.elementView.id == obj.element.targetElement.elementView.id)
+                    if (duplicate) {
+                        return true
+                    } else {
+                        me.value.outboundQuotas.push(obj.element.targetElement);
+                    }
                 }
 
                 if(obj.action=="deleteRelation" && obj.element && obj.element.targetElement && obj.element.targetElement._type == "Quota") {
@@ -177,9 +192,6 @@
             })
         },
         watch: {
-            name(appName) {
-                this.value.name = appName
-            },
             outboundQuotaNames() {
                 var me = this
                 me.value.object.spec.spec.rules[0].quotas = []

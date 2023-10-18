@@ -3,44 +3,56 @@
         <edge-element
                 v-if="isView"
                 selectable
-                connectable
-                deletable
+                :connectable="!isReadOnly"
+                :deletable="!isReadOnly"
+                :movable="!isReadOnly"
                 :vertices.sync="vertices"
+                :id.sync="value.relationView.id"
                 :from.sync="value.from"
                 :to.sync="value.to"
-                :_style="value.style"
+                :_style="style_"
                 :label="value.name"
-                v-on:dblclick="showProperty"
                 v-on:selectShape="selectedActivity"
                 v-on:deSelectShape="deSelectedActivity"
+                v-on:dblclick="openPanel"
                 v-on:removeShape="onRemoveShape(value)"
-        >
-        </edge-element>
+                :customMoveActionExist="isCustomMoveExist"
+                v-on:customRelationMoveAction="delayedRelationMove"
+        ></edge-element>
     </div>
 </template>
 
 <script>
-    import Relation from '../RelationAbstract'
+    import Relation from '../KubeRelationAbstract'
 
     export default {
         mixins: [Relation],
         name: 'kube-relation',
-        props: {
-            value: Object
-        },
+        props: {},
         created: function () {
             var me = this
-            if (this.value && this.value.relationView) {
-                this.value.from = this.value.relationView.from;
-                this.value.to = this.value.relationView.to;
-            }
+
         },
         computed: {
             className() {
                 return 'org.uengine.modeling.model.Relation'
             },
             style_() {
+                var me = this
                 var style = {}
+
+                if (me.value.sourceElement && me.value.targetElement) {
+                    if (!this.value.sourceElement.connectableType) {
+                        style = {
+                            'stroke-dasharray': '- '
+                        }
+                    } else if (!this.value.sourceElement.connectableType.includes(me.value.targetElement._type)) {
+                        style = {
+                            'stroke-dasharray': '- '
+                        }
+                    }
+                }
+
                 return style
             },
             createNew(elementId, from, to, vertices) {
@@ -71,12 +83,11 @@
         data: function () {
             return {}
         },
-        watch: {
-        },
+        watch: {},
         mounted: function () {
+
         },
-        methods: {
-        }
+        methods: {}
     }
 </script>
 

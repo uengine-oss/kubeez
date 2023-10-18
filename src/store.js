@@ -12,7 +12,8 @@ export default new Vuex.Store({
         kubeToken: '',
         username:'',
         storeAuthorized: false,
-        // 기본 사이즈 지정
+        
+        /*kuber-Ez  기본 사이즈 지정 start*/
         deployment: {'width': 100, 'height': 100},
         ingress: {'width': 100, 'height': 100},
         namespace: {'width': 400, 'height': 400},
@@ -25,19 +26,20 @@ export default new Vuex.Store({
         daemonSet: {'width': 100, 'height': 100},
         storageClass: {'width': 100, 'height': 100},
         job: {'width': 100, 'height': 100},
-        cronjob: {'width': 100, 'height': 100},
+        cronJob: {'width': 100, 'height': 100},
         configMap: {'width': 100, 'height': 100},
         secret: {'width': 100, 'height': 100},
         role: {'width': 100, 'height': 100},
         roleBinding: {'width': 100, 'height': 100},
         clusterRole: {'width': 100, 'height': 100},
         clusterRoleBinding: {'width': 100, 'height': 100},
-        horizontalPodutoscaler: {'width': 100, 'height': 100},
+        horizontalPodAutoscaler: {'width': 100, 'height': 100},
         serviceAccount: {'width': 100, 'height': 100},
         // istio 기본 사이즈 지정
         gateway: {'width': 100, 'height': 100},
         virtualService: {'width': 100, 'height': 100},
-        destinationRule: {'width': 100, 'height': 100},
+        destinationRule: {'width': 320, 'height': 175},
+        destinationRuleSubset: {'width': 80, 'height': 80},
         serviceEntry: {'width': 100, 'height': 100},
         sidecar: {'width': 100, 'height': 100},
         quota: {'width': 100, 'height': 100},
@@ -48,7 +50,18 @@ export default new Vuex.Store({
         // knative 기본 사이즈 지정
         knativeService: {'width': 100, 'height': 100},
         // argo 기본 사이즈 지정
-        workflow: {'width': 100, 'height': 100}
+        application: {'width': 100, 'height': 100},
+        workflow: {'width': 600, 'height': 250},
+        workflowStep: {'width': 80, 'height': 80},
+        workflowDag: {'width': 80, 'height': 80},
+        rollout: {'width': 100, 'height': 100},
+        eventSource: {'width': 100, 'height': 100},
+        sensor: {'width': 100, 'height': 100},
+        workflowTemplate: {'width': 100, 'height': 100},
+        // user defined crd
+        customResourceDefinition: {'width': 100, 'height': 100},
+        crdTemplate: {'width': 100, 'height': 100},
+        /*kuber-Ez  기본 사이즈 지정  end */
     },
     getters: {
         getWidth: (state) => (type) => {

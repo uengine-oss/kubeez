@@ -3,43 +3,62 @@
         <edge-element
                 v-if="isView"
                 selectable
-                connectable
-                deletable
+                :connectable="!isReadOnly"
+                :deletable="!isReadOnly"
                 :vertices.sync="vertices"
                 :from.sync="value.from"
                 :to.sync="value.to"
                 :_style="style_"
                 :label="value.name"
-                v-on:dblclick="showProperty"
+                v-on:dblclick="openPanel"
                 v-on:selectShape="selectedActivity"
                 v-on:deSelectShape="deSelectedActivity"
                 v-on:removeShape="onRemoveShape(value)"
+                :customMoveActionExist="isCustomMoveExist"
+                v-on:customRelationMoveAction="delayedRelationMove"
         ></edge-element>
 
         <relation-panel
-                v-if="openPanel && isOpen"
+                v-if="propertyPanel"
                 v-model="value"
+                @close="closePanel"
+                :readOnly="isReadOnly"
                 :titleName="'Ingress To Service'"
         ></relation-panel>
     </div>
 </template>
 
 <script>
-    import Relation from '../RelationAbstract'
-    import Panel from './IngressToServicePanel'
+    import Relation from '../KubeRelationAbstract'
+    import IngressToServicePanel from "./IngressToServicePanel";
 
     export default {
         mixins: [Relation],
         name: 'IngressToService',
         props: {},
         components: {
-            'relation-panel': Panel,
+            "relation-panel": IngressToServicePanel,
         },
         created: function () {
             var me = this
             if (this.value && this.value.relationView) {
                 this.value.from = this.value.relationView.from;
                 this.value.to = this.value.relationView.to;
+            }
+            if(!me.value.name) {
+                if(me.value.targetElement.object.metadata.name != '') {
+                    var name = (me.value.targetElement.object.metadata.name).toLowerCase()
+                    var lastChar = name.charAt(name.length - 1)
+                    if (lastChar == 's') {
+                        name += 'es'
+                    } else if (lastChar == 'y') {
+                        name = name.slice(0, -1) + 'ies'
+                    } else {
+                        name += 's'
+                    }
+                    me.value.targetElement.path = "/" + name;
+                    me.value.name = me.value.targetElement.host + me.value.targetElement.path;
+                }
             }
         },
         computed: {
@@ -91,10 +110,9 @@
             return {}
         },
         watch: {
-            name: {
+            'name': {
                 deep: true,
                 handler: function(value) {
-                    // console.log(value)
                     this.value.name = value;
                 }
             },

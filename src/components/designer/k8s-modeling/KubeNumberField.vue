@@ -2,6 +2,7 @@
     <v-text-field
             :label="label"
             v-model="numberVal"
+            :disabled="readOnly"
             type="number">
         <template v-slot:append-outer>
             <v-icon v-if="desDoc" small @click="openDoc(desDoc)">mdi-help-circle-outline</v-icon>
@@ -12,11 +13,17 @@
 <script>
 
     export default {
-        name: 'v-number-field',
+        name: 'kube-number-field',
         props: {
             value: Number,
             label: String,
             desDoc: String,
+            readOnly: {
+                type: Boolean,
+                default: function () {
+                    return false
+                }
+            }
         },
         data: function () {
             return {

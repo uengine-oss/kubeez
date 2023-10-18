@@ -1,65 +1,32 @@
 <template>
-    <v-layout wrap>
-        <v-navigation-drawer absolute permanent right v-bind:style="{width: 800}">
-            <!--  상단 이미지 및 선택 타이틀 이름-->
-            <v-list class="pa-1">
-                <v-list-item>
-                    <v-list-item-avatar>
-                        <!-- <img :src="img"> -->
-                    </v-list-item-avatar>
-                    <v-list-item-title class="headline">
-                        {{ value._type }}
-                    </v-list-item-title>
-                    <v-tooltip left>
-                        <template v-slot:activator="{ on }">
-                            <v-btn icon v-on="on">
-                                <v-icon color="grey lighten-1">mdi-information</v-icon>
-                            </v-btn>
-                        </template>
-                        <span>{{ descriptionText }}</span>
-                    </v-tooltip>
-                </v-list-item>
-            </v-list>
+    <kubernetes-common-panel
+            v-model="value"
+            :img="img"
+            :readOnly="readOnly"
+            @openDesDoc="desDocOpen"
+            @close="closePanel"
+    >
+        <template slot="headline">
+            <v-list-item-title class="headline">
+                {{ value._type }}
+            </v-list-item-title>
+        </template>
 
-            <v-list class="pt-0" dense flat>
-                <v-layout wrap>
-                    <v-flex shrink style="width: 180px;">
-                        <v-card flat>
-                            <v-card-text>
-                                <v-text-field
-                                    label="Name"
-                                    v-model="value.object.metadata.name"
-                                ></v-text-field>
-                            </v-card-text>
-                        </v-card>
-                    </v-flex>
-                    <v-flex>
-                        <yaml-editor
-                            v-model="value.object">
-                        </yaml-editor>
-                    </v-flex>
-                </v-layout>
-            </v-list>
+        <template slot="descriptionText">
+            <span>{{ descriptionText }}</span>
+        </template>
 
-        </v-navigation-drawer>
-    </v-layout>
+    </kubernetes-common-panel>
 
 </template>
 
 
 <script>
-    import yaml from "js-yaml";
-
-    import YamlEditor from "../KubeYamlEditor";
+    import KubernetesPanel from "../KubernetesPanel";
 
     export default {
-        name: 'property-panel',
-        props: {
-            value: Object,
-        },
-        components: {
-            "yaml-editor": YamlEditor,
-        },
+        mixins: [KubernetesPanel],
+        name: 'sidecar-property-panel',
         computed: {
             descriptionText() {
                 return 'Sidecar'
@@ -69,49 +36,15 @@
             return {}
         },
         watch: {
+            'value.object.metadata.name': {
+                deep: true,
+                handler: function(val) {
+                    this.value.name = val;
+                }
+            },
         },
         methods: {
         }
     }
 </script>
 
-
-<style lang="scss" rel="stylesheet/scss">
-    .v-icon.outlined {
-        border: 1px solid currentColor;
-        border-radius: 0%;
-    }
-
-    .md-sidenav .md-sidenav-content {
-        width: 400px;
-    }
-
-    .md-sidenav.md-right .md-sidenav-content {
-        width: 600px;
-    }
-
-    .flip-list-move {
-        transition: transform 0.5s;
-    }
-
-    .no-move {
-        transition: transform 0s;
-    }
-
-    .ghost {
-        opacity: 0.5;
-        background: #c8ebfb;
-    }
-
-    .list-group {
-        min-height: 20px;
-    }
-
-    .list-group-item {
-        cursor: move;
-    }
-
-    .list-group-item i {
-        cursor: pointer;
-    }
-</style>

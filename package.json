@@ -57,6 +57,7 @@
     "vue-moveable": "^1.8.9",
     "vue-router": "^3.4.3",
     "vue-simple-context-menu": "^3.3.0",
+    "vue-super-call": "^1.0.0",
     "vue-webrtc": "^1.2.2",
     "vue-youtube-embed": "^2.2.2",
     "vuedraggable": "^2.24.3",

@@ -18,6 +18,7 @@ import * as VueWindow from '@hscmap/vue-window'
 import TreeView from 'vue-json-tree-view'
 import 'vue-simple-context-menu/dist/vue-simple-context-menu.css'
 import VueSimpleContextMenu from 'vue-simple-context-menu'
+import VueSuperMethod from 'vue-super-call'
 
 
 Vue.use(VueFriendlyIframe);
@@ -48,6 +49,7 @@ Vue.prototype.$ModelingBus = new Vue();
 Vue.prototype.$manifestsPerTemplate = {};
 Vue.prototype.$innerWidth = window.innerWidth;
 Vue.prototype.$innerHeight = window.innerHeight;
+Vue.prototype.$super = VueSuperMethod;
 
 Vue.config.productionTip = false;
 

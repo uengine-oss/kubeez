@@ -2,21 +2,22 @@
     <div>
         <geometry-element
                 selectable
-                :movable="editMode"
-                :resizable="editMode"
-                connectable
-                :deletable=editMode
+                movable
+                resizable
+                :connectable="!isReadOnly"
+                :deletable="!isReadOnly"
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
                 :width.sync="value.elementView.width"
                 :height.sync="value.elementView.height"
                 :angle.sync="value.elementView.angle"
+                :customMoveActionExist="isCustomMoveExist"
+                v-on:customMoveAction="delayedMove"
+                v-on:moveShape="onMoveShape"
                 v-on:selectShape="selectedActivity"
                 v-on:deSelectShape="deSelectedActivity"
-                v-on:dblclick="showProperty"
-                v-on:rotateShape="onRotateShape"
-                v-on:labelChanged="onLabelChanged"
+                v-on:dblclick="openPanel"
                 v-on:addedToGroup="onAddedToGroup"
                 v-on:removeShape="onRemoveShape(value)"
                 :label.sync="name"
@@ -42,7 +43,7 @@
             ></geometry-rect>
 
             <sub-controller
-                    :image="'subprocess.png'"
+                    :image="'terminal.png'"
                     @click.prevent.stop="handleClick($event)"
             ></sub-controller>
 
@@ -59,9 +60,12 @@
         </geometry-element>
 
         <property-panel
-                v-if="openPanel"
-                v-model="value">
-        </property-panel>
+                v-if="propertyPanel"
+                v-model="value"
+                :img="imgSrc"
+                :readOnly="isReadOnly"
+                @close="closePanel"
+        ></property-panel>
 
         <vue-context-menu
             :elementId="value.elementView.id"
@@ -73,7 +77,7 @@
 </template>
 
 <script>
-    import Element from '../Kube-Element'
+    import Element from "../KubernetesModelElement";
     import PropertyPanel from './SidecarPropertyPanel'
 
     export default {
@@ -89,6 +93,9 @@
             },
             className() {
                 return 'Sidecar'
+            },
+            imgSrc() {
+                return `${ window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio.svg`
             },
             createNew(elementId, x, y, width, height) {
                 return {
@@ -151,9 +158,6 @@
 
         },
         watch: {
-            name(appName) {
-                this.value.name = appName
-            },
         },
         methods: {
         },

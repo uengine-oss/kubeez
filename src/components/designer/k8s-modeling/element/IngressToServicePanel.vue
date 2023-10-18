@@ -6,9 +6,9 @@
             <v-list class="pa-1">
                 <v-tabs v-model="activeTab">
                     <v-tab
-                        v-for="(tab, idx) in tabItems"
-                        :key="idx"
-                        @click="changeType(idx)">
+                            v-for="(tab, idx) in tabItems"
+                            :key="idx"
+                            @click="changeType(idx)">
                         <v-list-item-title>{{ tab }}</v-list-item-title>
                     </v-tab>
                 </v-tabs>
@@ -18,18 +18,20 @@
                 <v-layout v-if="activeTab == 0" wrap>
                     <v-card-text>
                         <v-text-field
-                            label="Service Path"
-                            hint="ex) /foo"
-                            v-model="path"
+                                label="Service Path"
+                                hint="ex) /foo"
+                                :disabled="isReadOnlyModeling"
+                                v-model="path"
                         ></v-text-field>
                     </v-card-text>
                 </v-layout>
                 <v-layout v-else wrap>
                     <v-card-text>
                         <v-text-field
-                            label="Host"
-                            hint="ex) foo.bar.com"
-                            v-model="host"
+                                label="Host"
+                                hint="ex) foo.bar.com"
+                                :disabled="isReadOnlyModeling"
+                                v-model="host"
                         ></v-text-field>
                     </v-card-text>
                 </v-layout>
@@ -40,23 +42,21 @@
 
 
 <script>
+    import KubernetesPanel from "../KubernetesPanel";
 
     export default {
         name: 'relation-panel',
-        props: {
-            value: Object,
-            titleName: String,
-        },
+        mixins: [KubernetesPanel],
+        props: {},
         computed: {
             path: {
                 get() {
-                    return this.value.targetElement.path;
+                    var pathStr = this.value.targetElement.path;
+                    return pathStr;
                 },
                 set(val) {
                     var me = this;
                     me.value.targetElement.path = val;
-                    me.value.name = me.value.targetElement.host + val;
-                    me.updateData();
                 }
             },
             host: {
@@ -66,43 +66,33 @@
                 set(val) {
                     var me = this;
                     me.value.targetElement.host = val;
-                    me.value.name = val + me.value.targetElement.path;
-                    me.updateData();
                 }
             },
         },
         data() {
             return {
                 activeTab: 0,
-                tabItems: [ "Path", "Virtual Host" ]
+                tabItems: ["Path", "Virtual Host"]
             }
         },
-        watch: {
-        },
+        watch: {},
         mounted() {
             var me = this
-            if(me.value.targetElement.routeType == 'path') {
+            if (me.value.targetElement.routeType == 'path') {
                 me.activeTab = 0
-            } else if(me.value.targetElement.routeType == 'host') {
+            } else if (me.value.targetElement.routeType == 'host') {
                 me.activeTab = 1
             }
         },
         beforeDestroy() {
         },
         methods: {
-            updateData() {
-                var me = this;
-                me.value.targetElement.object.metadata.name = me.value.targetElement.object.metadata.name + ","
-                me.$nextTick(function () {
-                    me.value.targetElement.object.metadata.name = (me.value.targetElement.object.metadata.name).replace(',', '')
-                });
-            },
             changeType(val) {
                 var me = this
                 me.activeTab = val
-                if(val == 0) {
+                if (val == 0) {
                     me.value.targetElement.routeType = "path"
-                } else if(val == 1) {
+                } else if (val == 1) {
                     me.value.targetElement.routeType = "host"
                 }
             }
