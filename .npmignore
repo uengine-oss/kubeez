@@ -1,5 +1,6 @@
 .DS_Store
 node_modules
+package-lock.json
 .env.local
 .env.*.local
 npm-debug.log*
@@ -19,4 +20,3 @@ yarn-error.log*
 *.sw?
 *.sh
 *.yaml
-Dockerfile
