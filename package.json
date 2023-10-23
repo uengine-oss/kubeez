@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "scripts": {
-    "serve": "vue-cli-service serve --host 0.0.0.0 --disableHostCheck true",
+    "serve": "vue-cli-service serve --port 8081 --host 0.0.0.0 --disableHostCheck true",
     "build": "vue-cli-service build",
     "deploy": "gh-pages -d dist"
   },
