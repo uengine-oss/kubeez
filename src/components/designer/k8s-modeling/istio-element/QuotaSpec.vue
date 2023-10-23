@@ -57,12 +57,14 @@
                         :text="'QuotaSpec'">
                 </text-element>
             </sub-elements>
+            
             <k8s-sub-controller
                     v-for="connectableType in filterConnectionTypes"
+                    :key="connectableType.component"
                     :element="value"
                     :image="connectableType.src"
-                    :type="connectableType.component">
-            </k8s-sub-controller>
+                    :type="connectableType.component"
+            ></k8s-sub-controller>
         </geometry-element>
 
         <property-panel

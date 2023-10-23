@@ -33,10 +33,10 @@
                 ></v-img>
             </v-card-text>
             <v-card-text
+                    v-else
                     id="scroll-target"
                     style="max-height: 600px;"
                     class="overflow-auto"
-                    v-else
             >
                 <codemirror
                         v-if="value[0]"
@@ -48,30 +48,27 @@
                         @input="onCmCodeChange"
                         height="700"
                         style="width: 580px;"
-                >
-                </codemirror>
+                ></codemirror>
             </v-card-text>
         </v-card>
-
     </v-container>
 </template>
-<script>
-    import 'codemirror/mode/yaml/yaml'
-    import 'codemirror/mode/dockerfile/dockerfile'
-    import 'codemirror/mode/markdown/markdown'
-    import 'codemirror/mode/properties/properties'
-    import 'codemirror/mode/shell/shell'
-    import 'codemirror/mode/xml/xml'
-    import 'codemirror/mode/python/python'
 
-    import 'codemirror/lib/codemirror.css'
-    import 'codemirror/theme/darcula.css'
-    import 'codemirror/mode/clike/clike'
-    import 'codemirror/lib/codemirror.css'
-    import 'codemirror/theme/darcula.css'
+<script>
+    import 'codemirror/mode/dockerfile/dockerfile';
+    import 'codemirror/mode/markdown/markdown';
+    import 'codemirror/mode/properties/properties';
+    import 'codemirror/mode/shell/shell';
+    import 'codemirror/mode/xml/xml';
+    import 'codemirror/mode/python/python';
+
+    import 'codemirror/mode/clike/clike';
+    import 'codemirror/mode/yaml/yaml';
+    import 'codemirror/lib/codemirror.css';
+    import 'codemirror/theme/darcula.css';
 
     export default {
-        name: 'code-viewer',
+        name: 'kubernetes-code-viewer',
         props: {
             value: Array
         },
@@ -97,11 +94,24 @@
                             scroll: true,
                             readOnly: true,
                             scrollbarStyle: null,
-                            lineWiseCopyCut:true,
+                            lineWiseCopyCut: true,
+
 
                         }
                     } else if (this.value[0].name.includes('.yml') || this.value[0].name.includes('.yaml')) {
                         var type = {
+                            // autoCloseBrackets: true,
+                            // tabSize: 4,
+                            // lineNumbers: true,
+                            // line: true,
+                            // mode: 'text/x-java',
+                            // theme: 'base16-light',
+                            // lineWrapping: true,
+                            // matchBrackets: true,
+                            // scroll: true,
+                            // readOnly: true,
+                            // scrollbarStyle: null,
+                            // lineWiseCopyCut:true,
                             autoCloseBrackets: true,
                             tabSize: 4,
                             lineNumbers: true,
@@ -111,7 +121,8 @@
                             lineWrapping: true,
                             matchBrackets: true,
                             scroll: true,
-                            readOnly: 'nocursor'
+                            readOnly: true,
+                            lineWiseCopyCut: true,
                         }
                     } else if (this.value[0].name.includes('.md')) {
                         var type = {
@@ -217,8 +228,7 @@
                 }
             },
         },
-        watch: {
-        },
+        watch: {},
         methods: {
             onScroll(e) {
                 // this.offsetTop = e.target.scrollTop

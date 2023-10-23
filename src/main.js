@@ -1,24 +1,30 @@
 import Vue from 'vue'
-import './plugins/vuetify'
-import 'vuetify/dist/vuetify.min.css'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+
+import vuetify from './plugins/vuetify';
+import 'vuetify/dist/vuetify.min.css'
+
 import './registerServiceWorker'
-import VueJWT from 'vuejs-jwt'
-import VModal from 'vue-js-modal'
+
 import Opengraph from './components/opengraph'
 import KubeModeling from './components/designer/k8s-modeling'
+
+import VueJWT from 'vuejs-jwt'
+import VModal from 'vue-js-modal'
 import Mustache from 'mustache'
 import VueFriendlyIframe from 'vue-friendly-iframe';
 import CodeMirror from 'vue-codemirror'
 import VueYouTubeEmbed from 'vue-youtube-embed'
-import vuetify from './plugins/vuetify';
 import * as VueWindow from '@hscmap/vue-window'
 import TreeView from 'vue-json-tree-view'
 import 'vue-simple-context-menu/dist/vue-simple-context-menu.css'
 import VueSimpleContextMenu from 'vue-simple-context-menu'
 import VueSuperMethod from 'vue-super-call'
+import { Icon } from '@iconify/vue2';
+
+require('../public/global-style.css');
 
 
 Vue.use(VueFriendlyIframe);
@@ -39,6 +45,7 @@ Vue.use(VueYouTubeEmbed, {
 
 // component
 Vue.component('vue-context-menu', VueSimpleContextMenu)
+Vue.component('Icon', Icon);
 
 var options = {'keyName' : 'accessToken'};
 

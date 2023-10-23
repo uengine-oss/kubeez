@@ -32,21 +32,18 @@
                 elementValidationResults: [],
             }
         },
-        created: function () {
+        created() {
             var me = this
             me.fullPath = this.$route.fullPath.split('/')
             me.params = this.$route.params
             me.paramKeys = Object.keys(me.params)
-            // me.messageRef = firebase.database().ref(`/${me.$route.params.author}/${me.$route.params.projectName}`);
         },
         beforeDestroy() {
-            // console.log("destory");
-            this.removeAction();
         },
         watch: {
             "value.elementView": {
                 deep: true,
-                handler: function (newVal, oldVal) {
+                handler(newVal, oldVal) {
                     this.refreshImg()
                     var me = this
                     if (this.value.elementView) {
@@ -60,16 +57,16 @@
                     }
                 }
             },
-            "movingElement": function () {
+            "movingElement"() {
                 this.refreshImg()
             },
-            "alertImage": function () {
+            "alertImage"() {
                 this.refreshImg()
             },
-            "newEditUserImg": function () {
+            "newEditUserImg"() {
                 this.refreshImg()
             },
-            "value.rotateStatus": function () {
+            "value.rotateStatus"() {
                 var me = this
                 if (this.value.elementView) {
                     var positionX = this.value.elementView.x / 1000
@@ -87,16 +84,11 @@
             },
 
         },
-        mounted: function () {
+        mounted() {
             var me = this
-            var elementId = me.value.elementView ? me.value.elementView.id : me.value.relationView.id
-
-            // me.$EventBus.$on('es-EndProgressing', function (newVal) {
-            //     me.EndProgressing = true
-            // })
+            var elementId = me.value.elementView ? me.value.elementView.id : me.value.relationView.id;
 
             me.$EventBus.$on(`${elementId}`, function (obj) {
-
 
                 if ( obj.action == 'elementPush' ) {
                     //STATUS_COMPLETE_addElementPush
@@ -147,15 +139,12 @@
                         })
                     }
                 }
-            })
-
+            });
 
             // Rotate Element
-            me.onRotateElement()
-
+            me.onRotateElement();
         },
         computed: {
-            // remove !!
             isReadOnly() {
                 if (this.modelCanvasComponent) {
                     return this.modelCanvasComponent.readOnly
@@ -271,56 +260,45 @@
             },
         },
         methods: {
-            removeAction(){},
             exceptionError(message, options){
-                var me = this
-                var msg = message ? message : '[Element] Exception Error.'
-                if(me.modelCanvasComponent){
-                    me.modelCanvasComponent.exceptionError(msg,options)
+                var me = this;
+                var msg = message ? message : '[Element] Exception Error.';
+                if (me.modelCanvasComponent) {
+                    me.modelCanvasComponent.exceptionError(msg,options);
                 }
                 console.error(`[Element] Exception: ${msg}`);
             },
             openPanel() {
-                // var openPanelStatus = false
-                // if(this.isServerModeling && this.isQueueModeling) {
-                //     if(this.EndProgressing || this.value.name == "" || this.value.name.includes('BoundedContext')) {
-                //         this.EndProgressing = true
-                //         openPanelStatus = true
-                //     }
-                // } else {
-                //     openPanelStatus = true
-                // }
-                // if(openPanelStatus) {
-                    if(this.propertyPanel) this.propertyPanel = false
-                    this.propertyPanel = true
-                    this.staySelected = false
-                // }
+                if (this.propertyPanel) {
+                    this.propertyPanel = false;
+                }
+                this.propertyPanel = true;
+                this.staySelected = false;
             },
             closePanel() {
-                if(!this.propertyPanel) this.propertyPanel = true
-                this.propertyPanel = false
+                if (!this.propertyPanel) {
+                    this.propertyPanel = true;
+                }
+                this.propertyPanel = false;
             },
-            deSelectedActivity: function () {
-                var me = this
-
+            deSelectedActivity() {
+                var me = this;
                 if (me.value) {
-                    me.selected = false
-                    me.propertyPanel = false
+                    me.selected = false;
+                    me.propertyPanel = false;
                 }
             },
             refreshImg() {
-                var me = this
-                me.refreshedImg = 'refresh'
+                var me = this;
+                me.refreshedImg = 'refresh';
                 me.$nextTick(function () {
                     if (me.refreshedImg == 'refresh') {
-                        me.refreshedImg = ''
+                        me.refreshedImg = '';
                     } else {
-                        me.refreshedImg = 'refresh'
+                        me.refreshedImg = 'refresh';
                     }
-                })
+                });
             },
-
-
             onRotateElement(){
                 if (this.value.elementView) {
                     var positionX = this.value.elementView.x / 1000
@@ -457,8 +435,6 @@
                     alert(`[Error] ModelElement-DelayedMoveQueue PUSH: ${e}`)
                 }
             },
-
-
             onMoveRelation(newObj,STATUS_COMPLETE){
                 var me = this
 
@@ -518,18 +494,11 @@
                 }
             },
             /////////// REMOVE /////////
-            onRemoveShape(model) {
+            onRemoveShape() {
                 var me = this
                 try {
-                    if ( me.isCustomMoveExist ) {
-                        // 변화 인지
-                        me.modelCanvasComponent.modelChanged = true
-                        me.removeShapeQueue()
-                    } else {
-                        me.removeShapeLocal()
-                    }
-
-                    me.validate()
+                    me.removeShapeLocal();
+                    me.validate();
                 } catch (e) {
                     alert(`[Error] ModelElement-onRemoveShape: ${e}`)
                 }
@@ -578,23 +547,20 @@
                 return component
             },
             removeUndefinedValue(obj) {
-                const newObj = {}; // 빈객체를 만들어놓고
+                const newObj = {};
 
                 Object.keys(obj).forEach(key => {
-                    // 키 값이 {오브젝트} 인 경우
                     if (obj[key] && Object.keys(obj[key]).length) {
-                        newObj[key] = this.removeUndefinedValue(obj[key]); // newObj 안에서 또 재귀함수를 돌리자
+                        newObj[key] = this.removeUndefinedValue(obj[key]);
                     }
 
-                    // 키 값이 그외 값인 경우
                     else if (obj[key]) {
-                        newObj[key] = obj[key]; // 조건을 통과하면 newObj에 똑같은 키와 값을 채워준다
+                        newObj[key] = obj[key];
                     }
                 });
 
                 return newObj;
-            }
-
+            },
         }
     }
 </script>

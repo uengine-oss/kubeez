@@ -10,9 +10,10 @@
   "main": "./dist/kuber-ez.common.js",
   "dependencies": {
     "@hscmap/vue-window": "^2.4.2",
-    "@mdi/font": "^5.0.45",
     "@mdi/js": "^4.9.95",
     "@mdi/react": "^1.4.0",
+    "@octokit/rest": "^18.9.0",
+    "acebase": "^1.29.5",
     "axios": "^0.27.2",
     "body-parser": "^1.19.0",
     "change-case": "^3.1.0",
@@ -22,7 +23,6 @@
     "es6-error": "^4.1.1",
     "express": "^4.17.1",
     "file-saver": "^2.0.2",
-    "firebase": "^7.24.0",
     "fs": "0.0.1-security",
     "gh-pages": "^2.2.0",
     "js-base64": "^2.6.4",
@@ -63,9 +63,12 @@
     "vuedraggable": "^2.24.3",
     "vuejs-jwt": "^1.1.0",
     "vuetify": "^2.3.10",
-    "vuex": "^3.5.1"
+    "vuex": "^3.5.1",
+    "yamljs": "^0.3.0"
   },
   "devDependencies": {
+    "@iconify/vue2": "^2.1.0",
+    "@mdi/font": "^7.3.67",
     "@vue/cli-plugin-pwa": "^3.12.1",
     "@vue/cli-service": "^3.12.1",
     "cssimportant-loader": "^0.4.0",

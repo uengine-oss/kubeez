@@ -73,7 +73,6 @@
                     :image="connectableType.src"
                     :type="connectableType.component"
             ></k8s-sub-controller>
-
         </geometry-element>
 
         <property-panel

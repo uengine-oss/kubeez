@@ -1,35 +1,27 @@
-<template>
-</template>
+<template></template>
 
 <script>
+    import StorageBaseLocalStorage_ from "./StorageBaseLocalStorage_";
+
     export default {
-        name: 'storage-base-localstorage',
-        data() {
-            return {}
-        },
-        methods: {
-            _list(path, metadata) {
-                return localStorage
+        name: "storage-base-localstorage",
+        mixins: [StorageBaseLocalStorage_],
+        methods:{
+            get(path, tenant){
+                return this._get(path)
             },
-            _get(path) {
-                return localStorage.getItem(path)
+            put(path, string, isString){
+                return this._put(path,string)
             },
-            _put(path, string) {
-                localStorage.setItem(path, string)
+            delete(path){
+                return this._delete(path)
             },
-            _push(path,string){
-                console.log('No methods : localStorage push')
+            list(path, metadata, tenant){
+                return this._get(path)
             },
-            _delete(path) {
-                localStorage.removeItem(path)
-                return null
-            },
-            watch(path, callback) {
-                console.log('No methods : LocalStorage Watch')
-            },
-
-
+            set(path, string, isString){
+                return this._put(path)
+            }
         }
-
-    }
+    };
 </script>
