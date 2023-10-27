@@ -51,11 +51,37 @@ kubectl create -f https://raw.githubusercontent.com/uengine-oss/kuber-ez/master/
 
 (Above diagram shows all the kuberEz components)
 
+
+## Development
+
+run the frontend
+```
+nvm install 14.19.0 && nvm use 14.19.0
+
+npm i
+npm run serve
+```
+
+run the tunneling server
+```
+git clone ..
+cd kubeez-tunneling
+mvn spring-boot:run
+```
+
+run the gateway 
+```
+cd gateway
+mvn spring-boot:run
+```
+
 ## How to add new component
 
 You can find examples of Kubernetes object models in https://github.com/uengine-oss/kuber-ez/blob/master/src/components/designer/k8s-modeling/element.
 Create a new copy of element and property panel component for the K8S object kind (e.g. Deployment.vue and DeploymentPropertyPanel.vue), and place them in the above folder.
 Then add the component to the 'elementTypes' array of https://github.com/uengine-oss/kuber-ez/blob/master/src/components/designer/k8s-modeling/KubeModeler.vue file.
+
+
 
 
 ## Documentation
