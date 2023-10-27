@@ -1,135 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <base href="/"/>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="title" content="EventStorming2Code">
-    <meta name="description" content="EventStorming to Code Generator">
-    <meta name="keywords"
-          content="kubernetes, kuberez, k8s, msa, micro service architecture,  microservicearchitecture">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+    <head>
+        <base href="/"/>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="title" content="EventStorming2Code">
+        <meta name="description" content="EventStorming to Code Generator">
+        <meta name="keywords"
+            content="kubernetes, kuberez, k8s, msa, micro service architecture,  microservicearchitecture">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <link rel="icon" href="<%= BASE_URL %>favicon.ico">
 
-    <title>Kubernetes Easy</title>
+        <title>Kubernetes Easy</title>
 
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
+        <script type="javascript" src="static/lib/jqueryXML2JSON/jquery.xml2json.js"></script>
+        <script type="text/javascript" src="static/lib/opengraph/OpenGraph-0.1.3-SNAPSHOT.js"></script>
+        <script type="text/javascript" src="static/lib/jquery-contextMenu/jquery.contextMenu.js"></script>
+        <script type="javascript" src="static/slimscroll/jquery.slimscroll.min.js"></script>
+        <!--    google-->
+        <script src="https://apis.google.com/js/client.js"></script>
+        <script src="https://apis.google.com/js/api.js"></script>
+        <script src="https://apis.google.com/js/platform.js" async defer></script>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-153107610-1"></script>
+        <!--i18n-->
+        <script src="https://unpkg.com/vue-i18n/dist/vue-i18n.js"></script>
+        <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.min.js"></script>-->
+        <script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+        <!--<script src="static/iam-client/iam-api-2.0.1.js"></script>-->
+        <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+        <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="//unpkg.com/vue-material@0.7.4/dist/vue-material.css"> -->
+        <link rel="stylesheet" href="static/external/font-awesome.min.css">
+        <link rel="stylesheet" href="static/external/fonts.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons">
+        <link href="static/bpmn/css/bpmn.css" rel="stylesheet" type="text/css">
+        <!-- jquery-ui, jquery.contextmenu -->
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.min.css"/>
+        <link rel="stylesheet" type="text/css" href="/static/lib/jquery-contextMenu/jquery.contextMenu.css"/>
+        <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/acebase-client@latest/dist/browser.min.js"></script>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
-    <script type="javascript" src="static/lib/jqueryXML2JSON/jquery.xml2json.js"></script>
-    <script type="text/javascript" src="static/lib/opengraph/OpenGraph-0.1.3-SNAPSHOT.js"></script>
-    <script type="text/javascript" src="static/lib/jquery-contextMenu/jquery.contextMenu.js"></script>
-    <script type="javascript" src="static/slimscroll/jquery.slimscroll.min.js"></script>
-    <!--    google-->
-    <script src="https://apis.google.com/js/client.js"></script>
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-153107610-1"></script>
-    <!--i18n-->
-    <script src="https://unpkg.com/vue-i18n/dist/vue-i18n.js"></script>
-    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.min.js"></script>-->
-    <script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-    <!--<script src="static/iam-client/iam-api-2.0.1.js"></script>-->
-    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-    <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="//unpkg.com/vue-material@0.7.4/dist/vue-material.css"> -->
-    <link rel="stylesheet" href="static/external/font-awesome.min.css">
-    <link rel="stylesheet" href="static/external/fonts.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons">
-    <link href="static/bpmn/css/bpmn.css" rel="stylesheet" type="text/css">
-    <!-- jquery-ui, jquery.contextmenu -->
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.min.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/lib/jquery-contextMenu/jquery.contextMenu.css"/>
-    <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+        <!-- libs -->
+        <!-- TODO: please change local version -->
+        <!-- <script src="https://unpkg.com/hybind@latest/index.js"></script> -->
 
+        <script>
 
-    <!-- libs -->
-    <!-- TODO: please change local version -->
-    <!-- <script src="https://unpkg.com/hybind@latest/index.js"></script> -->
+            var profile = 'local';
+            var config = {};
 
-    <script>
+            /**
+             * Get profile from system env given by dcos
+             */
+            window.dataLayer = window.dataLayer || [];
 
-        var profile = 'local';
-        var config = {};
-
-        /**
-         * Get profile from system env given by dcos
-         */
-        window.dataLayer = window.dataLayer || [];
-
-        function gtag() {
-            dataLayer.push(arguments);
-        }
-
-        gtag('js', new Date());
-
-        gtag('config', 'UA-153107610-1');
-
-        $.ajax({
-            url: "../static/env.txt",
-            type: "get",
-            async: false,
-            success: function (data) {
-                var lines = data.split('\n');
-                $.each(lines, function (i, line) {
-
-                    if (line && line.indexOf('VUE_APP_API_HOST=') == 0) {
-                        let api_host = line.split('=')[1];
-                        window.API_HOST = api_host;
-                    }
-                    if (line && line.indexOf('VUE_APP_API_HOST=') == 0) {
-                        let api_host = line.split('=')[1];
-                        window.API_HOST = api_host;
-                    }
-
-                });
-            },
-            error: function () {
-                console.log('Failed to get env');
-            }
-        });
-    </script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons">
-    <link rel="stylesheet" href="//cdn.materialdesignicons.com/5.0.45/css/materialdesignicons.min.css">
-</head>
-<body>
-<script>
-
-    !function () {
-        function e() {
-            function e() {
-                var e = t.contentDocument, a = e.createElement("script");
-                a.type = "text/javascript", a.async = !0, a.src = window[n] && window[n].url ? window[n].url + "/inapp-web/gitple-loader.js" : "https://app.gitple.io/inapp-web/gitple-loader.js", a.charset = "UTF-8", e.head && e.head.appendChild(a)
+            function gtag() {
+                dataLayer.push(arguments);
             }
 
-            var t = document.getElementById(a);
-            t || ((t = document.createElement("iframe")).id = a, t.style.display = "none", t.style.width = "0", t.style.height = "0", t.addEventListener ? t.addEventListener("load", e, !1) : t.attachEvent ? t.attachEvent("onload", e) : t.onload = e, document.body.appendChild(t))
-        }
+            gtag('js', new Date());
 
-        var t = window, n = "GitpleConfig", a = "gitple-loader-frame";
-        if (!window.Gitple) {
-            document;
-            var i = function () {
-                i.ex && i.ex(arguments)
-            };
-            i.q = [], i.ex = function (e) {
-                i.processApi ? i.processApi.apply(void 0, e) : i.q && i.q.push(e)
-            }, window.Gitple = i, t.attachEvent ? t.attachEvent("onload", e) : t.addEventListener("load", e, !1)
-        }
-    }();
-    console.log("init")
-    Gitple('boot');
+            gtag('config', 'UA-153107610-1');
 
-</script>
-<noscript>
+            $.ajax({
+                url: "../static/env.txt",
+                type: "get",
+                async: false,
+                success: function (data) {
+                    var lines = data.split('\n');
+                    $.each(lines, function (i, line) {
 
-    <strong>We're sorry but service-ui doesn't work properly without JavaScript enabled. Please enable it to
-        continue.</strong>
-</noscript>
-<div id="app"></div>
-<!-- built files will be auto injected -->
-</body>
+                        if (line && line.indexOf('VUE_APP_API_HOST=') == 0) {
+                            let api_host = line.split('=')[1];
+                            window.API_HOST = api_host;
+                        }
+                        if (line && line.indexOf('VUE_APP_API_HOST=') == 0) {
+                            let api_host = line.split('=')[1];
+                            window.API_HOST = api_host;
+                        }
+
+                    });
+                },
+                error: function () {
+                    console.log('Failed to get env');
+                }
+            });
+        </script>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons">
+        <link rel="stylesheet" href="//cdn.materialdesignicons.com/5.0.45/css/materialdesignicons.min.css">
+    </head>
+    <body>
+        <script>
+            window.$acebase = new AceBaseClient({
+                host: "localhost",
+                port: 5757,
+                dbname: "mydb",
+                https: false,
+            });
+            window.$acebase.ready(() => {
+                console.log("Connected successfully");
+            
+            });
+        </script>
+        <noscript>
+            <strong>
+                We're sorry but service-ui doesn't work properly without JavaScript enabled. Please enable it to continue.
+            </strong>
+        </noscript>
+        <div id="app"></div>
+        <!-- built files will be auto injected -->
+    </body>
 </html>

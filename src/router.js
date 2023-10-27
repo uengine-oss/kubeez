@@ -2,8 +2,11 @@ import Vue from 'vue';
 import Router from 'vue-router';
 Vue.use(Router);
 
-import ListPage from './components/KuberEzList/ListPage';
+import ListPage from './components/listPages/ListPage';
+import ModelerImageGenerator from './components/designer/ModelerImageGenerator';
+
 Vue.component('list-page', ListPage);
+Vue.component("modeler-image-generator", ModelerImageGenerator);
 
 ////////////////////////
 const KubernetesModelCanvas = () =>
@@ -13,16 +16,16 @@ const KubernetesModelCanvas = () =>
 ////////////////////////
 
 export default new Router({
-    mode: 'history',
+    // mode: 'history',
     base: process.env.BASE_URL,
     routes: [
-        // {
-        //     path: '/',
-        //     name: 'KuberEzListPage',
-        //     component: ListPage
-        // },
         {
             path: '/',
+            name: 'KubeEzListPage',
+            component: ListPage
+        },
+        {
+            path: '/kubernetes/:projectId',
             name: 'KubernetesModelCanvas',
             component: KubernetesModelCanvas
         },

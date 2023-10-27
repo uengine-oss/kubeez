@@ -201,14 +201,13 @@
             },
             deleteInNameSpace(boundedName) {
                 var me = this
-                var designer = this.getComponent('kubernetes-model-canvas')
-
-                designer.value.definition.forEach(function (item, idx) {
+ 
+                me.modelCanvasComponent.value.elements.forEach(function (item, idx) {
                     if (item != null) {
                         if (item.boundedContext && item.boundedContext.name == boundedName) {
                             // console.log("boundedItem Id : ", item.elementView.id)
                             me.$EventBus.$off(`${item.elementView.id}`);
-                            designer.value.definition[idx] = null;
+                            me.modelCanvasComponent.value.elements[idx] = null;
                         }
                     }
                 })

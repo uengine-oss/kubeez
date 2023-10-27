@@ -1,0 +1,14 @@
+{
+    "rules": {
+        "definitions": {
+            ".read": true,
+            ".write": true,
+            "$definition": {
+                ".read": true,
+                ".write": true
+            }
+        },
+        ".read": true,
+        ".write": true
+    }
+}

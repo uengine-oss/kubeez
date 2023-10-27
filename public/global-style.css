@@ -545,7 +545,8 @@ code[class*=language-]:nth-child(1) {
 
 .gs-window-width-610-under-zoom {
     position: relative !important;
-    left: 170px !important;
+    top: 10px !important;
+    left: 200px !important;
     opacity: 0.3;
 }
 .gs-window-width-610-under-zoom:hover {

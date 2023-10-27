@@ -337,11 +337,7 @@
         methods: {
             movedNewActivity() {
                 var me = this;
-                if (me.modelCanvasComponent.isLogin &&
-                        me.modelCanvasComponent.isServerModeling &&
-                        !me.modelCanvasComponent.isClazzModeling &&
-                        !me.isReadOnly
-                ) {
+                if (me.modelCanvasComponent.isLogin && !me.isReadOnly) {
                     var obj = {
                         action: 'userMovedOn',
                         editUid: me.userInfo.uid,
@@ -355,11 +351,7 @@
             },
             movedOldActivity() {
                 var me = this
-                if (me.modelCanvasComponent.isLogin &&
-                        me.modelCanvasComponent.isServerModeling &&
-                        !me.modelCanvasComponent.isClazzModeling &&
-                        !me.isReadOnly
-                ) {
+                if (me.modelCanvasComponent.isLogin && !me.isReadOnly) {
                     var obj = {
                         action: 'userMovedOff',
                         editUid: me.userInfo.uid,

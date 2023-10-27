@@ -1,10 +1,13 @@
 <template>
-    <v-dialog v-model="showLoginCard"><Login :onlyGitLogin="true" @login="showLoginCard = false" /></v-dialog>
+    <v-dialog v-model="showLoginCard">
+        <Login :onlyGitLogin="true" @login="showLoginCard = false" />
+    </v-dialog>
 </template>
 
 
 <script>
-    import StorageBase from "./StorageBase";
+    import StorageBase from "./ModelStorageBase";
+    import Login from "../../oauth/LoginByAcebase";
 
     import * as io from 'socket.io-client';
     
@@ -61,6 +64,7 @@
         name: 'model-canvas',
         components: {
             io,
+            Login
         },
         props: {
             renderCount:{
@@ -111,12 +115,12 @@
                     return ''
                 }
             },
-            projectName: {
-                type: String,
-                default() {
-                    return ''
-                }
-            },
+            // projectName: {
+            //     type: String,
+            //     default() {
+            //         return ''
+            //     }
+            // },
             dragPageMovable: {
                 type: Boolean,
                 default() {
@@ -203,7 +207,7 @@
                 params: null,
                 paramKeys: null,
                 canvas: null,
-                canvasType: 'es',
+                canvasType: 'k8s',
                 isAutoForkModel:  false,
                 canvasValidationResults: [],
 
@@ -238,6 +242,7 @@
                 showParticipantPanel: false,
 
                 //project
+                projectName: '',
                 modelChanged: false,
                 initLoad: false,
                 title: '',
@@ -431,7 +436,6 @@
             },
             getScale: {
                 getter() {
-                    console.log("aa")
                     return this.sliderLocationScale
                 }
             },
@@ -586,130 +590,128 @@
             },
         },
         created: async function () {
-            var me = this
+            var me = this;
 
             if (me.embedded) {
-                return
+                return;
             }
             // URL
-            me.fullPath = me.$route.fullPath.split('/')
-            me.params = me.$route.params
-            me.paramKeys = Object.keys(me.params)
-            // me.modelCanvasChannel = new BroadcastChannel('model-canvas')
+            me.fullPath = me.$route.fullPath.split('/');
+            me.params = me.$route.params;
+            me.paramKeys = Object.keys(me.params);
 
-            me.$EventBus.$emit('showNewButton', false)
+            me.$EventBus.$emit('showNewButton', false);
+
             //set userInfol
-            // await me.loginUser()
-            window.io = io
-            me.app = this.getComponent('App')
+            await me.loginUser();
+            window.io = io;
+            me.app = this.getComponent('App');
 
             if (me.isMobile) {
-                me.sliderLocationScale = 0.7
+                me.sliderLocationScale = 0.7;
             }
+
             //initialize if never initialized before
             if (!me.value || !me.value.relations) {
-                me.value = {}
-                me.value.relations = {}
+                me.value = {};
+                me.value.relations = {};
             }
             if (!me.value || !me.value.elements) {
                 me.value.elements = {};
             }
 
-            // await me.loadDefinition()
+            await me.loadDefinition();
 
-            // if(me.information.associatedProject){
-            //     me.receiveAssociatedProject(me.information.associatedProject);
-            // }
+            if (me.information.associatedProject) {
+                me.receiveAssociatedProject(me.information.associatedProject);
+            }
 
-            // if( !me.disableModel && ((me.isServerModeling && !me.isAutoForkModel) || me.isVersionMode) ){
-            //     me.watchInformation();
-            //     me.onEventHandler();
-            // }
+            if (!me.disableModel &&
+                    ((me.isServerModeling && !me.isAutoForkModel) || me.isVersionMode)
+            ) {
+                me.watchInformation();
+                me.onEventHandler();
+            }
 
-            // if (me.isServerModeling) {
-            //     if (me.isQueueModeling) {
-            //         if (me.isDisableModeling || me.isVersionMode){
-            //             me.initLoad = true
-            //             me.$EventBus.$emit('progressValue', false)
-            //         }else {
-            //             me.receiveQueue()
-            //         }
-            //     } else {
-            //         me.receiveValueSpecOne()
-            //         me.initLoad = true
-            //         me.$EventBus.$emit('progressValue', false)
-            //     }
-            // }
+            if (me.isServerModeling) {
+                me.receiveValueSpecOne();
+                me.initLoad = true;
+                me.$EventBus.$emit('progressValue', false);
+            }
         },
         mounted() {
-            var me = this
-            me.$EventBus.$emit('isMounted-ModelCanvas', 'true')
+            var me = this;
+            me.$EventBus.$emit('isMounted-ModelCanvas', 'true');
+
             if (!me.value.relations) {
-                me.value.relations = {}
+                me.value.relations = {};
             }
             if (!me.value.elements) {
                 me.value.elements = {};
             }
 
-            me.debounceTime = 1000
+            me.debounceTime = 1000;
 
             me.$EventBus.$on('participantPanel', function (newVal) {
-                me.showParticipantPanel = newVal
+                me.showParticipantPanel = newVal;
             })
 
             me.$EventBus.$on('snackbar', function (newVal) {
-                me.snackbar.color = newVal.color ? newVal.color : '#000000'
-                me.snackbar.mode = newVal.mode ? newVal.mode : 'multi-line'
-                me.snackbar.timeout = newVal.timeout ? newVal.timeout : 2000
-                me.snackbar.text = newVal.text ? newVal.text : ''
-                me.snackbar.top = newVal.top ? newVal.top : false
-                me.snackbar.bottom = newVal.bottom ? newVal.bottom : false
-                me.snackbar.show = newVal.show ? newVal.show : false
-                me.snackbar.centered = newVal.centered ? newVal.centered : false
-                me.snackbar.closeBtn = newVal.closeBtn ? newVal.closeBtn : false
-            })
+                me.snackbar.color = newVal.color ? newVal.color : '#000000';
+                me.snackbar.mode = newVal.mode ? newVal.mode : 'multi-line';
+                me.snackbar.timeout = newVal.timeout ? newVal.timeout : 2000;
+                me.snackbar.text = newVal.text ? newVal.text : '';
+                me.snackbar.top = newVal.top ? newVal.top : false;
+                me.snackbar.bottom = newVal.bottom ? newVal.bottom : false;
+                me.snackbar.show = newVal.show ? newVal.show : false;
+                me.snackbar.centered = newVal.centered ? newVal.centered : false;
+                me.snackbar.closeBtn = newVal.closeBtn ? newVal.closeBtn : false;
+            });
 
             me.$nextTick(() => {
                 window.addEventListener('resize', this.onResize);
-            })
+            });
 
             //새로고침 감지 && 탭 닫기
             window.onbeforeunload = function (e) {
-                console.log('reload')
-                me.exitUser()
+                console.log('reload');
+                me.exitUser();
                 me.releaseMoveEvents();
             }
 
-            try{
+            try {
                 me.isConnection('db://', function (connection) {
                     if (!connection && me.isServerModeling) {
-                        me.disconnect = true
+                        me.disconnect = true;
                         alert("현재 네트워크에 연결되어 있지 않습니다. \n" +
                             "현재 동시편집 기능을 이용중 이라시면 동시편집의 전체적인 데이터 손실이 될수 있습니다.\n" +
-                            "네트워크 연결 후에 작업 해주시길 바랍니다. ");
+                            "네트워크 연결 후에 작업 해주시길 바랍니다. "
+                        );
                     }
-                })
-            }catch(e){
-                console.log("failed to connect to db")
+                });
+            } catch (e) {
+                console.log("failed to connect to db");
             }
-
 
             me.$EventBus.$on('login', async function (newVal) {
                 if (newVal) {
-                    await me.setUserInfo()
-                    if (me.information && me.isServerModeling)
-                        me.settingPermission(me.information)
+                    await me.setUserInfo();
+                    if (me.information && me.isServerModeling) {
+                        me.settingPermission(me.information);
+                    }
                 }
-            })
+            });
 
+            this.$nextTick(() => {
+                let startTime = Date.now();
 
-            this.$nextTick(function () {
+                if (this.canvas) {
+                    this.canvas._CONFIG.FAST_LOADING = false;
+                }
 
-                let startTime = Date.now()
-
-                if (this.canvas) this.canvas._CONFIG.FAST_LOADING = false;
-
-                if (this.$refs.opengraph) this.$refs.opengraph.printTimer(startTime, Date.now());
+                if (this.$refs.opengraph) {
+                    this.$refs.opengraph.printTimer(startTime, Date.now());
+                }
 
                 $(document).keydown((evt) => {
                     var CkeyCode = 67;
@@ -793,11 +795,11 @@
                 handler: _.debounce(function (newVal, oldVal) {
                     var me = this
                     if (me.initLoad) {
-                        me.modelChanged = true
-                        if(me.information && me.information.projectName != newVal){
+                        me.modelChanged = true;
+                        if (me.information && me.information.projectName != newVal) {
                             var informationObj = {
-                                projectName : me.projectName
-                            }
+                                projectName : newVal
+                            };
                             me.updateInformation(informationObj);
                         }
                     }
@@ -805,59 +807,48 @@
             },
             webRtcDialog(newVal, oldVal) {
                 if (newVal == false) {
-                    this.onLeave()
+                    this.onLeave();
                 }
             },
             participantLists: {
                 deep: true,
                 handler: _.debounce(function (newVal, oldVal) {
-                    this.$EventBus.$emit('participant', newVal)
+                    this.$EventBus.$emit('participant', newVal);
                 }, 1000)
             },
             "value.scm": {
                 deep: true,
                 handler(newVal, oldVal) {
                     if(this.initLoad){
-                        this.changedByMe = true
+                        this.changedByMe = true;
                     }
                 }
             },
             "copyValue": {
                 deep: true,
                 handler(newVal, oldVal) {
-                    this.onValueChanged(oldVal, newVal)
+                    this.onValueChanged(oldVal, newVal);
                 }
             },
-            // "mirrorValue.elements": {
-            //     deep: true,
-            //     handler(newVal, oldVal){
-            //         Object.keys(newVal).forEach(key => {
-            //             if(!newVal[key]) 
-            //                 throw new Error("gotcha!")
-            //         }
-            //         )
-            //     }
-            // }
-
         },
         methods: {
-            overrideElements(elementValues){
-              // use code core.
-                return elementValues
+            overrideElements(elementValues) {
+                // use code core.
+                return elementValues;
             },
-            afterSnapshotLoad(){
+            afterSnapshotLoad() {
                 // Loading initial snapshot
             },
             afterLoad() {
                 // Loading initial snapshot + init queue;
             },
-            alertReLogin(){
-                alert("You need to re-login because session is expired")
-                this.showLoginCard = true
+            alertReLogin() {
+                alert("You need to re-login because session is expired");
+                this.showLoginCard = true;
             },
-            publishScreenShot(){
-                var me = this
-                if( !me.isServerModeling ){
+            publishScreenShot() {
+                var me = this;
+                if(!me.isServerModeling) {
                     clearTimeout(me.valueChangedTimer);
                     me.valueChangedTimer = setTimeout(async function () {
                         let image = await me.screenshot();
@@ -871,46 +862,46 @@
                     },1000)
                 }
             },
-            onValueChanged( oldVal, newVal ){
-                var me = this
+            onValueChanged(oldVal, newVal) {
+                var me = this;
                 var diff = jsondiffpatch.diff(oldVal, newVal);
-                if(me.initLoad && diff){
+                if (me.initLoad && diff) {
                     me.modifiedElement(diff);
                 }
             },
-            async executeBeforeDestroy(){
-                var me = this
+            async executeBeforeDestroy() {
+                var me = this;
 
-                //embedded
                 if (me.embedded) {
-                    return
+                    return;
                 }
                 
-                localStorage.removeItem('projectId')
+                localStorage.removeItem('projectId');
 
                 me.$EventBus.$emit('isMounted-ModelCanvas', 'false');
                 me.$EventBus.$emit('participant', []);
 
-                if(window.opener) {
+                if (window.opener) {
                     window.opener = null;
                 }
 
                 if (me.rtcLogin){
-                    me.onLeave()
+                    me.onLeave();
                 }
 
                 if (me.sortScheduleId) {
-                    clearTimeout(me.sortScheduleId)
+                    clearTimeout(me.sortScheduleId);
                 }
 
                 window.removeEventListener('resize', this.onResize);
 
-                if( me.initLoad ) {
+                if (me.initLoad) {
                     let base64Img = await me.screenshot();
-                    console.log("****************")
-                    console.log(me.projectId)
-                    console.log("****************")
-                    if(me.isServerModeling){
+                    console.log("****************");
+                    console.log(me.projectId);
+                    console.log("****************");
+
+                    if (me.isServerModeling) {
                         // save image in cloud storage
                         await me.putString(`storage://definitions/${me.projectId}/information/image`, base64Img);
                     } else {
@@ -925,29 +916,28 @@
                     }
                 }
 
-                await me.exitUser()
+                await me.exitUser();
                 await me.releaseMoveEvents();
 
-
-                if( me.isServerModeling  && !me.isReadOnlyModeling ) {
+                if (me.isServerModeling  && !me.isReadOnlyModeling) {
                     // server && permission O
-                    if( me.initLoad && me.modelChanged ){
+                    if (me.initLoad && me.modelChanged) {
                         var putObj = {
                             lastModifiedTimeStamp: Date.now(),
                             lastModifiedUser: me.userInfo.uid,
                             lastModifiedEmail: me.userInfo.email,
                             projectName: me.projectName,
-                        }
-                        await me.putObject(`db://definitions/${me.projectId}/information`, putObj)
+                        };
+                        await me.putObject(`db://definitions/${me.projectId}/information`, putObj);
                     }
 
-                } else if( !me.isServerModeling ) {
+                } else if (!me.isServerModeling) {
                     // local
-                    if( me.initLoad && me.modelChanged ){
+                    if (me.initLoad && me.modelChanged) {
                         var lists = localStorage.getItem('localLists')
                         if (lists) {
-                            lists = JSON.parse(lists)
-                            var index = lists.findIndex(list => list.projectId == me.projectId)
+                            lists = JSON.parse(lists);
+                            var index = lists.findIndex(list => list.projectId == me.projectId);
                             if (index != -1) {
                                 if (localStorage.getItem(me.projectId)) {
                                     lists[index].projectName = me.projectName;
@@ -955,18 +945,18 @@
                                 } else {
                                     lists.splice(index, 1);
                                 }
-                                await me.putObject(`localstorage://localLists`, lists)
+                                await me.putObject(`localstorage://localLists`, lists);
                             }
                         }
                     }
                 }
             },
-            async screenshot( canvasInfo ){
-                var me = this
-                if(me.$refs['modeler-image-generator']){
-                    let canvas =  canvasInfo ? canvasInfo : me.canvas
+            async screenshot(canvasInfo) {
+                var me = this;
+                if (me.$refs['modeler-image-generator']) {
+                    let canvas =  canvasInfo ? canvasInfo : me.canvas;
                     let base64Img = await me.$refs['modeler-image-generator'].save(me.projectName, canvas);
-                    return base64Img
+                    return base64Img;
                 }
                 return null;
             },
@@ -975,19 +965,19 @@
                     if (typeof timeStamp == 'string')
                         timeStamp = Number(timeStamp)
                     var date = new Date(timeStamp);
-                    return date.getFullYear() + "년 " + (date.getMonth() + 1) + "월 " + date.getDate() + "일 " + date.getHours() + "시 " + date.getMinutes() + "분"
+                    return date.getFullYear() + "년 " + (date.getMonth() + 1) + "월 " + date.getDate() + "일 " + date.getHours() + "시 " + date.getMinutes() + "분";
                 } else {
-                    return null
+                    return null;
                 }
             },
-            moveToView(item){
-                if(item){
+            moveToView(item) {
+                if (item) {
                     let route = this.$router.resolve(`${this.modelingProjectId}/${item.viewId}`);
                     window.open(route.href, '_blank');
                 }
             },
-            moveToVersion(item){
-                if(item){
+            moveToVersion(item) {
+                if (item) {
                     let lastIndex = this.filteredVersionLists.findIndex(x=>x.version == 'latest')
                     let lateVersion = this.filteredVersionLists[lastIndex - 1]
                     let version = item.version == 'latest' ? lateVersion.version : item.version
@@ -1595,23 +1585,23 @@
 
 
                 if (state == 'save') {
-                    if (window.opener && me.canvasType == 'k8s') {
+                    if (window.opener) {
                         obj = null;
                         me.postParentWindow();
-                    } else if (me.isServerModeling) {
-                        obj.action = 'backup'
-                        obj.title = 'Save New Version'
-
-                        let nextVer = me.information.lastVersionName ? me.information.lastVersionName : me.defaultVersion;
-                        if(me.information.lastVersionName){
-                            let nextVersion = nextVer.substr(-1);
-                            nextVersion =  !isNaN(Number(nextVersion)) ? Number(nextVersion)+1: ''
-                            nextVer = `${nextVer.substr(0, nextVer.length - 1)}${nextVersion}`
-                        }
-                        obj.version = nextVer
-                    } else{
-                        // SAVE
                     }
+                    
+                    obj.action = 'backup';
+                    obj.title = 'Save New Version';
+
+                    let nextVer = me.information.lastVersionName ? me.information.lastVersionName : me.defaultVersion;
+
+                    if (me.information.lastVersionName) {
+                        let nextVersion = nextVer.substr(-1);
+                        nextVersion =  !isNaN(Number(nextVersion)) ? Number(nextVersion)+1 : '';
+                        nextVer = `${nextVer.substr(0, nextVer.length - 1)}${nextVersion}`;
+                    };
+                    obj.version = nextVer;
+                    
                 } else if (state == 'fork') {
                     var forkBy ={
                         org : me.scmOrg,
@@ -1634,8 +1624,8 @@
                     obj = null;
                 }
 
-                this.storageCondition = obj
-                this.storageDialog = true
+                this.storageCondition = obj;
+                this.storageDialog = true;
             },
             storageDialogCancel() {
                 this.storageCondition.loading = false
@@ -1914,16 +1904,8 @@
 
                         if (index != -1) {
                             await me.delete(`localstorage://${originProjectId}`)
-                            if(me.canvasType == 'es') {
-                                location = 'storming'
-                            }else if (me.canvasType == 'k8s') {
+                            if (me.canvasType == 'k8s') {
                                 location = 'kubernetes'
-                            } else if (me.canvasType == 'bm') {
-                                location = 'business-model-canvas'
-                            } else if (me.canvasType == 'bpmn') {
-                                location = 'bpmn'
-                            } else {
-                                location = me.canvasType
                             }
 
                             lists.splice(index, 1)
@@ -2078,14 +2060,8 @@
                                 me.updateClassModelingId(settingProjectId);
                             }else{
                                 var location = null;
-                                if( me.canvasType == 'es' ) {
-                                    location = 'storming'
-                                } else if (me.canvasType == 'k8s') {
+                                if (me.canvasType == 'k8s') {
                                     location = 'kubernetes'
-                                } else if (me.canvasType == 'bm') {
-                                    location = 'business-model-canvas'
-                                } else {
-                                    location = me.canvasType
                                 }
 
                                 // me.moveModelUrl(settingProjectId);
@@ -2680,7 +2656,7 @@
                     } else {
                         hashName = `ide-${me.hashCode(userGroup + "-" + userName)}`
                     }
-                    me.$http.get(`${me.getProtocol()}//api.${me.getTenantId()}/api/v1/namespaces/default/pods/${hashName}`).then(function (result) {
+                    me.$http.get(`api/v1/namespaces/default/pods/${hashName}`).then(function (result) {
                         if (result.data.status.phase == "Running") {
                             resolve(true)
                         } else {
@@ -2700,7 +2676,7 @@
 
                 if (!serverUrl || !serverToken) {
                     return new Promise(function (resolve) {
-                        me.$http.get(`${me.getProtocol()}//api.${me.getTenantId()}/apis/uengine.org/v1alpha1/namespaces/default/ides/${hashName}/status`).then(function (result) {
+                        me.$http.get(`apis/uengine.org/v1alpha1/namespaces/default/ides/${hashName}/status`).then(function (result) {
                             console.log(result.data.status.conditions)
                             result.data.status.conditions.forEach(function (item) {
                                 if (item.reason == "InstallSuccessful" && item.type == "Deployed") {
@@ -2713,7 +2689,7 @@
                     })
                 } else {
                     return new Promise(function (resolve) {
-                        me.$http.get(`http://api.${me.getTenantId()}/apis/uengine.org/v1alpha1/namespaces/default/ides/${hashName}/status?serverUrl=${serverUrl}&token=${serverToken}`).then(function (result) {
+                        me.$http.get(`http://apis/uengine.org/v1alpha1/namespaces/default/ides/${hashName}/status?serverUrl=${serverUrl}&token=${serverToken}`).then(function (result) {
                             console.log(result.data.status.conditions)
                             result.data.status.conditions.forEach(function (item) {
                                 if (item.reason == "InstallSuccessful" && item.type == "Deployed") {
@@ -2731,11 +2707,11 @@
                 return new Promise(async function (resolve, reject) {
                     var tenant;
                     if(me.$parent.classInfo) {
-                        tenant = me.$parent.classInfo.ideUrl
+                        tenant = me.$parent.classInfo.ideUrl;
                     } else {
-                        tenant = window.MODE == "onprem" ? me.getTenantId() : 'kuberez.io'
+                        tenant = me.getTenantId();
                     }
-                    me.$http.delete(`${me.getProtocol()}//file.${tenant}/api/deleteConfig`, {
+                    me.$http.delete(`file.${tenant}/api/deleteConfig`, {
                         data: {
                             "tenant": "eventstorming",
                             "course": obj.course,
@@ -2748,23 +2724,21 @@
                         headers: {
                             "Content-Type": "application/json; charset=UTF-8"
                         }
-                    }).then(function () {
+                    }).then(() => {
                         resolve()
                     }).catch(error => alert(error))
-                    // await me.putObject(configPath + '/config', configJson)
-                    // resolve()
-                })
+                });
             },
             makeDir(path) {
                 var me = this;
                 return new Promise(function (resolve,reject) {
                     var tenant;
                     if(me.$parent.classInfo) {
-                        tenant = me.$parent.classInfo.ideUrl
+                        tenant = me.$parent.classInfo.ideUrl;
                     } else {
-                        tenant = window.MODE == "onprem" ? me.getTenantId() : 'kuberez.io'
+                        tenant = me.getTenantId();
                     }
-                    me.$http.post(`${me.getProtocol()}//file.${tenant}/api/makeDir`, {
+                    me.$http.post(`file.${tenant}/api/makeDir`, {
                             "path": path
                         }).then(function () {
                             return resolve();
@@ -2772,7 +2746,7 @@
                             alert(e);
                         reject();
                     });
-                })
+                });
             },
             makeConfig(hashName, obj) {
                 var me = this
@@ -2782,7 +2756,7 @@
                         serverUrl = me.$parent.classInfo.serverUrl;
                         serverToken = me.$parent.classInfo.token;
                     } else {
-                        serverUrl = window.MODE == "onprem" ? window.CLUSTER_ADDRESS : 'https://218.236.22.12:6443';
+                        serverUrl = window.CLUSTER_ADDRESS;
                     }
 
                     var serviceAccount = await me.existServiceAccountCheck(hashName);
@@ -2841,14 +2815,14 @@
                                 }
                             }
                         ]
-                    }
+                    };
                     var tenant;
                     if(me.$parent.classInfo) {
-                        tenant = me.$parent.classInfo.ideUrl
+                        tenant = me.$parent.classInfo.ideUrl;
                     } else {
-                        tenant = window.MODE == "onprem" ? me.getTenantId() : 'kuberez.io'
+                        tenant = me.getTenantId();
                     }
-                    me.$http.post(`${me.getProtocol()}//file.${tenant}/api/uploadConfig`, {
+                    me.$http.post(`file.${tenant}/api/uploadConfig`, {
                         "config": JSON.stringify(configJson),
                         "tenant": me.$route.params.labId ? me.getTenantId() : "eventstorming",
                         "course": obj.course,
@@ -2861,11 +2835,9 @@
                             "Content-Type": "application/json; charset=UTF-8"
                         }
                     }).then(function () {
-                        me.$EventBus.$emit("nextStep")
-                        resolve()
+                        me.$EventBus.$emit("nextStep");
+                        resolve();
                     }).catch(error => alert(error))
-                    // await me.putObject(configPath + '/config', configJson)
-                    // resolve()
                 })
             },
             async addInviteUser(user, myself) {
