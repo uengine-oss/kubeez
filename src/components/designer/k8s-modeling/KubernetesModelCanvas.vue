@@ -1210,6 +1210,7 @@
                         :newTreeHashLists.sync="newTreeHashLists"
                         :isVersionMode="isVersionMode"
                         canvas-name="kubernetes-model-canvas"
+                        :defaultTemplate="template"
                 ></kube-code-generator>
             </template>
         </separate-panel-components>
@@ -1363,7 +1364,7 @@
                 // data structure
                 treeList: [],
                 openCode: [],
-                template: '',
+                template: 'Separate File',
                 templateTypes: [ 'Separate File', 'Single File', 'Separate File per kind', 'Helm' ],
                 treeOpen: true,
                 
@@ -1978,7 +1979,6 @@
             },
             async template() {
                 var me = this;
-                await me.callGenerateCode();
                 me.$nextTick(() => {
                     me.treeOpen = true;
                 });
@@ -4150,12 +4150,6 @@
                 this.codeView = false;
                 this.$modal.hide('yamlModal');
             },
-            async codeModalShow() {
-                var me = this;
-                await me.callGenerateCode();
-                me.$modal.show('codeModal');
-                me.codeView = true;
-            },
             async openCodeViewer() {
                 var me = this;
 
@@ -4436,71 +4430,6 @@
 
                 return type;
             },
-            callGenerateCode() {
-                var me = this;
-
-                return new Promise(function (resolve, reject) {
-                    me.treeList = [];
-                    me.openCode = [];
-                    var value = me.embedded ? me.value.k8sValue : me.value;
-                    var copyValue = JSON.parse(JSON.stringify(value));
-
-                    if (me.template.length > 0) {
-                        var template = me.template;
-                    } else {
-                        var template = 'Separate File per kind';
-                    }
-
-                    if (template == 'Separate File') {
-                        var codeValue = {};
-
-                        Object.keys(copyValue.elements).forEach((key) => {
-                            var item = copyValue.elements[key];
-                            if (item && item._type != "DestinationRuleSubset" && 
-                                    item._type != "WorkflowDag" && 
-                                    item._type != "WorkflowStep"
-                            ) {
-                                codeValue = {
-                                    'key': item.elementView.id,
-                                    'name': item.object.metadata.name + '.yaml',
-                                    'code': me.yamlFilter(json2yaml.stringify(item.object)),
-                                    'file': me.fileType('.yaml')
-                                };
-                                me.treeList.push(codeValue);
-                                resolve();
-                            }
-                        });
-                    } else if (template == 'Single File') {
-                        var yaml = '';
-
-                        Object.keys(copyValue.elements).forEach((key) => {
-                            var item = copyValue.elements[key]
-                            if (item && item._type != "DestinationRuleSubset" &&
-                                    item._type != "WorkflowDag" &&
-                                    item._type != "WorkflowStep"
-                            ) {
-                                yaml += '--- \n' + me.yamlFilter(json2yaml.stringify(item.object));
-                            }
-                        });
-
-                        var codeValue = {
-                            'key': 'local',
-                            'name': 'local.yaml',
-                            'code': yaml,
-                            'file': me.fileType('.yaml')
-                        };
-
-                        me.treeList.push(codeValue);
-                        resolve();
-                    } else if (template == 'Separate File per kind') {
-                        me.setYamlPerKind(me.treeList);
-                        resolve();
-                    } else if (template == 'Helm') {
-                        me.setHelmChart();
-                        resolve();
-                    }
-                });
-            },
             yamlFilter(yamlText) {
                 let lines = yamlText.split('\n');
                 lines.splice(0, 1);
@@ -4563,80 +4492,6 @@
                     me.generateZipDialog = false;
                     me.isDownloading = false;
                 }
-            },
-            setYamlPerKind(treeList) {
-                var me = this;
-                var value = me.embedded ? me.value.k8sValue : me.value;
-                var copyValue = JSON.parse(JSON.stringify(value));
-
-                Object.keys(copyValue.elements).forEach((key) => {
-                    var item = copyValue.elements[key];
-                    if (item && item._type != "DestinationRuleSubset" && 
-                            item._type != "WorkflowDag" && 
-                            item._type != "WorkflowStep"
-                    ) {
-                        var name = (item._type).toLowerCase();
-                        var codeValue = {
-                            'key': item.elementView.id,
-                            'name': name + '.yaml',
-                            'code': '--- \n' + me.yamlFilter(json2yaml.stringify(item.object)),
-                            'file': me.fileType('.yaml')
-                        };
-
-                        var index = treeList.findIndex((val) => {
-                            if (val.name == codeValue.name) {
-                                val.code += codeValue.code;
-                            }
-                            return val.name == codeValue.name;
-                        });
-
-                        if (index == -1) {
-                            treeList.push(codeValue);
-                        }
-                    }
-                });
-            },
-            setHelmChart() {
-                var me = this;
-                var templates = [];
-                var notes = {
-                    'key': 'notes',
-                    'name': 'NOTES.txt',
-                    'code': '',
-                    'file': 'txt'
-                };
-                templates.push(notes);
-                me.setYamlPerKind(templates);
-
-                me.chartJson = {
-                    "apiVersion": "v1",
-                    "name": me.projectName,
-                    "version": "0.1.0",
-                    "description": "A Helm chart for Kubernetes"
-                };
-
-                var folder = {
-                    'name': me.projectName,
-                    'children': [
-                        {
-                            'key': 'chart',
-                            'name': 'Chart.yaml',
-                            'code': me.yamlFilter(json2yaml.stringify(me.chartJson)),
-                            'file': me.fileType('.yaml')
-                        },
-                        {
-                            'name': 'templates',
-                            'children': templates
-                        },
-                        {
-                            'key': 'values',
-                            'name': 'values.yaml',
-                            'code': me.valuesYaml,
-                            'file': me.fileType('.yaml')
-                        }
-                    ]
-                };
-                me.treeList.push(folder);
             },
             async startIDE() {
                 var me = this

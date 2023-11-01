@@ -43,11 +43,23 @@ class Git {
     getRepo(org, repo) {
         throw new Error('getRepo() must be implement')
     }
+    getTemplateURL(repo) {
+        throw new Error('getTemplateURL() must be implement')
+    }
+    getToppingURL(repo) {
+        throw new Error('getToppingURL() must be implement')
+    }
+    setGitList(element, repository, gitRepoUrl) {
+        throw new Error('setGitList() must be implement')
+    }
     getOrgList() {
         throw new Error('getOrgList() must be implement')
     }
     recursiveTree(element) {
         throw new Error('recursiveTree() must be implement')
+    }
+    getFile(repo, org, filePath) {
+        throw new Error('getFile() must be implement')
     }
     getFiles(options) {
         throw new Error('getFiles() must be implement')
@@ -57,6 +69,9 @@ class Git {
     }
     setPushList(options) {
         throw new Error('setPushList() must be implement')
+    }
+    getTree(org, repo, sha) {
+        throw new Error('getTree() must be implement')
     }
     postTree(org, repo, treeList, treesha) {
         throw new Error('postTree() must be implement')

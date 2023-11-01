@@ -105,7 +105,7 @@ class Github extends Git {
     createRepo(org, repo, userName) {
         let me = this;
         let createRepoUrl;
-        let newRepoData = {
+        let options = {
             name: repo,
             auto_init: true
         }
@@ -196,6 +196,51 @@ class Github extends Git {
                 .catch((e) => {
                     reject(e)
                 })
+            }
+        })
+    }
+    getTemplateURL(repo) {
+        let me = this;
+        return new Promise((resolve, reject) => {
+            let result = "https://github.com/msa-ez/" + repo
+            resolve(result)
+        })
+    }
+    getToppingURL(repo) {
+        let me = this;
+        return new Promise((resolve, reject) => {
+            let result = "https://github.com/msa-ez/topping-" + repo
+            resolve(result)
+        })
+    }
+    loadHandleBarHelper(handler){
+        try{
+            if( !handler ){
+                return;
+            }
+            (new Function(handler))();
+        }catch(e){
+            console.log(`Error] Load HandleBar Helper.js: ${e} `)
+        }
+    }
+    getFile(repo, org, filePath) {
+        let me = this;
+        return new Promise(async function (resolve, reject) {
+            let results = []
+            try {
+                let url = `https://api.github.com/repos/${org}/${repo}/contents/${filePath}`
+                let file = await axios.get(url, { headers: me.getHeader() })
+                .then(res => {
+                    let result = {
+                        data: decodeURIComponent(escape(atob(res.data.content))),
+                        url: url
+                    }
+                    resolve(result)
+                    
+                })
+                .catch(e => reject(e))
+            } catch(e) {
+                reject(e)
             }
         })
     }
@@ -312,6 +357,18 @@ class Github extends Git {
             }
         })
     }
+    getTree(org, repo, sha) {
+        let me = this
+        return new Promise(async function (resolve, reject) {
+            let tree = await axios.get(`https://api.github.com/repos/` + org + '/' + repo + `/git/trees/` + sha, { headers: me.getHeader() })
+            .then((res) => {
+                resolve(res.data)
+            })
+            .catch((e) => {
+                reject(e)
+            })
+        })
+    }
     postTree(org, repo, treeList, treesha) {
         let me = this
         return new Promise(async function (resolve, reject) {
@@ -326,6 +383,127 @@ class Github extends Git {
             .catch((e) => {
                 reject(e)
             })
+        })
+    }
+    setGitList(element, repository, gitRepoUrl) {
+        let me = this;
+        return new Promise(async function (resolve, reject) {
+            let isToppingSetting = false
+            if(element.url.includes("topping-")){
+                isToppingSetting = true
+            }
+            let toppingName = ""
+            if(isToppingSetting){
+                toppingName = repository
+            }
+            let gitTemplateContents = {};
+            let manifestsPerTemplate = {}
+            manifestsPerTemplate[gitRepoUrl] = []
+            let templateFrameWorkList = {}
+            let manifestsPerToppings = {}
+            manifestsPerToppings[gitRepoUrl] = []
+            let gitToppingList = {}
+            // let result = null;
+            
+            let result = await axios.get(element.url + '?recursive=1', { headers: me.getHeader() })
+            .then(function(res) {
+                if( res && res.data && res.data.tree.length > 0 ) {
+                    let callCnt = 0;
+                    res.data.tree.forEach(async function (ele, idx) {
+                        if(isToppingSetting){
+                            try{
+                                if (ele.type != 'tree') {
+                                    //var elePath = ele.path.replace(`${toppingName}/`, '')
+                                    var elePath = ele.path
+                                    manifestsPerToppings[gitRepoUrl].push(elePath)
+    
+                                    if(!gitToppingList[gitRepoUrl]){
+                                        gitToppingList[gitRepoUrl] = {}
+                                    }
+                                    if(!gitToppingList[gitRepoUrl][elePath]){
+                                        gitToppingList[gitRepoUrl][elePath] = {}
+                                    }
+                                    gitToppingList[gitRepoUrl][elePath].requestUrl = ele.url
+    
+                                    var gitSha = await axios.get(ele.url, { headers: me.githubHeaders })
+                                    if(!gitTemplateContents[elePath]) gitTemplateContents[elePath] = null
+                                    gitTemplateContents[elePath] = Base64.decode(gitSha.data.content);
+                                }
+                            }catch(e){
+                                console.log(`Error] Set ToppingLists: ${e}`)
+                            }finally {
+                                callCnt ++ ;
+                                if(res.data.tree.length == callCnt) {
+                                    Object.keys(gitTemplateContents).forEach(function (fileName) {
+                                        if(!gitToppingList[gitRepoUrl][fileName]){
+                                            gitToppingList[gitRepoUrl][fileName] = {}
+                                        }
+                                        gitToppingList[gitRepoUrl][fileName].content = gitTemplateContents[fileName]
+                                    });
+                                    console.log(`>>> Generate Code] Topping(${gitRepoUrl}) DONE`)
+                                    let result = {
+                                        gitToppingList: gitToppingList,
+                                        manifestsPerToppings: manifestsPerToppings,
+                                        gitTemplateContents: gitTemplateContents
+                                    }
+                                    resolve(result);
+                                }
+    
+                                var gitSha = await axios.get(ele.url, { headers: me.githubHeaders });
+                                if(!gitTemplateContents[ele.path]) gitTemplateContents[ele.path] = null
+                                gitTemplateContents[ele.path] = Base64.decode(gitSha.data.content);
+                                if(ele.path.includes("helper.js")){
+                                    me.loadHandleBarHelper(Base64.decode(gitSha.data.content));
+                                }
+                            }
+                        } else {
+                            try {
+                                if (ele.type != 'tree') {
+                                    if(gitRepoUrl){
+                                        manifestsPerTemplate[gitRepoUrl].push('./' + ele.path)
+                                    }
+    
+                                    if(!templateFrameWorkList[gitRepoUrl]){
+                                        templateFrameWorkList[gitRepoUrl] = {}
+                                    }
+                                    if(!templateFrameWorkList[gitRepoUrl][ele.path]){
+                                        templateFrameWorkList[gitRepoUrl][ele.path] = {}
+                                    }
+                                    templateFrameWorkList[gitRepoUrl][ele.path].requestUrl = ele.url
+    
+                                    var gitSha = await axios.get(ele.url, { headers: me.githubHeaders });
+                                    if(!gitTemplateContents[ele.path]) gitTemplateContents[ele.path] = null
+                                    gitTemplateContents[ele.path] = Base64.decode(gitSha.data.content);
+                                }
+                            } catch (e) {
+                                console.log(`Error] Set GitLists: ${e}`)
+                            } finally {
+                                let manifestsPerBaseTemplate = {}
+                                callCnt ++;
+                                if(res.data.tree.length == callCnt) {
+                                    manifestsPerBaseTemplate[gitRepoUrl] = manifestsPerTemplate[gitRepoUrl];
+                                    Object.keys(gitTemplateContents).forEach(function (fileName) {
+                                        if(!templateFrameWorkList[gitRepoUrl][fileName]){
+                                            templateFrameWorkList[gitRepoUrl][fileName] = {}
+                                        }
+                                        templateFrameWorkList[gitRepoUrl][fileName].content = gitTemplateContents[fileName]
+                                    });
+                                    console.log(`>>> Generate Code] Template(${gitRepoUrl}) DONE`);
+                                    let result = {
+                                        manifestsPerBaseTemplate: manifestsPerBaseTemplate,
+                                        templateFrameWorkList: templateFrameWorkList,
+                                        manifestsPerTemplate: manifestsPerTemplate,
+                                    }
+                                    resolve(result);
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    resolve();
+                }
+            })
+            .catch(e => (reject(e)))
         })
     }
     getCommit(org, repo, branch) {
@@ -446,7 +624,7 @@ class Github extends Git {
     patch(org, repo, branch, options) {
         let me = this
         return new Promise(async function (resolve, reject) {
-            console.log(branch)
+            // console.log(branch)
             let patchMainResult = await axios.patch(`https://api.github.com/repos/${org}/${repo}/git/refs/heads/${branch}`, options, { headers: me.getHeader() })
             .then((res) => {
                 resolve(res)
@@ -458,6 +636,69 @@ class Github extends Git {
     }
     setPushTemplateList() {
 
+    }
+    getActionLogs(org, repo) {
+        let me = this
+        return new Promise(async function (resolve, reject) {
+            let run_id
+            await axios.get(`https://api.github.com/repos/${org}/${repo}/actions/runs?status='queued'`, { headers: me.getHeader() })
+            .then(async (res) => {
+                if(res.data.workflow_runs.length == 0){
+                    await axios.get(`https://api.github.com/repos/${org}/${repo}/actions/runs?status='in_progress'`, { headers: me.getHeader() })
+                    .then((res) => {
+                        run_id = res.data.workflow_runs[0].id
+                    })
+                    .catch(e => {
+                        reject(e)
+                    })
+                } else {
+                    run_id = res.data.workflow_runs[0].id
+                }
+            })
+            .catch(e => {
+                reject(e)
+            })
+
+            let logs = await me.getLogs(org, repo, run_id)
+            resolve(logs)
+
+        })
+    }
+    getLogs(org, repo, run_id) {
+        let me = this
+        return new Promise(async function (resolve, reject) {
+            await axios.get(`https://api.github.com/repos/${org}/${repo}/actions/runs/${run_id}`, { headers: me.getHeader() })
+            .then(async (res) => {
+                if(res.data.status == "completed"){
+                    if(res.data.conclusion == "success"){
+                        resolve(res)
+                    } else {
+                        await axios.get(`https://api.github.com/repos/${org}/${repo}/actions/runs/${run_id}/jobs`, { headers: me.getHeader() })
+                        .then(async (res) => {
+                            await axios.get(`https://api.github.com/repos/${org}/${repo}/actions/jobs/${res.data.jobs[0].id}/logs`, { headers: me.getHeader() })
+                            .then((res) => {
+                                let log = res.data.split("COMPILATION ERROR : ")
+                                resolve(log[1])
+                            })
+                            .catch(e => {
+                                reject(e)
+                            })
+                        })
+                        .catch(e => {
+                            reject(e)
+                        })
+                    }
+                } else {
+                    setTimeout(async () => {
+                        let logs = await me.getLogs(org, repo, run_id)
+                        resolve(logs)
+                    }, 5000)
+                }
+            })
+            .catch(e => {
+                reject(e)
+            })
+        })
     }
     // startCommit() {
     //     return new Promise(async function (resolve, reject) {

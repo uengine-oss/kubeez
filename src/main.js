@@ -11,6 +11,7 @@ import './registerServiceWorker';
 import Opengraph from './components/opengraph';
 import KubeModeling from './components/designer/k8s-modeling';
 import LoginAcebase from './components/oauth/LoginByAcebase';
+import Login from './components/oauth/Login';
 
 import i18n from './i18n';
 import VueGtag from 'vue-gtag';
@@ -48,8 +49,13 @@ Vue.use(VueYouTubeEmbed, {
 
 // component
 Vue.component('vue-context-menu', VueSimpleContextMenu)
-Vue.component('Login', LoginAcebase);
 Vue.component('Icon', Icon);
+
+if(window.MODE == "onprem") {
+    Vue.component('Login', LoginAcebase);
+} else {
+    Vue.component('Login', Login);
+}
 
 var options = {'keyName' : 'accessToken'};
 

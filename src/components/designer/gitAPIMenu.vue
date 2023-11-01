@@ -218,7 +218,7 @@
                                                 <v-tooltip bottom>
                                                     <template v-slot:activator="{ on }">
                                                         <v-btn
-                                                            :disabled="!isReleasedTag && isVersionMode"
+                                                            :disabled="!isReleasedTag && projectVersion"
                                                             style="text-align: center;
                                                             text-align: center;
                                                             height: 40px;
@@ -536,6 +536,7 @@
 </template>
 
 <script>
+    // import SIGenerator from './modeling/generators/SIGenerator'
     // import labBase from "../labs/LabStorageBase"
     import Login from "../oauth/Login";
     import LoginByGitlab from "../oauth/LoginByGitlab";
@@ -551,7 +552,7 @@
         // mixins: [labBase],
         components: {
             LoginByGitlab,
-            Login
+            Login,
         },
         props: {
             onlyOneBcId: String,
@@ -567,13 +568,12 @@
             projectId: String,
             projectName: String,
             isListSettingDone: Boolean,
-            isMineProject: Boolean,
+            isOwnModel: Boolean,
             information: Object,
             gitUsers: Object,
             generateCodeLists: Array,
             ShowCreateRepoTab: Boolean,
-            isServerModeling: Boolean,
-            isVersionMode: Boolean,
+            isServerModel: Boolean,
         },
         data() {
             return {
@@ -657,14 +657,16 @@
                 gitLabProjectId: null,
                 isReleasedTag: false,
                 gitPodError: false,
+                generator: null,
+                prompt: null,
             }
         },
         computed: {
             releaseTagPath(){
-                return !this.editTemplateMode && (this.isVersionMode && !this.isFirstCommit) ? `/releases/tag/${this.value.tag}` : ''
+                return !this.editTemplateMode && (this.projectVersion && !this.isFirstCommit) ? `/releases/tag/${this.value.tag}` : ''
             },
             cloneTagPath(){
-                return !this.editTemplateMode && (this.isVersionMode && !this.isFirstCommit) ? ` -b ${this.value.tag}` : ''
+                return !this.editTemplateMode && (this.projectVersion && !this.isFirstCommit) ? ` -b ${this.value.tag}` : ''
             },
             APIType(){
                 return this.git.getType()
@@ -760,7 +762,7 @@
             gitTabItems(){
                 var me = this
                 var setTabItems
-                if(!me.isMineProject){
+                if(!me.isOwnModel){
                     if(me.information && me.information.permissions && me.userInfo && me.userInfo.uid){
                         if(me.information.permissions[me.userInfo.uid]){
                             me.isPrivilegedUser = true
@@ -793,11 +795,11 @@
                         { tab: 'Editor', index: 3, tabKey: 'openGithubEditor' }
                     ]
                 } else {
-                    if(me.isVersionMode){
+                    if(me.projectVersion){
                         setTabItems = [
                             { tab: 'IDE', tabKey: 'info', index: 1 },
                         ]
-                    } else if(me.isMineProject){
+                    } else if(me.isOwnModel){
                         if(me.isFirstCommit){
                             setTabItems = [
                                 { tab: 'Repository', index: 1, tabKey: 'setFirstRepo' },
@@ -871,6 +873,7 @@
         },
         mounted: function () {
             var me = this
+            window.addEventListener("message", me.messageProcessing);
             me.setGitInfo()
             me.checkRepoExist()
         },
@@ -903,7 +906,7 @@
                 this.RepoNameChanged()
             }, 1000),
             gitUserName: _.debounce(function () {
-                if((this.isMineProject || this.isPrivilegedUser) && (!this.firstSetUserName || !this.gitOrgName)){
+                if((this.isOwnModel || this.isPrivilegedUser) && (!this.firstSetUserName || !this.gitOrgName)){
                     this.gitOrganizations = []
                     this.firstTimeGet = true
                     if(this.gitUserName){
@@ -996,13 +999,76 @@
             },
         },
         methods: {
+            async messageProcessing(e) {
+                var me = this;
+                if (e.data.message === "gitlab-login") {
+                    var getUsers = e.data.data;
+                    // window.localStorage.setItem("gitAuthor", getUsers.data.email);
+                    // window.localStorage.setItem(
+                    //     "gitUserName",
+                    //     getUsers.data.username
+                    // );
+                    // window.localStorage.setItem("gitEmail", getUsers.data.email);
+                    // window.localStorage.setItem(
+                    //     "gitToken",
+                    //     getUsers.data.accessToken
+                    // );
+                    me.gitUserName = getUsers.data.username
+                    me.gitToken = getUsers.data.accessToken
+                    // me.gitUsers = getUsers;
+                    me.$emit("update:gitUsers", getUsers.data)
+                }
+            },
+            async getActionLogs(){
+                var me = this
+                await me.git.getActionLogs(me.value.org, me.value.repo)
+                .then((result) => {
+                    console.log(result)
+                    // me.$emit("getActionLogs", result)
+                    // me.prompt = result
+                    // me.generator = new SIGenerator(this);
+                    // me.generator.generate();
+                })
+                .catch((e) => {
+                    if(e.response.status === 401){
+                        me.alertReLogin()
+                    }
+                    console.log(e)
+                })
+            },
+            // sendFileToAi(){
+            //     let me = this;
+            //     let prompt
+                
+            //     let codeGenerator = getParent(me.$parent, "code-generator")
+
+            //     var filteredCode = []
+            //     codeGenerator.treeLists.forEach((item) => {
+            //         if(item.bcId != null){
+            //             filteredCode.push(item)
+            //         }
+            //     })
+
+            //     let collectedCodes = codeGenerator.getSelectedFilesDeeply(filteredCode,{keyword: "si"})
+                
+            //     if(Array.isArray(collectedCodes) && collectedCodes.length > 0){
+            //         prompt = collectedCodes.join("\n\n");
+            //     }
+                
+            //     me.testFile = codeGenerator.testFile
+
+            //     me.openAiMessageList.push({
+            //         role: 'user',
+            //         content: 'Here is the list of configuration code for my project: \n' + prompt
+            //     })
+            // },
             commonError(error) {
                 let me = this;
                 console.log(error)
-                if(error.response.status === 401){
-                    me.alertReLogin()
-                }
-                if(error.response && error.response.data && error.response.data.message){
+                if(error && error.response && error.response.data && error.response.data.message){
+                    if(error.response.status === 401){
+                        me.alertReLogin()
+                    }
                     var errText = error.response.data.message
                     if(error.response.data.errors && error.response.data.errors[0] && error.response.data.errors[0].message){
                         errText = errText + ', ' + error.response.data.errors[0].message
@@ -1068,7 +1134,7 @@
             },
             async checkReleasedTags(){
                 var me = this
-                if(me.isVersionMode){
+                if(me.projectVersion){
                     let result = await me.git.getReleasedTag(me.value.org, me.value.repo, me.value.tag)
                     .then(() => {
                         me.isReleasedTag = true; 
@@ -1159,7 +1225,7 @@
                     me.gitLabProjectId = null
                     me.gitLabCommitAction = []
                     if(me.projectId){
-                        if(me.isServerModeling){
+                        if(me.isServerModel){
                             if(!me.isPrivilegedUser){
                                 me.value.org = me.gitOrgName
                                 me.value.repo = me.gitRepoName
@@ -1358,7 +1424,7 @@
                             });
                         console.log(response4)
                     }
-                    if(me.isServerModeling){
+                    if(me.isServerModel){
                         if(!me.isPrivilegedUser){
                             me.setString(`db://definitions/${me.projectId}/information/firstCommit`, "false")
                         } else {
@@ -1431,7 +1497,7 @@
                 me.isPushing = true
                 try {
                     if(me.projectId){
-                        if(me.isServerModeling){
+                        if(me.isServerModel){
                             if(!me.isPrivilegedUser){
                                 me.value.org = me.gitOrgName
                                 me.value.repo = me.gitRepoName
@@ -1461,7 +1527,7 @@
                         });
                     console.log(forkRes)
                     if(forkRes){
-                        if(me.isServerModeling){
+                        if(me.isServerModel){
                             if(!me.isPrivilegedUser){
                                 me.setString(`db://definitions/${me.projectId}/information/firstCommit`, "false")
                             } else {
@@ -1484,7 +1550,7 @@
                             me.gitRepoName = forkRes.data.name
 
                             if(me.projectId){
-                                if(me.isServerModeling){
+                                if(me.isServerModel){
                                     if(!me.isPrivilegedUser){
                                         me.value.repo = me.gitRepoName;
                                         // me.setString(`db://definitions/${me.projectId}/information/gitRepoName`, me.gitRepoName)
@@ -1523,7 +1589,7 @@
                 try {
                     me.isPushing = true
                     if(me.projectId){
-                        if(me.isServerModeling){
+                        if(me.isServerModel){
                             if(!me.isPrivilegedUser){
                                 me.value.org = me.gitOrgName
                                 me.value.repo = me.gitRepoName
@@ -1546,7 +1612,7 @@
                         });
                     console.log(forkRes)
                     if(forkRes){
-                        if(me.isServerModeling){
+                        if(me.isServerModel){
                             if(!me.isPrivilegedUser){
                                 me.setString(`db://definitions/${me.projectId}/information/firstCommit`, "false")
                             } else {
@@ -1628,7 +1694,7 @@
                         if(beforeModelInfo && beforeModelInfo.org != null){
                             me.gitForkOrgName = beforeModelInfo.org
                             me.gitForkRepoName = beforeModelInfo.repo
-                            if(me.isServerModeling){
+                            if(me.isServerModel){
                                 me.value.forkedOrg = me.gitForkOrgName
                                 me.value.forkedRepo = me.gitForkRepoName
                                 // me.setString(`db://definitions/${me.projectId}/information/forkedByModelGitOrgName`, me.gitForkOrgName)
@@ -1675,7 +1741,7 @@
                         }
                     }
                     if(!me.information.useIdeItem){
-                        if(me.isServerModeling){
+                        if(me.isServerModel){
                             me.setString(`db://definitions/${me.projectId}/information/useIdeItem`, 'gitpod')
                         }
                     } else if(me.information.useIdeItem == 'theia'){
@@ -1706,7 +1772,7 @@
                     me.gitOrganizations.push(me.gitOrgName)
                     me.gitRepoName = me.core.filterProjectName (me.projectName);
 
-                    if(me.isServerModeling){
+                    if(me.isServerModel){
                         me.setString(`db://definitions/${me.projectId}/information/useIdeItem`, 'gitpod')
                     }
                 }
@@ -1716,7 +1782,7 @@
                 }
 
                 me.gitTabKey++;
-                if(((me.isMineProject || me.isPrivilegedUser) && !me.isFirstCommit) || me.editTemplateMode){
+                if(((me.isOwnModel || me.isPrivilegedUser) && !me.isFirstCommit) || me.editTemplateMode){
                     me.gitTab = 1
                 } else {
                     me.gitTab = 0
@@ -1983,7 +2049,7 @@
             },
             changedUseGitPodStatus(){
                 var me = this
-                if(me.isServerModeling){
+                if(me.isServerModel){
                     if(me.usegitPod){
                         me.setString(`db://definitions/${me.projectId}/information/useIdeItem`, 'gitpod')
                     } else {
@@ -2044,15 +2110,17 @@
                 me.commitStepText = 'Started Commit'
 
                 if(me.projectId){
-                    if(me.isServerModeling){
+                    if(me.isServerModel){
                         if(!me.isPrivilegedUser){
                             me.value.org = me.gitOrgName
                             me.value.repo = me.gitRepoName
+                            me.setString(`db://definitions/${me.projectId}/information/firstCommit`, "false")
                             // me.setString(`db://definitions/${me.projectId}/information/gitOrgName`, me.gitOrgName)
                             // me.setString(`db://definitions/${me.projectId}/information/gitRepoName`, me.gitRepoName)
                         } else {
                             me.setString(`db://definitions/${me.projectId}/information/permissions/${me.userInfo.uid}/gitOrgName`, me.gitOrgName)
                             me.setString(`db://definitions/${me.projectId}/information/permissions/${me.userInfo.uid}/gitRepoName`, me.gitRepoName)
+                            me.setString(`db://definitions/${me.projectId}/information/permissions/${me.userInfo.uid}/firstCommit`, "false")
                         }
                     }
                 }
@@ -2071,7 +2139,8 @@
                             let treeOptions = {
                                 tree: result.data.tree,
                                 name: result.data.name,
-                                repo: me.gitRepoName
+                                repo: me.gitRepoName,
+                                org: me.gitOrgName
                             }
                             gitTreeList = await me.git.getFiles(treeOptions)
                             .then(async function(files) {
@@ -2123,6 +2192,9 @@
                                                 me.gitSnackBar.Color = "success"
                                                 me.gitSnackBar.icon="check_circle"
                                                 me.gitSnackBar.title="Success"
+                                                setTimeout(() => {
+                                                    me.getActionLogs()
+                                                }, 5000)
                                             })
                                         })
                                         .catch((error) =>{
@@ -2264,6 +2336,9 @@
                             me.gitSnackBar.Color = "success"
                             me.gitSnackBar.icon="check_circle"
                             me.gitSnackBar.title="Success"
+                            setTimeout(() => {
+                                me.getActionLogs()
+                            }, 5000)
                         })
                         .catch((error) =>{
                             me.commonError(error)

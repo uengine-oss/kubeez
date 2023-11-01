@@ -3,9 +3,6 @@
         <v-card flat style="height: 100vh; z-index:2;">
             <v-card-title style="min-height: 65px;">
                 <v-row style="margin:-30px 0px 0px 1px;">
-                    <span v-if="changedModifying" class="headline">
-                        Merge with existing changes
-                    </span>
                     <div v-if="!isGeneratorDone">
                         <v-progress-circular
                                 size="15"
@@ -119,8 +116,7 @@
                             <template v-slot:activator="{ on: menu, attrs }">
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on: tooltip }">
-                                        <v-btn
-                                                :loading="startGenerate"
+                                        <v-btn :loading="startGenerate"
                                                 @click="stopGenerate()"
                                                 :disabled="!isGeneratorDone"
                                                 class="code-preview-left-re-size-btn"
@@ -133,46 +129,22 @@
                                                 mdi-auto-fix
                                             </v-icon>
                                         </v-btn>
-                                        <!-- <div v-else>
-                                            <v-progress-circular
-                                                size="15"
-                                                :width="3"
-                                                indeterminate
-                                                color="primary"
-                                            ></v-progress-circular>
-                                        </div> -->
                                     </template>
                                     <span>input openai token</span>
                                 </v-tooltip>
                             </template>
-                            <!-- <div v-if="openaiPopup">
-                                <v-container fluid style="background-color: white;">
-                                    <v-btn style="float: right; margin-top: -17px; margin-right: -17px;" icon @click="closeOpenaiPopup()">
-                                        <v-icon small>mdi-close</v-icon>
-                                    </v-btn>
-                                    <v-text-field
-                                            v-model="openaiToken"
-                                            style="width: 400px; font-size: small;"
-                                            :append-icon="showOpenaiToken ? 'mdi-eye' : 'mdi-eye-off'"
-                                            :type="showOpenaiToken ? 'text' : 'password'"
-                                            name="openaiToken"
-                                            label="openAI Token"
-                                            @click:append="showOpenaiToken = !showOpenaiToken"
-                                    ></v-text-field>
-                                    <div style="font-size: small;">
-                                        <v-icon small style="margin-right: 5px;">mdi-help-circle-outline</v-icon>
-                                        <a href="https://beta.openai.com/account/api-keys" target="_blank">how to get token</a>
-                                    </div>
-                                </v-container>
-                            </div> -->
                         </v-menu>
                     </div>
 
                     <v-tooltip bottom v-if="editableTemplate">
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn v-on="on" class="code-preview-left-re-size-btn"
-                                    icon fab @click="openTemplateEditor()"
-                                    :color="editTemplateMode ? 'primary':''"
+                            <v-btn v-on="on"
+                                    v-bind="attrs"
+                                    icon 
+                                    fab 
+                                    @click="openTemplateEditor()"
+                                    :color="editTemplateMode ? 'primary' : ''"
+                                    class="code-preview-left-re-size-btn"
                                     style="margin-left:5px;"
                             >
                                 <v-icon size="20">mdi-code-braces</v-icon>
@@ -183,10 +155,14 @@
 
                     <v-tooltip bottom v-if="editableTemplate">
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn v-on="on" class="code-preview-left-re-size-btn"
+                            <v-btn v-on="on" 
+                                    v-bind="attrs"
                                     :disabled="isLoadingExpectedTemplate"
-                                    icon fab @click="testTemplateModel()"
-                                    :color="openExpectedTemplateTestDialog ? 'primary':''"
+                                    icon 
+                                    fab 
+                                    @click="testTemplateModel()"
+                                    :color="openExpectedTemplateTestDialog ? 'primary' : ''"
+                                    class="code-preview-left-re-size-btn"
                                     style="margin-left:5px;"
                             >
                                 <v-icon v-if="!startCheckDiff" size="20">mdi-code-tags-check</v-icon>
@@ -198,9 +174,13 @@
 
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn v-on="on" class="code-preview-left-re-size-btn"
+                            <v-btn v-on="on" 
+                                    v-bind="attrs"
                                     :disabled="!existChangedFile || !isGeneratorDone"
-                                    icon fab @click="onOffChangedPathLists()"
+                                    icon
+                                    fab 
+                                    @click="onOffChangedPathLists()"
+                                    class="code-preview-left-re-size-btn"
                                     style="margin-top:-3px;"
                             >
                                 <div>
@@ -214,9 +194,11 @@
 
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn v-on="on" class="code-preview-left-re-size-btn"
+                            <v-btn v-on="on" 
+                                    v-bind="attrs"
                                     icon fab
                                     @click="onOffDesignPatterns()"
+                                    class="code-preview-left-re-size-btn"
                                     style="margin:-2px 0px 0px 4px;"
                             >
                                 <div>
@@ -301,241 +283,6 @@
                         <span>Explain Project</span>
                     </v-tooltip>
                 </v-row>
-
-                <v-row>
-                    <v-row style="height: 60px; display:contents;">
-                        <div style="width: 90px;
-                                position: absolute;
-                                right: 0px;
-                                top: 25px;"
-                        >
-                            <v-menu left :close-on-content-click="false" :close-on-click="false" @input="onClickToppingBox(true)">
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn text small
-                                            v-bind="attrs"
-                                            v-on="on"
-                                            style="width: 100%; font-size: 10px; margin-top: 5px; right:15px;"
-                                    >
-                                        Toppings
-                                        <v-icon>{{ showTopping ? ' mdi-menu-up' : 'mdi-menu-down' }}</v-icon>
-                                    </v-btn>
-                                </template>
-                                <v-card style="width:400px; height:100vh; overflow-y:scroll;" v-if="showTopping">
-                                    <v-btn @click="onClickToppingBox(false)" small icon style="position:absolute; right:5px; top:5px;">
-                                        <v-icon>mdi-close</v-icon>
-                                    </v-btn>
-                                    <v-card-text>
-                                        Java/Spring Version
-                                        <v-btn style="margin-bottom: 1px; color:gray" text @click="marketplaceDialog = true">
-                                            <v-icon style="margin-right: 5px; color:gray" small>mdi-cart</v-icon>
-                                            Marketplace
-                                        </v-btn>
-
-                                        <v-divider></v-divider>
-                                        <div>
-
-                                            <v-radio-group
-                                                    v-model="selectedVersion"
-                                                    row
-                                                    style="font-size: 10px; height: 35px;"
-                                            >
-                                                <v-radio
-                                                        label="JAVA 8"
-                                                        value="java8"
-                                                        :disabled="onlyJava15"
-                                                ></v-radio>
-                                                <v-radio
-                                                        label="JAVA 15"
-                                                        value="java15"
-                                                ></v-radio>
-                                            </v-radio-group>
-                                        </div>
-
-
-                                        <div class="topping-radio-group">
-                                            <div v-for="baseToppingGroup in Object.keys(baseToppingPlatforms)">
-                                                {{baseToppingGroup}}
-                                                <v-divider></v-divider>
-                                                <div v-for="baseTopping in baseToppingPlatforms[baseToppingGroup]">
-                                                    <v-row style="margin: 1px;align-items: center;">
-                                                        <v-tooltip left>
-                                                            <template v-slot:activator="{ on, attrs }">
-                                                                <v-row style="margin-top: 1px; margin-left: 1px;" v-bind="attrs"
-                                                                        v-on="on">
-                                                                    <v-checkbox
-                                                                            class="topping-checkbox"
-                                                                            dense
-                                                                            :disabled="baseTopping.disable"
-                                                                            :label="getPreferredPlatformName(baseTopping.label, false, true)"
-                                                                            :input-value="isUsedTopping(baseTopping.value)"
-                                                                            @click="changedTopping(baseTopping.value)"
-                                                                    ></v-checkbox>
-                                                                </v-row>
-                                                            </template>
-                                                            <span>{{`${toppingBaseUrl}${baseTopping.value}`}}</span>
-                                                        </v-tooltip>
-
-                                                        <v-menu v-if="isExistConfTemplate('TOPPING', `${toppingBaseUrl}${baseTopping.value}`)"
-                                                                v-model="menuOpen[baseTopping]"
-                                                                offset-y top
-                                                                :close-on-click="false"
-                                                                :close-on-content-click="false"
-                                                        >
-                                                            <template v-slot:activator="{ on }">
-                                                                <v-btn
-                                                                        x-small
-                                                                        outlined
-                                                                        v-on="on"
-                                                                >
-                                                                    Configuration
-                                                                </v-btn>
-                                                            </template>
-                                                            <v-card flat v-if="menuOpen[baseTopping]" style="width: 300px;">
-                                                                <CodeConfiguration
-                                                                        :instruction="configurationTemplate('TOPPING', `${toppingBaseUrl}${baseTopping.value}`)"
-                                                                        @apply="applyCodeConfiguration"
-                                                                        @close="closeCodeConfiguration"
-                                                                ></CodeConfiguration>
-                                                            </v-card>
-                                                        </v-menu>
-                                                    </v-row>
-                                                </div>
-                                            </div>
-                                            <!--                                                Kubernetes-->
-                                            <!--                                                <v-divider></v-divider>-->
-                                            <!--                                                <div>-->
-                                            <!--                                                    <v-checkbox-->
-                                            <!--                                                            :input-value="isUsedTopping('isVanillaK8s')"-->
-                                            <!--                                                            label="Vanilia kubernetes"-->
-                                            <!--                                                            dense-->
-                                            <!--                                                            @click="changedTopping('isVanillaK8s')"-->
-                                            <!--                                                            class="topping-checkbox"-->
-                                            <!--                                                    ></v-checkbox>-->
-                                            <!--                                                </div>-->
-
-                                            <!--                                                Security - Token based Authentication-->
-                                            <!--                                                <v-divider></v-divider>-->
-                                            <!--                                                <div>-->
-                                            <!--                                                    <v-checkbox-->
-                                            <!--                                                            :input-value="isUsedTopping('spring-security')"-->
-                                            <!--                                                            @click="changedTopping('spring-security')"-->
-                                            <!--                                                            label="Oauth by Spring Security + Spring GW"-->
-                                            <!--                                                            dense-->
-                                            <!--                                                    ></v-checkbox>-->
-                                            <!--                                                    <v-checkbox-->
-                                            <!--                                                            :input-value="isUsedTopping('keycloak-security')"-->
-                                            <!--                                                            @click="changedTopping('keycloak-security')"-->
-                                            <!--                                                            label="Oauth by Keycloak + Spring GW"-->
-                                            <!--                                                            dense-->
-                                            <!--                                                            class="topping-checkbox"-->
-                                            <!--                                                    ></v-checkbox>-->
-                                            <!--                                                </div>-->
-
-                                            <!--                                                Service Mesh-->
-                                            <!--                                                <v-divider></v-divider>-->
-                                            <!--                                                <div>-->
-                                            <!--                                                    <v-checkbox-->
-                                            <!--                                                            :input-value="isUsedTopping('istio')"-->
-                                            <!--                                                            label="Istio"-->
-                                            <!--                                                            dense-->
-                                            <!--                                                            @click="changedTopping('istio')"-->
-                                            <!--                                                    ></v-checkbox>-->
-                                            <!--                                                    <v-checkbox-->
-                                            <!--                                                            :input-value="isUsedTopping('ingress')"-->
-                                            <!--                                                            label="Ingress"-->
-                                            <!--                                                            dense-->
-                                            <!--                                                            @click="changedTopping('ingress')"-->
-                                            <!--                                                            class="topping-checkbox"-->
-                                            <!--                                                    ></v-checkbox>-->
-                                            <!--                                                </div>-->
-
-                                            <!--                                                DevOps-->
-                                            <!--                                                <v-divider></v-divider>-->
-                                            <!--                                                <div>-->
-                                            <!--                                                    <v-checkbox-->
-                                            <!--                                                            :input-value="isUsedTopping('argo')"-->
-                                            <!--                                                            label="Argo + Istio"-->
-                                            <!--                                                            dense-->
-                                            <!--                                                            @click="changedTopping('argo')"-->
-                                            <!--                                                    ></v-checkbox>-->
-                                            <!--                                                </div>-->
-
-                                            <!--                                                Data Projection-->
-                                            <!--                                                <v-divider></v-divider>-->
-                                            <!--                                                <div>-->
-                                            <!--                                                    <v-checkbox-->
-                                            <!--                                                            :input-value="isUsedTopping('apollo-graphql')"-->
-                                            <!--                                                            label="Apollo GraphQL"-->
-                                            <!--                                                            dense-->
-                                            <!--                                                            @click="changedTopping('apollo-graphql')"-->
-                                            <!--                                                    ></v-checkbox>-->
-                                            <!--                                                    <v-checkbox-->
-                                            <!--                                                            :input-value="isUsedTopping('java-graphql')"-->
-                                            <!--                                                            label="JAVA GraphQL"-->
-                                            <!--                                                            disabled-->
-                                            <!--                                                            dense-->
-                                            <!--                                                            @click="changedTopping('java-graphql')"-->
-                                            <!--                                                            class="topping-checkbox"-->
-                                            <!--                                                    ></v-checkbox>-->
-                                            <!--                                                </div>-->
-                                            <div>Custom Toppings</div>
-                                            <v-divider></v-divider>
-                                            <div v-for="customToppingPath in Object.keys(filteredCustomToppingLists)">
-                                                <div v-for="customTopping in filteredCustomToppingLists[customToppingPath]">
-                                                    <v-row style="margin: 1px;align-items: center;">
-                                                        <v-tooltip left>
-                                                            <template v-slot:activator="{ on, attrs }">
-                                                                <v-row style="margin-top: 1px; margin-left: 1px;" v-bind="attrs"
-                                                                        v-on="on">
-                                                                    <v-checkbox
-                                                                            class="topping-checkbox"
-                                                                            dense
-                                                                            :label="getPreferredPlatformName(customTopping, false, true)"
-                                                                            :input-value="isUsedTopping(customTopping)"
-                                                                            @click="changedTopping(customTopping)"
-                                                                    ></v-checkbox>
-                                                                </v-row>
-                                                            </template>
-                                                            <span>{{customTopping}}</span>
-                                                        </v-tooltip>
-
-                                                        <v-menu v-if="isExistConfTemplate('TOPPING', customTopping)"
-                                                                v-model="menuOpen[customTopping]"
-                                                                offset-y top
-                                                                :close-on-click="false"
-                                                                :close-on-content-click="false"
-                                                        >
-                                                            <template v-slot:activator="{ on }">
-                                                                <v-btn
-                                                                        x-small
-                                                                        outlined
-                                                                        v-on="on"
-                                                                >
-                                                                    Configuration
-                                                                </v-btn>
-                                                            </template>
-                                                            <v-card flat v-if="menuOpen[customTopping]" style="width: 300px;">
-                                                                <CodeConfiguration
-                                                                        :instruction="configurationTemplate('TOPPING', customTopping)"
-                                                                        @apply="applyCodeConfiguration"
-                                                                        @close="closeCodeConfiguration"
-                                                                ></CodeConfiguration>
-                                                            </v-card>
-                                                        </v-menu>
-                                                        <v-btn small icon @click="removeCustomTopping(customTopping)" style="align-self: center;"><v-icon small>mdi-close</v-icon></v-btn>
-                                                    </v-row>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </v-card-text>
-                                    <v-card-actions>
-                                        <v-btn block dark @click="openTemplateDialog('TOPPING')"> Custom Topping </v-btn>
-                                    </v-card-actions>
-                                </v-card>
-                            </v-menu>
-                        </div>
-                    </v-row>
-                </v-row>
             </v-card-title>
             
             <v-divider></v-divider>
@@ -551,180 +298,53 @@
                     <template v-slot:one>
                         <div style="height: 100%; margin-top: 7px;">
                             <!-- TREE  -->
-                            <v-col
+                            <v-col id="scroll-target"
+                                    class="code-preview-left-re-size"
                                     style="display: flex; margin-top:-15px; height: 100%; margin: 0; padding: 0;"
                                     :style="editTemplateMode ? 'overflow-x:hidden !important;':''"
-                                    id="scroll-target"
-                                    class="code-preview-left-re-size"
                             >
-                                <div v-if="changedModifying">
-                                    <v-treeview
-                                            hoverable
-                                            :items.sync='changedTmp'
-                                            @update:active="onSelected"
-                                            activatable
-                                            item-key="hash"
-                                            return-object
-                                            open-all
-                                            transition
-                                            dense
-                                    >
-                                        <template v-slot:prepend="{ item, open }">
-                                            <v-icon v-if="item.changed > 0">
-                                                mdi-autorenew
-                                            </v-icon>
-                                            <v-icon v-if="item.isNew">
-                                                mdi-plus
-                                            </v-icon>
-                                        </template>
-                                        <template v-slot:append="{ item, open }" color="red">
-                                            {{item.changed == 0 ? "" : item.changed}}
-                                        </template>
-                                    </v-treeview>
-                                </div>
-                                <div v-else
-                                     class="event-storming-treeview-height"
-                                     style="min-width: 0px;
-                                        margin-right: 0px;
-                                        width: 100%;
-                                        margin-left: -15px;
-                                        overflow-y: auto;
-                                        padding-right: 15px;"
+                                <div class="event-storming-treeview-height"
+                                        style="min-width: 0px;
+                                            margin-right: 0px;
+                                            width: 100%;
+                                            margin-left: -15px;
+                                            overflow-y: auto;
+                                            padding-right: 15px;"
                                 >
-                                    <div  v-if="searchForContent.onOff" style="margin-left: 12px; width: 100%;">
-                                        <v-text-field
-                                                v-model="searchForContent.search"
-                                                append-outer-icon="mdi-close"
-                                                label="Search"
-                                                type="text"
-                                                filled
-                                                sole
-                                                dense
-                                                autofocus
-                                                hide-details
-                                                @click:append-outer="closeSearchForContents()"
-                                        ></v-text-field>
-                                        <div v-if="searchForContent.search && filteredTreeLists && filteredTreeLists.length == 0" style="margin-left: 10px;">
-                                            No results found.
-                                        </div>
-                                    </div>
-                                    <div
-                                            v-if="searchForFile.onOff"
-                                            style="position: absolute; top: 0; left: 50%; width: 40%; margin-top: 20px;"
-                                    >
-                                        <v-autocomplete
-                                                v-model="searchForFile.search"
-                                                label="Search for files by name"
-                                                :items="filteredCodeLists"
-                                                item-text="fullPath"
-                                                return-object
-                                                append-outer-icon="mdi-close"
-                                                @update:search-input="searchForFiles"
-                                                @click:append-outer="closeSearchForFiles()"
-                                                autofocus
-                                                dense
-                                                style="text-overflow: clip !important; margin-right:-50px;"
-                                                :style="editTemplateMode ? 'max-height: 70%;':''"
-                                                class="gs-v-treeview-width"
-                                        >
-                                            <template v-slot:item="{ item }">
-                                                <div style="font-size: 14px;">{{item.fileName}} </div>
-                                                <div style="font-size: 10px; color: gray; margin-left: 7px;">
-                                                    {{item.fullPath.substring(0,item.fullPath.lastIndexOf("/"))}}
-                                                </div>
-                                            </template>
-                                        </v-autocomplete>
-                                    </div>
-
-
-
-                                    <!-- BASE  -->
-                                    <v-menu v-if="showBaseTemplate"
-                                            v-model="menuOpen.BASE"
+                                    <v-menu v-model="showTemplateTypeList"
                                             offset-y
+                                            class="my-2"
                                             :close-on-content-click="false"
                                     >
                                         <template v-slot:activator="{ on, attrs }">
                                             <v-row style="position: relative; top: 0; margin: 0px 0px 5px 12px; color:gray;">
-                                                <div>Base:</div>
-                                                <v-chip
-                                                        @mouseenter="showFullNameforBaseTemplate = true"
-                                                        @mouseleave="showFullNameforBaseTemplate = false"
-                                                        x-small
+                                                <div>Type: </div>
+                                                <v-chip x-small
                                                         v-bind="attrs"
                                                         v-on="on"
                                                         style="left: 40px; top:3px; position: absolute;"
+                                                        @click="showTemplateTypeList = !showTemplateTypeList"
                                                 >
-                                                    {{ selectedBaseTemplateName }}
+                                                    {{ defaultTemplate }}
                                                 </v-chip>
                                             </v-row>
                                         </template>
-                                        <v-tabs>
-                                            <v-tab> {{editableTemplate ? 'Change Template' : 'Cannot be changed.' }} </v-tab>
-                                            <v-btn style="margin: 5px 0px 0px 10px;" text @click="marketplaceDialog = true">
-                                                <v-icon style="margin-right: 5px;" small>mdi-cart</v-icon>
-                                                Marketplace
-                                            </v-btn>
-                                            <v-tab v-if="isExistConfTemplate('BASE', basePlatform)"> Configuration </v-tab>
-                                            <v-tab-item>
-                                                <v-list v-if="editableTemplate">
-                                                    <v-list-item
-                                                            v-for="(tempItem, index) in baseTemplateList"
-                                                            :key="index"
-                                                    >
-                                                        <subMenu :templateInfo="tempItem" :isBaseTemplate="true" @selectTemplate="emitEventChangedTemplate" />
-                                                    </v-list-item>
-                                                </v-list>
-                                            </v-tab-item>
-                                            <v-tab-item>
-                                                <CodeConfiguration
-                                                        :instruction="configurationTemplate('BASE', basePlatform)"
-                                                        @apply="applyCodeConfiguration"
-                                                        @close="closeCodeConfiguration"
-                                                ></CodeConfiguration>
-                                            </v-tab-item>
-                                            
-                                        </v-tabs>
-  
+                                        <v-list>
+                                            <v-list-item-group v-model="selectedTemplateType">
+                                                <v-list-item
+                                                        v-for="(tempItem, index) in templateTypeList"
+                                                        :key="index"
+                                                        link
+                                                        @click="changeTemplate(tempItem)"
+                                                >
+                                                    {{ tempItem }}
+                                                </v-list-item>
+                                            </v-list-item-group>
+                                        </v-list>
                                     </v-menu>
 
                                     <div v-if="isGeneratorDone">
-                                        <div v-if="embeddedK8s && selectedElementIds.length == 1">
-                                            <v-list-item>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Docs Navigator
-                                                    </v-list-item-title>
-                                                </v-list-item-content>
-                                            </v-list-item>
-
-                                            <v-divider></v-divider>
-                                            <v-list
-                                                    dense
-                                                    nav
-                                            >
-                                                <v-list-item-group
-                                                        color="primary"
-                                                >
-                                                    <v-list-item
-                                                            v-for="(item, i) in docsNavigator"
-                                                            :key="i"
-                                                            link
-                                                    >
-                                                        <a :href="item.anchor">
-                                                            <v-list-item-content>
-                                                                <v-list-item-title>
-                                                                    {{ item.text }}
-                                                                </v-list-item-title>
-                                                            </v-list-item-content>
-                                                        </a>
-                                                    </v-list-item>
-                                                </v-list-item-group>
-                                            </v-list>
-                                            <v-divider></v-divider>
-                                        </div>
-
-                                        <v-list v-else nav dense style="margin:-15px -30px 0px -10px;">
+                                        <v-list nav dense style="margin:-15px -30px 0px -10px;">
                                             <v-list-group :class="editTemplateMode ? 'gs-source-tree-v-list-group' : ''" :value="true">
                                                 <template v-slot:activator>
                                                     <div style="width: 100%; min-width: 0px;  margin-left: 6px;">
@@ -735,20 +355,24 @@
                                                 <v-treeview
                                                         ref="codeTrees"
                                                         v-if="filteredTreeLists"
-                                                        :items.sync='filteredTreeLists'
-                                                        @update:active="onSelected"
-                                                        
-                                                        :open="filteredTreeOpenList"
-                                                        :active="selectedFileList"
+                                                        :items.sync="filteredTreeLists"
+                                                        :active.sync="openCode"
                                                         activatable
-                                                        item-key="hash"
+                                                        item-key="key"
                                                         return-object
                                                         dense
                                                         style="text-overflow: clip !important; margin-right:-50px;"
-                                                        :style="editTemplateMode ? 'max-height: 70%;':''"
                                                         class="gs-v-treeview-width"
                                                 >
                                                     <template v-slot:prepend="{ item, open }">
+                                                        <v-icon v-if="!item.file">
+                                                            {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
+                                                        </v-icon>
+                                                        <v-icon v-else>
+                                                            {{ icon[item.file] }}
+                                                        </v-icon>
+                                                    </template>
+                                                    <!-- <template v-slot:prepend="{ item, open }">
                                                         <v-icon v-if="isChangedCode(item)"
                                                                 color="#00B0FF"
                                                                 x-small
@@ -806,7 +430,6 @@
                                                                                 v-on="on"
                                                                                 style="position:absolute; left:190px; top:7px;"
                                                                         >
-                                                                            <!-- {{item.preferredPlatform ? item.preferredPlatform:'selected'}} -->
                                                                             {{item.preferredPlatform ? (showFullNameforSelectedTemplateKey == item.key ? getPreferredPlatformName(item.preferredPlatform, true):getPreferredPlatformName(item.preferredPlatform, false)):'selected'}}
                                                                         </v-chip>
                                                                     </template>
@@ -842,55 +465,6 @@
                                                                             ></CodeConfiguration>
                                                                         </v-tab-item>
                                                                     </v-tabs>
-
-                                                                    <!-- <v-tabs>
-                                                                        <v-tab> Change Template </v-tab>
-                                                                        <v-tab v-if="isExistConfTemplate('TEMPLATE', item.preferredPlatform)"> Configuration </v-tab>
-                                                                        <v-tab-item>
-                                                                            <v-list v-if="editableTemplate">
-                                                                                <v-list-item
-                                                                                        v-for="(tempItem, index) in templateList"
-                                                                                        :key="index"
-                                                                                        @click="openTemplateDialog('TEMPLATE', tempItem.template, item)"
-                                                                                        @mouseenter="getForkedList(tempItem.template)"
-                                                                                >
-                                                                                    <v-menu
-                                                                                            open-on-hover
-                                                                                            right
-                                                                                            offset-x
-                                                                                    >
-                                                                                        <template v-slot:activator="{ on, attrs }">
-                                                                                            <v-list-item-title v-bind="attrs" v-on="on">{{ tempItem.display }}</v-list-item-title>
-                                                                                        </template>
-                                                                                        <v-card v-if="forkedRepoList.length > 0" style="width: 600px;">
-                                                                                            <v-list>
-                                                                                                <v-list-item v-for="(repo, index) in forkedRepoList" :key="index">
-                                                                                                    <v-list-item-content @click="changePlatformToForkedRepo(repo.title, false, item)" style="cursor: pointer;">
-                                                                                                        <v-list-item-title>{{ repo.title }}</v-list-item-title>
-                                                                                                        <v-list-item-subtitle style="font-size: small;">
-                                                                                                            <v-icon small style="margin-right: 5px;">mdi-star-outline</v-icon>Star: {{ repo.starCount }}
-                                                                                                            <v-icon small style="margin-left: 10px; margin-right: 5px;">mdi-source-fork</v-icon>Fork: {{ repo.forkCount }}
-                                                                                                            <v-icon small style="margin-left: 10px; margin-right: 5px;">mdi-update</v-icon>Update: {{ repo.updateTimeStamp }}
-                                                                                                        </v-list-item-subtitle>
-                                                                                                    </v-list-item-content>
-                                                                                                    <v-list-item-action>
-                                                                                                        <v-btn icon @click="openForkedRepo(repo.title)"><v-icon>mdi-open-in-new</v-icon></v-btn>
-                                                                                                    </v-list-item-action>
-                                                                                                </v-list-item>
-                                                                                            </v-list>
-                                                                                        </v-card>
-                                                                                    </v-menu>
-                                                                                </v-list-item>
-                                                                            </v-list>
-                                                                        </v-tab-item>
-                                                                        <v-tab-item>
-                                                                            <CodeConfiguration
-                                                                                    :instruction="configurationTemplate('TEMPLATE', item)"
-                                                                                    @apply="applyCodeConfiguration"
-                                                                                    @close="closeCodeConfiguration"
-                                                                            ></CodeConfiguration>
-                                                                        </v-tab-item>
-                                                                    </v-tabs> -->
                                                                 </v-menu>
 
                                                                 <div style="color:red;">
@@ -900,12 +474,12 @@
                                                         </v-row>
                                                         <div style="margin-top: 8px;">
                                                             <v-divider v-if="item.divisionLine && showBaseTemplate && !isOneBCModel"
-                                                                       style="margin-left: -96%;
+                                                                    style="margin-left: -96%;
                                                                         width: 90vw;
                                                                         position: absolute;"
                                                             />
                                                         </div>
-                                                    </template>
+                                                    </template> -->
                                                 </v-treeview>
                                             </v-list-group>
                                         </v-list>
@@ -1423,7 +997,7 @@
                                             :modelingProjectId="modelingProjectId"
                                         />
                                     </v-dialog>
-                                    <div v-if="changedModifying">
+                                    <!-- <div v-if="changedModifying">
                                         <h2 v-if="openCodeWeb.length > 0"
                                             style="float:left; margin-left: 27px">IDE Exist
                                             Code</h2>
@@ -1463,7 +1037,20 @@
                                                 @startAutoGenerate="startAutoGenerateCode"
                                                 @update="updatePathTmp"
                                         ></code-viewer>
-                                    </div>
+                                    </div> -->
+                                    <!-- <kubernetes-code-viewer
+                                            v-if="isDiffMode"
+                                            :diff-value="existYaml"
+                                            v-model="filteredOpenCode"
+                                            :type="'diff'"
+                                            :create-value="existYaml"
+                                            @update="updatePathTmp"
+                                            style="padding: 0 !important;"
+                                    ></kubernetes-code-viewer> -->
+                                    <kubernetes-code-viewer
+                                            v-model="filteredOpenCode"
+                                            style="padding: 0 !important;"
+                                    ></kubernetes-code-viewer>
                                 </v-col>
                             </v-row>
                         </div>
@@ -1669,6 +1256,8 @@
     import getParent from "../../../utils/getParent";
 
     import 'core-js';
+    import json2yaml from 'json2yaml';
+
 
     const axios = require('axios');
     const prettier = require("prettier");
@@ -1712,6 +1301,7 @@
             oldTreeHashLists: Object,
             isVersionMode: Boolean,
             canvasName: String,
+            defaultTemplate: String,
         },
         data() {
             return {
@@ -1804,37 +1394,15 @@
                 autoGenerateCodeValue: "",
                 openaiPopup: false,
                 modelForElement: {},
-                newTreeList: null,
                 isComputeTreeListSwitch: false,
                 debuggerPoint: [],
+
                 // Template
-                defaultTemplate: '',
-                tempToppingPlatforms: [] ,
-                tempConfiguration: null,
-                menuOpen:{
-                  BASE: false,
-                },
-                baseToppingPlatforms:{
-                    'Kubernetes':[
-                        {label:'Vanilla Kubernetes', value: 'isVanillaK8s'}
-                    ],
-                    'Security - Token based Authentication':[
-                        {label:'Oauth by Spring Security + Spring GW', value: 'spring-security'},
-                        {label:'Oauth by Keycloak + Spring GW', value: 'keycloak-security'}
-                    ],
-                    'Service Mesh': [
-                        {label:'Istio', value: 'istio'},
-                        {label:'Ingress', value: 'ingress'}
-                    ],
-                    'DevOps': [
-                        {label:'Argo + Istio', value: 'argo'}
-                    ],
-                    'Data Projection': [
-                        {label:'Apollo GraphQL', value: 'apollo-graphql'},
-                        {label:'JAVA GraphQL', value: 'java-graphql', disable: true}
-                    ]
-                },
-                // selectedBaseTemplate: 'spring-boot',
+                newTreeList: null,
+                // defaultTemplate: 'Separate File',
+                templateTypeList: [ 'Separate File', 'Single File', 'Separate File per kind', 'Helm' ],
+                showTemplateTypeList: false,
+                
                 // preferredToppingPlatforms: [],
                 // Toppings
                 showTopping: false,
@@ -1859,8 +1427,6 @@
                 gitMenuRenderKey: 0,
                 gitCodeUrl: {},
                 forkedRepoList: [],
-                showFullNameforBaseTemplate: false,
-                showFullNameforSelectedTemplateKey: null,
                 oldPlatform: null,
                 mouseEnteredPlatform: null,
                 changedValueCustomTemplate: false,
@@ -2041,33 +1607,26 @@
             "oldTreeHashLists": function () {
                 this.isChangedPathLists = true
             },
-            "isGeneratorDone":_.debounce(function () {
-                if( this.isGeneratorDone ){
-                    // this.isListSettingDone = true
-                    if( !this.isFirstGenerate ){
-                        //this.refreshCallGenerate();
-                        this.isFirstGenerate = true
-                    }
-                    this.startReGenerateCode = false
-                    this.setTemplateTreeList()
-                    if(this.reGenerateOnlyModifiedTemplate){
-                        this.setTemplateFramework(this.opennedTemplateFramework)
-                    }
-                    
-                    this.isLoadingExpectedTemplate = true
-                    if(this.openCode && this.openCode[0]){
-                        Object.keys(this.templateFrameWorkList[this.openCode[0].template]).some(function (key){
-                            if(key.includes(".template/test/expected/")){
-                                this.isLoadingExpectedTemplate = false
-                                return true;
-                            }
-                        })
-                    }
+            "isGeneratorDone":{
+                handler: _.debounce(function (newVal) {
+                    if (newVal) {
+                        if (!this.isFirstGenerate) {
+                            this.isFirstGenerate = true;
+                        }
+                        
+                        this.startReGenerateCode = false;
+                        this.setTemplateTreeList();
 
-                    console.log('>>> Generate Code] End Main <<<', Date.now())
-                }
+                        if (this.reGenerateOnlyModifiedTemplate) {
+                            this.setTemplateFramework(this.opennedTemplateFramework);
+                        }
+                        
+                        this.isLoadingExpectedTemplate = true;
 
-            }, 500),
+                        console.log('>>> Generate Code] End Main <<<', Date.now());
+                    }
+                }, 500),
+            },
             "selectedVersion": function (newVal, oldVal) {
                 if (newVal == 'java15') {
                     this.isJava15 = true
@@ -2103,6 +1662,17 @@
                     me.selectedFile = newVal
                     //me.gptCodes = []
                     //me.collectSelectedFileContents(newVal)
+                }
+            },
+            defaultTemplate: {
+                deep: true,
+                async handler(newVal, oldVal) {
+                    var me = this;
+                    if (newVal !== oldVal) {
+                        me.isGeneratorDone = false;
+                        me.showTemplateTypeList = false;
+                        await me.callGenerate();
+                    }
                 }
             }
             // "changedModifying": async function(newVal) {
@@ -2179,25 +1749,6 @@
                     return {}
                 }
             },
-            selectedBaseTemplateName(){
-                var me = this
-                if(me.basePlatform.includes("http")){
-                    if(!me.showFullNameforBaseTemplate){
-                        var Project = me.basePlatform.split('/')[me.basePlatform.split('/').length - 1]
-                        if(Project.includes("template")){
-                            Project = Project.replace("template", "")
-                            if(Array.from(Project)[0] == '-'){
-                                Project = Project.replace("-", "")
-                            }
-                        }
-                        return Project
-                    } else {
-                        return me.basePlatform
-                    }
-                } else {
-                    return me.basePlatform
-                }
-            },
             existChangedFile() {
                 if ((this.changedPathLists.length > 0 && this.changedPathListsBucket.length == 0)
                     || (this.changedPathListsBucket && this.changedPathListsBucket.length > 0)
@@ -2246,39 +1797,38 @@
                 return null;
             },
             filteredOpenCode() {
-                var me = this
-
+                var me = this;
                 if (me.isGeneratorDone) {
+                    return me.openCode;
 
-                    if (me.openCode.length == 0) {
-                        var getCodePath = localStorage.getItem('openCodePath')
-                        if (getCodePath) {
-                            me.openCode[0] = me.codeLists.find(x => x.fullPath == getCodePath)
-                        } 
-                    }
-                    //done
-                    if (me.openCode.length > 0 && me.openCode[0]) {
-                        var openCodePath = me.openCode[0].fullPath ? me.openCode[0].fullPath : me.openCode[0].path
-                        if(!localStorage.getItem('openCodePath')){
-                            localStorage.setItem('openCodePath', openCodePath)
-                        }
-                        if (openCodePath && openCodePath.includes('.java')) {
-                            setTimeout(()=>{   //TODO: temporal 
-                                me.openCode[0].code = me.codeAlign(me.openCode[0].code)
-                            }, 0)
+                    // if (me.openCode.length == 0) {
+                    //     var getCodePath = localStorage.getItem('openCodePath')
+                    //     if (getCodePath) {
+                    //         me.openCode[0] = me.codeLists.find(x => x.fullPath == getCodePath)
+                    //     } 
+                    // }
+                    // //done
+                    // if (me.openCode.length > 0 && me.openCode[0]) {
+                    //     var openCodePath = me.openCode[0].fullPath ? me.openCode[0].fullPath : me.openCode[0].path
+                    //     if(!localStorage.getItem('openCodePath')){
+                    //         localStorage.setItem('openCodePath', openCodePath)
+                    //     }
+                    //     if (openCodePath && openCodePath.includes('.java')) {
+                    //         setTimeout(()=>{   //TODO: temporal 
+                    //             me.openCode[0].code = me.codeAlign(me.openCode[0].code)
+                    //         }, 0)
                             
-                        }
-                        return me.openCode
-                    }
+                    //     }
+                    //     return me.openCode
+                    // }
 
-                    if (me.treeLists && me.treeLists.length > 0 && !me.editTemplateMode) {
-                        return me.treeLists[0].children
-                    }
+                    // if (me.treeLists && me.treeLists.length > 0 && !me.editTemplateMode) {
+                    //     return me.treeLists[0].children
+                    // }
 
-                    return []
+                    // return []
                 }
             },
-
             getDiffTreeLists() {
                 var me = this
                 // var list = {}
@@ -2339,346 +1889,24 @@
                 // return this.isMineProject
                 return true
             },
-            templateList: function () {
-                var me = this
-                var list = []
-                Object.keys(me.$manifestsPerTemplate).forEach(function (template) {
-                    if(template == 'Custom Template'){
-                        var obj = {
-                            display: template,
-                            template: template
-                        }
-                    } else {
-                        if(!template.includes("http")){
-                            var obj = {
-                                display: template,
-                                template: "https://github.com/msa-ez/template-" + template
-                            }
-                        } else {
-                            var obj = {
-                                display: template,
-                                template: template
-                            }
-                        }
-                    }
-                    if(!list.find(x => x.template == obj.template)){
-                        list.push(obj)
-                    }
-                })
-
-                return list
-            },
-            baseTemplateList: function () {
-                var me = this
-                var list = []
-                Object.keys(me.$manifestsPerBaseTemplate).forEach(function (template) {
-                    if(template == 'Custom Template'){
-                        var obj = {
-                            display: template,
-                            template: template
-                        }
-                    } else {
-                        if(!template.includes("http")){
-                            var obj = {
-                                display: template,
-                                template: "https://github.com/msa-ez/template-" + template
-                            }
-                        } else {
-                            var obj = {
-                                display: template,
-                                template: template
-                            }
-                        }
-                    }
-                    if(!list.find(x => x.template == obj.template)){
-                        list.push(obj)
-                    }
-                })
-
-                return list
-            },
             filteredTreeLists(){
                 var me = this
-                me.showTemplatePath = false;
+                // me.showTemplatePath = false;
+                return me.newTreeList;
 
                 if (!me.isClosedSeparatePanel && me.isGeneratorDone) {
                     try {
-
-                        let selectedObj = me.selectedElementIds[0] ? me.selectedElementIds[0] : null
-                        let selectedId = selectedObj ? selectedObj.id : null
-                        let returnArray = [];
-
-                        if (selectedId) {
-                            let isEmbedded = selectedObj ? selectedObj.isEmbedded : false;
-                            let value = isEmbedded ? me.value.k8sValue : me.value
-                            let selectedElement = selectedId ? value.elements[selectedId]: null;
-                            let selectedElementBC = selectedElement ? selectedElement.boundedContext : null;
-
-                            me.showChangedPathLists = false;
-                            me.treeOpenLists = [];
-
-                            if (selectedElement && selectedElement._type && selectedElement._type.endsWith("BoundedContext")) {
-                                returnArray = me.treeLists.filter(tree => tree.bcId == selectedId)
-                            } else {
-                                me.showTemplatePath = true
-
-                                var representativeForArray = [];
-                                var relatedArray = [];
-
-                                if( isEmbedded ){
-                                    me.filteredCodeLists.forEach(function (code, idx) {
-                                        if (code.element == selectedId) {
-                                            // 자신의 템플릿 파악.
-                                            var data = {
-                                                name: code.fileName,
-                                                key: code.key,
-                                                file: code.file,
-                                                code: code.code,
-                                                path: code.fullPath,
-                                                changed: 0,
-                                                hash: code.hash,
-                                                fullPath: code.fullPath ? code.fullPath:null,
-                                                template: code.template ? code.template:null,
-                                                templatePath: code.templatePath ? code.templatePath:null,
-                                            }
-                                            representativeForArray.push(data)
-                                            if(me.selectedElementIds.length == 1){
-                                                me.openCode = []
-                                                me.openCode.push(data)
-                                                me.docsRenderKey++
-                                            }
-                                        }
-                                    })
-                                } else {
-                                    let bcName = me.value.elements[selectedElementBC.id] ? me.value.elements[selectedElementBC.id].name : null;
-                                    // let bcName = selectedElementBC ? (selectedElementBC.name ? selectedElementBC.name : selectedElementBC.id) : null
-
-                                    me.filteredCodeLists.forEach(function (code, idx) {
-                                        // representativeFor
-                                        if (code.representativeFor
-                                            && bcName
-                                            && bcName == code.boundedContext
-                                            && selectedElement._type
-                                            && selectedElement._type.endsWith(code.representativeFor)
-                                        ) {
-
-                                            if (code && code.forEach == code.representativeFor) {
-                                                // forEach  == representativeFor  동일 한경우 모든 대표파일이 나오는 문제.
-                                                if (code.element == selectedId) {
-                                                    // 자신의 템플릿 파악.
-                                                    var data = {
-                                                        name: code.fileName,
-                                                        key: code.key,
-                                                        file: code.file,
-                                                        code: code.code,
-                                                        path: code.fullPath,
-                                                        changed: 0,
-                                                        hash: code.hash,
-                                                        fullPath: code.fullPath ? code.fullPath:null,
-                                                        template: code.template ? code.template:null,
-                                                        templatePath: code.templatePath ? code.templatePath:null,
-                                                    }
-                                                    representativeForArray.push(data)
-                                                }
-                                            } else {
-                                                // 같은 BC , representativeFor 같은 Type
-                                                //중복 제거.
-                                                if (representativeForArray.findIndex(obj => obj.path == code.fullPath) == -1) {
-                                                    var data = {
-                                                        name: code.fileName,
-                                                        key: code.key,
-                                                        file: code.file,
-                                                        code: code.code,
-                                                        path: code.fullPath,
-                                                        changed: 0,
-                                                        hash: code.hash,
-                                                        fullPath: code.fullPath ? code.fullPath:null,
-                                                        template: code.template ? code.template:null,
-                                                        templatePath: code.templatePath ? code.templatePath:null,
-                                                    }
-                                                    representativeForArray.push(data)
-                                                }
-                                            }
-                                        }
-
-                                        // related
-                                        if (code.element == selectedId && !code.representativeFor) {
-                                            if (relatedArray.findIndex(obj => obj.path == code.fullPath) == -1) {
-                                                var data = {
-                                                    name: code.fileName,
-                                                    key: code.key,
-                                                    file: code.file,
-                                                    code: code.code,
-                                                    path: code.fullPath,
-                                                    changed: 0,
-                                                    hash: code.hash,
-                                                    template: code.template ? code.template:null,
-                                                    fullPath: code.fullPath ? code.fullPath:null,
-                                                    templatePath: code.templatePath ? code.templatePath:null,
-                                                }
-                                                relatedArray.push(data)
-                                            }
-                                        }
-
-                                    });
-                                }
-
-                                // TODO:  Design Patterns - 성능이슈로 주석 처리함.
-                                // let patternByBC = me.generateDesignPatterns();
-                                // if(patternByBC){
-                                //     patternByBC.filter(bc=> selectedElementBC && selectedElementBC.id == bc.bcId).forEach(function(bc){
-                                //         if(bc.children){
-                                //             let patterns =  bc.children.filter(function(codeObj){
-                                //                 if( (codeObj.patternRef.elementName && codeObj.patternRef.elementName == selectedElement.name)
-                                //                     && (codeObj.patternRef.type && selectedElement._type.endsWith(codeObj.patternRef.type))
-                                //                 ){
-                                //                     return true;
-                                //                 }
-                                //             });
-
-                                //             patterns.forEach(function(pattern){
-                                //                 returnArray.push(pattern);
-                                //             });
-                                //         }
-                                //     });
-                                // }
-
-                                //END OF DESIGN PATTERNS
-
-
-                                // Default
-                                var mainData = {
-                                    name: 'Representative',
-                                    key: 'Representative',
-                                    hash: 'Representative0',
-                                    path: '/',
-                                    children: representativeForArray,
-                                    file: null,
-                                    code: null,
-                                    changed: 0,
-                                }
-
-                                var subData = {
-                                    name: 'Referenced',
-                                    key: 'Referenced',
-                                    hash: 'Referenced0',
-                                    path: '/',
-                                    children: relatedArray,
-                                    file: null,
-                                    code: null,
-                                    changed: 0,
-                                }
-
-                                returnArray.push(subData);
-                                returnArray.push(mainData);
-                                // tree open
-                                me.treeOpenLists = JSON.parse(JSON.stringify(returnArray));
-                                // first code open
-                                me.openCode = representativeForArray.length > 0 ? representativeForArray :  me.openCode
-                            }
-                        } else if (me.showChangedPathLists) {
-                            me.treeOpenLists = []
-                            var changedArray = []
-
-                            if (me.changedPathListsBucket.length > 0) {
-                                var merged = [...me.changedPathListsBucket, ...me.changedPathLists]
-                                me.changedPathListsBucket = [...new Set(merged)]
-                            } else {
-                                me.changedPathListsBucket = JSON.parse(JSON.stringify(me.changedPathLists))
-                            }
-
-                            me.changedPathListsBucket.forEach(function (changedPath) {
-                                var file = me.filteredCodeLists.find(item => item.code && (item.fullPath == changedPath))
-                                if (file) {
-                                    var data = {
-                                        name: file.fileName,
-                                        key: file.key,
-                                        file: file.file,
-                                        code: file.code,
-                                        path: file.fullPath,
-                                        changed: 0,
-                                        hash: file.hash,
-                                    }
-                                    changedArray.push(data)
-                                } else {
-                                    // delete file
-                                }
-                            })
-
-
-                            var mainData = {
-                                name: 'Changed Files',
-                                key: 'ChangedFiles',
-                                hash: 'ChangedFiles0',
-                                path: '/',
-                                children: changedArray,
-                                file: null,
-                                code: null,
-                                changed: 0,
-                            }
-                            returnArray.push(mainData)
-
-                            me.treeOpenLists = returnArray
-
-                        } else if( me.showDesignPatterns ){
-                            me.showTemplatePath = true
-                            returnArray = me.generateDesignPatterns();
-                        } else if( me.searchForContent.onOff ){
-                            returnArray = me.searchForContents();
-                        }  else {
-                            returnArray = me.treeLists;
-                        }
-
-                        if( !(selectedId || me.showChangedPathLists) ){
-                            // Base 및 Template 구분선.
-                            returnArray = returnArray.sort(function(a, b){
-                                // a.codeRef.type
-                                if( b.generatedType == 'BASE') {
-                                    return a.generatedType == 'BASE' ? 0 : 1
-                                } else if ( b.generatedType == 'MAIN'){
-                                    return a.generatedType == 'MAIN' ? 0 : 1
-                                } else {
-                                    return 0
-                                }
-                            })
-                            // returnArray =  returnArray.sort((a) => { if(a.bcId == null) return -1; } );
-                            let division = returnArray.find(tree => tree.generatedType == 'MAIN')
-                            if(division){
-                                division.divisionLine = true;
-                            }
-
-                            // me.showBaseTemplate = returnArray.find(tree => tree.type == 'BASE') ? true : false
-
-                            returnArray.filter(tree => tree.generatedType == 'MAIN').forEach(function(item){
-                                item.showTemplateChip = item.isMirrorElement ? false: true;
-                            });
-
-                        }
-
-                        // setting menuOpen
-                        returnArray.forEach(function (root) {
-                            if(root.preferredPlatform && !root.isBasePlatform){
-                                me.menuOpen[root.bcId] = false;
-                            }
-                        })
-
-                        if(me.isComputeTreeListSwitch){
-                            me.isComputeTreeListSwitch = false
-                            return me.newTreeList
-                        } else {
-                            return returnArray
-                        }
+                        return me.newTreeList;
                     } catch (e) {
-
                         console.log(`ERROR] Filtered TreeLists:: ${e}`)
-                        return []
+                        return [];
                     }
                 }
-                return []
+                return [];
             },
-            filteredCodeLists(){
-                var me = this
-                var codeList = me.setAutoGenerateCodetoList ? me.setAutoGenerateCodetoList : me.codeLists
+            filteredCodeLists() {
+                var me = this;
+                var codeList = me.setAutoGenerateCodetoList ? me.setAutoGenerateCodetoList : me.codeLists;
                 // var copyCodeLists = JSON.parse(JSON.stringify(codeList));
 
                 // try{
@@ -2689,106 +1917,92 @@
                 //     me.setAutoGenerateCodetoList = null;
                 //     return copyCodeLists
                 // }
-                return codeList
+                return codeList;
             },
-            filteredPrettierCodeLists(){
-                var me = this
-                let copyCodeLists = me.filteredCodeLists
+            filteredPrettierCodeLists() {
+                var me = this;
+                let copyCodeLists = me.filteredCodeLists;
 
                 try{
-                    if(copyCodeLists && copyCodeLists.length > 0){
-                        copyCodeLists.forEach(function(codeObj){
-                            if(codeObj && codeObj.fullPath.includes('.java')){
-                                codeObj.code = me.codeAlign(codeObj.code)
+                    if (copyCodeLists && copyCodeLists.length > 0) {
+                        copyCodeLists.forEach(codeObj => {
+                            if (codeObj && codeObj.fullPath.includes('.java')) {
+                                codeObj.code = me.codeAlign(codeObj.code);
                             }
                         })
                     }
-                    return copyCodeLists
+                    return copyCodeLists;
                 }catch (e) {
-                    console.log(`ERROR] Prettier CodeLists ${e}`)
-                    return  me.filteredCodeLists
+                    console.log(`ERROR] Prettier CodeLists ${e}`);
+                    return  me.filteredCodeLists;
                 }
             },
+            selectedTemplateType() {
+                return this.templateTypeList.indexOf(this.defaultTemplate)
+            }
         },
-        created:function () {
-            let canvas = getParent(this.$parent, this.canvasName);
-            this.core = new CodeGeneratorCore({
-                canvas: canvas,
-                projectName: this.projectName,
-                gitURLforModel: this.gitURLforModel,
-                defaultTemplate: 'https://github.com/msa-ez/template-spring-boot'
-            });
-
-            // K8s Topping은 기본세팅
-            if(this.tempToppingPlatforms && !this.tempToppingPlatforms.find(x => x === "isVanillaK8s")){
-                this.tempToppingPlatforms.push('isVanillaK8s')
-            }
-            if(this.value){
-            if(this.value.toppingPlatforms && !this.value.toppingPlatforms.find(x => x === "isVanillaK8s")){
-                this.value.toppingPlatforms.push('isVanillaK8s')
-            }
-            }
+        created() {
+            // let canvas = getParent(this.$parent, this.canvasName);
+            // this.core = new CodeGeneratorCore({
+            //     canvas: canvas,
+            //     projectName: this.projectName,
+            //     gitURLforModel: this.gitURLforModel,
+            //     defaultTemplate: 'https://github.com/msa-ez/template-spring-boot'
+            // });
             
-            this.openCodeGenerator()
-            this.settingGithub()
-            // this.onLoadInitTemplate();
+            this.openCodeGenerator();
+            this.settingGithub();
             this.initHandleBars(window.$HandleBars);
             this.callGenerate();
 
         },
         beforeDestroy: function () {
-            this.closeCodeViewer()
-            // if(!this.labId){
-            // history.pushState(null, null, '/#/storming/'+this.modelingProjectId);
-            // }
+            this.closeCodeViewer();
         },
-        mounted: function () { 
+        mounted() { 
+            var me = this;
 
-            var me = this
-
-            if(localStorage.getItem("editTemplateList") && me.firstSetEditTemplateList){
+            if (localStorage.getItem("editTemplateList") && me.firstSetEditTemplateList) {
                 var CircularJSON = require('circular-json');
                 var obj = CircularJSON.parse(localStorage.getItem("editTemplateList"));
-                if(obj && obj.projectId == me.modelingProjectId){
-                    me.editTemplateFrameWorkList = obj.editTemplateList
+                if (obj && obj.projectId == me.modelingProjectId) {
+                    me.editTemplateFrameWorkList = obj.editTemplateList;
                 }
-                me.firstSetEditTemplateList = false
+                me.firstSetEditTemplateList = false;
             }
-            Object.keys(me.editTemplateFrameWorkList).forEach(function (key){
-                Object.keys(me.editTemplateFrameWorkList[key]).forEach(function (filePath){
-                    if(!me.editTemplateFrameWorkList[key][filePath].failedGenerate){
-                        if(!me.templateFrameWorkList[key]){
-                            me.templateFrameWorkList[key] = {}
+            Object.keys(me.editTemplateFrameWorkList).forEach(key => {
+                Object.keys(me.editTemplateFrameWorkList[key]).forEach(filePath => {
+                    if (!me.editTemplateFrameWorkList[key][filePath].failedGenerate) {
+                        if (!me.templateFrameWorkList[key]) {
+                            me.templateFrameWorkList[key] = {};
                         }
-                        if(me.editTemplateFrameWorkList[key][filePath].isDeleted){
+                        if (me.editTemplateFrameWorkList[key][filePath].isDeleted) {
                             me.templateFrameWorkList[key][filePath] = {
                                 isDeleted: true
-                            }
-
+                            };
                         } else {
                             me.templateFrameWorkList[key][filePath] = {
                                 content: me.editTemplateFrameWorkList[key][filePath].code,
                                 refList: [],
                                 requestUrl: null
-                            }
+                            };
                         }
                     }
-                })
-            })
-
-            // // K8s Topping은 기본세팅
-            // me.tempToppingPlatforms.push('isVanillaK8s')
-            // me.value.toppingPlatforms.push('isVanillaK8s')
-            me.$EventBus.$on('deploy', async function (boundedId) {
-                await me.callGenerate();
+                });
             });
 
+            
             if(localStorage.getItem("openaiToken")){
                 me.openaiToken = localStorage.getItem("openaiToken")
             }
 
+            // EventBus
+            me.$EventBus.$on('deploy', async function (boundedId) {
+                await me.callGenerate();
+            });
+
             me.$EventBus.$on('downloadCode',function () {
-                me.downloadArchive()
+                me.downloadArchive();
             });
 
             me.$EventBus.$on('selectedElementObj', function (selectedObj) {
@@ -2872,18 +2086,7 @@
     
                     me.startCheckDiff = false
                 }
-
             },
-            applyTemplateInMarket(val){
-                this.changePlatformToForkedRepo(`${val.templatePath}`, true, null)
-                this.marketplaceDialog = false
-            },
-            applyToppingInMarket(val){
-                this.changedTopping(`${val.toppingPath}`)
-                this.marketplaceDialog = false
-                this.closeToppingBox();
-            },
-
             setModelData(modelData, roofNumber){
                 var me = this
                 var pathList = me.treePathList[me.currentModelData.id].split("/")
@@ -2953,11 +2156,10 @@
                     this.selectedTreeItem.newName = this.selectedTreeItem.name
                 }
             },  
-            editTreeItem(){
-                var me = this 
-                console.log(me.selectedTreeItem)
-                if(me.selectedTreeItem.editMode.includes('add')){
-                    if(me.selectedTreeItem.editMode == 'add New'){
+            editTreeItem() {
+                var me = this;
+                if(me.selectedTreeItem.editMode.includes('add')) {
+                    if(me.selectedTreeItem.editMode == 'add New') {
                         me.selectedTreeItem.newName = me.newTemplateType + '-' + me.selectedTreeItem.newName
                         me.templateTreeList[me.selectedTreeItem.newName] = me.templateTreeList['New_Template']
                         delete me.templateTreeList['New_Template']
@@ -3065,15 +2267,14 @@
                 localStorage.setItem("editTemplateList", str)
 
             },
-            pasteModelValue(item){
-                console.log(item)
-                if(this.treePathList[item.id]){
+            pasteModelValue(item) {
+                if (this.treePathList[item.id]) {
                     var subPath = this.treePathList[item.id].replace(item.name.replace(": ", ""), "")
                     console.log(subPath + item.name.replace(": ", ""))
                     this.$EventBus.$emit('pasteModelValue', subPath + item.name.replace(": ", ""))
                 }
             },
-            openModelDataEditor(item){
+            openModelDataEditor(item) {
                 this.showModelDataEditor = true
                 this.currentModelData = item
                 if(this.treePathList[item.id]){
@@ -3125,22 +2326,21 @@
                     })
                 }
             },
-            alertReLogin(){
-                alert("You need to re-login because session is expired")
-                this.showLoginCard = true
+            alertReLogin() {
+                alert("You need to re-login because session is expired");
+                this.showLoginCard = true;
             },
-            showTemplateListChip(obj){
-
-                if( obj.showTemplateChip ){
-                    return true
+            showTemplateListChip(obj) {
+                if (obj.showTemplateChip) {
+                    return true;
                 }
                 return false;
             },
-            async processTemplateUseOpenAi(modifiedValueList){
-                var me = this
-                me.startTemplateGenerate = true
-                var content
-                var startGen = false
+            async processTemplateUseOpenAi(modifiedValueList) {
+                var me = this;
+                me.startTemplateGenerate = true;
+                var content;
+                var startGen = false;
                 // if(prompt == "autoGen"){
                     Object.keys(modifiedValueList).forEach(function (key){
                         if(modifiedValueList[key] != {}){
@@ -3158,7 +2358,7 @@
                     I want to make a mustache template that generating following source code:` 
                     + me.originMustacheTemplate[0].code
 
-                    startGen = true
+                    startGen = true;
                 // } else {
                 //     if(prompt != '' && prompt != null){
                 //         console.log(prompt)
@@ -3166,7 +2366,7 @@
                 //         startGen = true
                 //     }
                 // }
-                if(me.openaiToken && startGen){
+                if (me.openaiToken && startGen) {
                     let tokenLength = 4092 - Math.round(content.length/3.5)
                     let data = {
                         model: "text-davinci-003",
@@ -3818,15 +3018,15 @@
                 }
                 return ''
             },
-            openCodeGenerator(){
-                var me = this
-                var separatePanel = localStorage.getItem("separatePanel")
+            openCodeGenerator() {
+                var me = this;
+                var separatePanel = localStorage.getItem("separatePanel");
                 var separatePanelInfo = null;
                 if(separatePanel) {
-                    separatePanelInfo = JSON.parse(separatePanel)
+                    separatePanelInfo = JSON.parse(separatePanel);
                 }
-                me.separatePanelInfo.current = separatePanelInfo && separatePanelInfo.separatePanelInfo ? separatePanelInfo.separatePanelInfo : 30
-                me.codeSeparatePanelInfo.current = separatePanelInfo && separatePanelInfo.codeSeparatePanelInfo ? separatePanelInfo.codeSeparatePanelInfo :50
+                me.separatePanelInfo.current = separatePanelInfo && separatePanelInfo.separatePanelInfo ? separatePanelInfo.separatePanelInfo : 30;
+                me.codeSeparatePanelInfo.current = separatePanelInfo && separatePanelInfo.codeSeparatePanelInfo ? separatePanelInfo.codeSeparatePanelInfo :50;
             },
             closeCodeGenerator(){
                 var me = this
@@ -4082,7 +3282,6 @@
                 }
 
             },
-
             getSelectedFilesDeeply(){
                 let codeBag = []
                 this._collectSelectedFileContents(this.selectedFile, codeBag)
@@ -4093,39 +3292,34 @@
                 var me = this;
                 var set = new Set();
 
-                
                 root.forEach((item) => {
                     if(Array.isArray(item.children)) {
                         me._collectSelectedFileContents(item.children, codeBag);
                     }
                     if(item.code != null && (item.name.endsWith(".vue") || item.name.endsWith(".java") || item.name.endsWith(".yaml") || item.name.endsWith(".yml")) && !item.path.includes("/test")){
-                        // if (!Array.isArray(me.gptCodes)) {
-                        //     //me.gptCodes = []; // 배열로 초기화    /// very very BAD
-                        // }
                         if (!set.has(item.code)) {
                             codeBag.push("#"+ item.name + "\n" + item.code);
                             set.add(item.code);
                         }
-                        //me.$refs.codeViewer.$refs.collectedCodes = me.gptCodes   /// Very BAD
                     }
                 });
             },
-            showGptDialog(){
+            showGptDialog() {
                 var me = this;
                 me.showGpt = !me.showGpt
             },
-            searchForReady(onOff){
-                this.closeSearchForFiles()
-                this.closeSearchForContents()
+            searchForReady(onOff) {
+                this.closeSearchForFiles();
+                this.closeSearchForContents();
 
-                if(onOff == 'files'){
-                    this.searchForFile.onOff = true
-                    this.searchForFiles()
+                if (onOff == 'files') {
+                    this.searchForFile.onOff = true;
+                    this.searchForFiles();
                     return false
-                }else if(onOff == 'contents'){
-                    this.searchForContent.onOff = true
-                     this.searchForContents()
-                    return false
+                } else if(onOff == 'contents') {
+                    this.searchForContent.onOff = true;
+                    this.searchForContents();
+                    return false;
                 }
             },
             closeSearchForFiles(){
@@ -4139,8 +3333,7 @@
             },
             searchForFiles(){
                 var me = this
-
-                try{
+                try {
                     if(me.searchForFile.onOff){
                         var searchFileObj = me.searchForFile.search
                         if(searchFileObj){
@@ -4163,8 +3356,7 @@
                             }
                         }
                     }
-                }catch (e) {
-
+                } catch (e) {
                 }
             },
             searchForContents(){
@@ -4641,23 +3833,6 @@
                 });
 
             },
-            onClickToppingBox(isOpen){
-                if(isOpen && !this.showTopping){
-                    this.openToppingBox()
-                }else if(!isOpen && this.showTopping ){
-                    this.closeToppingBox()
-                }
-            },
-            viewToAggregate(view) {
-                var tmp = view.fieldDescriptors;
-
-                view.elementView._type == "org.uengine.modeling.model.Aggregate";
-                view["aggregateRoot"] = {
-                    _type: "org.uengine.modeling.model.AggregateRoot",
-                    fieldDescriptors: tmp
-                }
-                return view
-            },
             asyncHandleBars(){
 
                 let obj = {}
@@ -4780,10 +3955,9 @@
                             return options.inverse(this)
                         }
 
-                    }catch(e){
+                    } catch(e) {
                         return options.inverse(this)
                     }
-
                 });
 
 
@@ -5097,146 +4271,67 @@
                     me.editTemplateFrameWorkList = {}
                 }
                 me.refreshCallGenerate();
-                // me.changeBasePlatform();
             },
-            pushTemplateToGit(platform){
-                var me = this
-                // var setRepoName
-                if(platform.includes("http") && !platform.includes("msa-ez/")){
-                    me.isCustomTemplate = true
+            pushTemplateToGit(platform) {
+                var me = this;
+                if (platform.includes("http") && !platform.includes("msa-ez/")) {
+                    me.isCustomTemplate = true;
                 }
-                // else {
-                //     me.isCustomTemplate = false
-                //     setRepoName = "template-" + platform
-                // }
-                me.oldPlatform = me.basePlatform
-
-                me.templateRepoName = platform
-                me.editTemplateList = me.editTemplateFrameWorkList[platform]
-
-                me.templatePushDialog = true
+                me.oldPlatform = me.basePlatform;
+                me.templateRepoName = platform;
+                me.editTemplateList = me.editTemplateFrameWorkList[platform];
+                me.templatePushDialog = true;
             },
-            closeToppingBox(){
-                var me = this
-                me.showTopping = false;
-                if( !me.compareArrayOnlyValue(me.tempToppingPlatforms, me.toppingPlatforms) ){
-                    me.tempToppingPlatforms = Array.from(new Set(me.tempToppingPlatforms));
-                    me.settingPlatform('TOPPING', me.tempToppingPlatforms);
-                    me.refreshCallGenerate();
-                }
-            },
-            compareArrayOnlyValue(array1, array2){
-                if (array1.length !== array2.length) return false;
-                const uniqueValues = new Set([...array1, ...array2]);
-                for (const v of uniqueValues) {
-                    const aCount = array1.filter(e => e === v).length;
-                    const bCount = array2.filter(e => e === v).length;
-                    if (aCount !== bCount) return false;
-                }
-                return true;
-            },
-            openToppingBox(){
-                var me = this
-                me.tempToppingPlatforms = JSON.parse(JSON.stringify(me.toppingPlatforms))
-
-                //<< radio box
-                // if(me.tempToppingPlatforms.includes('java15')){
-                //     me.selectedVersion= 'java15'
-                //     me.isJava15 = true
-                // }
-                //>> radio box
-
-                me.showTopping = true
-
-                // if(isCustom){
-                //     me.showTopping = true
-                // }else{
-                    // // init
-                    // me.selectedVersion = 'java8'
-                    // me.isVanillaK8s = false
-                    // me.isJava15 = false
-                    // me.selectedSecurity = null
-                    // me.isSpringSecurity = false
-                    // me.isKeycloakSecurity = false
-                    // me.isServiceMesh = false
-                    // me.isRollout = false
-                    // me.isIngress = false
-                    // me.isApolloGraphQL = false
-                    // me.isJavaGraphQL = false
-                    //
-                    // if(me.tempToppingPlatforms.length > 0 ){
-                    //     me.tempToppingPlatforms.forEach(function(toppingPlatform){
-                    //         if(toppingPlatform =="apollo-graphql"){
-                    //             me.isApolloGraphQL = true
-                    //         } else if(toppingPlatform=="spring-security"){
-                    //             me.selectedSecurity = "isSpringSecurity"
-                    //             me.isKeycloakSecurity = false
-                    //             me.isSpringSecurity = true
-                    //         } else if(toppingPlatform=="keycloak-security"){
-                    //             me.selectedSecurity = "isKeycloakSecurity"
-                    //             me.isKeycloakSecurity = true
-                    //             me.isSpringSecurity = false
-                    //         } else if(toppingPlatform=="argo"){
-                    //             me.isRollout = true
-                    //         } else if(toppingPlatform=="istio"){
-                    //             me.isServiceMesh = true
-                    //         } else if(toppingPlatform=="ingress"){
-                    //             me.isIngress = true
-                    //         } else if(toppingPlatform=="java15"){
-                    //             me.selectedVersion = "java15"
-                    //         } else if(toppingPlatform=="isVanillaK8s"){
-                    //             me.isVanillaK8s = true
-                    //         }
-                    //     })
-                    // }
-                    // me.showTopping = true
-                // }
-            },
-            // openForkedRepo(gitPath){
-            //     window.open(gitPath, '_blank');
-            // },
-            changePlatformToForkedRepo(repoPath, isChangeBaseTemplate, item){
-                var me = this
-                if(isChangeBaseTemplate){
+            changePlatformToForkedRepo(repoPath, isChangeBaseTemplate, item) {
+                var me = this;
+                if (isChangeBaseTemplate) {
                     me.openTemplateDialog('BASE', repoPath);
                 } else {
-                    if(item){
+                    if (item) {
                         me.openTemplateDialog('TEMPLATE', repoPath, item);
                     }
                 }
             },
-            changePlatform(platform){
-                var me = this
-                var isChanged = false
-                me.newTreeList = JSON.parse(JSON.stringify(me.filteredTreeLists))
-                Object.keys(me.value.elements).forEach(function (eleId){
-                    if(me.value.elements[eleId] && me.value.elements[eleId].preferredPlatform && me.value.elements[eleId].preferredPlatform == me.oldPlatform){
-                        me.$emit('changedByMe', true)
-                        me.value.elements[eleId].preferredPlatform = platform
-                        me.newTreeList.some(function (arr, index){
-                            if(arr.bcId == eleId){
+            changePlatform(platform) {
+                var me = this;
+                var isChanged = false;
+                me.newTreeList = JSON.parse(JSON.stringify(me.filteredTreeLists));
+
+                Object.keys(me.value.elements).forEach(eleId => {
+                    if (me.value.elements[eleId] && 
+                            me.value.elements[eleId].preferredPlatform && 
+                            me.value.elements[eleId].preferredPlatform == me.oldPlatform
+                    ) {
+                        me.$emit('changedByMe', true);
+                        me.value.elements[eleId].preferredPlatform = platform;
+                        me.newTreeList.some((arr, index) => {
+                            if (arr.bcId == eleId) {
                                 me.newTreeList[index].preferredPlatform = platform
                                 return true
                             }
-                        })
+                        });
 
-                        isChanged = true
-
-                        if((me.openCode[0] && (eleId == me.openCode[0].bcId)) && !me.openCode[0].code.includes("<!-- Is Not Template -->")){
-                            var openCodePath = me.openCode[0].fullPath ? me.openCode[0].fullPath : me.openCode[0].path
-                            localStorage.setItem('openCodePath', openCodePath)
+                        isChanged = true;
+                        
+                        if ((me.openCode[0] && 
+                                (eleId == me.openCode[0].bcId)) &&
+                                !me.openCode[0].code.includes("<!-- Is Not Template -->")
+                        ) {
+                            var openCodePath = me.openCode[0].fullPath ? 
+                                me.openCode[0].fullPath : me.openCode[0].path;
+                            localStorage.setItem('openCodePath', openCodePath);
                         }
                     }
-                })
-                if(isChanged){
-                    me.isComputeTreeListSwitch = true
+                });
+
+                if (isChanged) {
+                    me.isComputeTreeListSwitch = true;
                 }
-                if(me.basePlatform == me.oldPlatform){
-                    if(me.basePlatform != platform){
+
+                if (me.basePlatform == me.oldPlatform) {
+                    if (me.basePlatform != platform) {
                         me.settingPlatform('BASE', platform);
-                        delete me.templateFrameWorkList[me.oldPlatform]
-                        // me.selectedBaseTemplate = platform
-                        // me.setString(`db://definitions/${me.modelingProjectId}/information/preferredPlatforms/basePlatform` , platform)
+                        delete me.templateFrameWorkList[me.oldPlatform];
                     }
                 }
 
@@ -6579,7 +5674,7 @@
                 me.ideCheckDialog = false;
                 me.$EventBus.$emit("progressing", {
                     progressing: true,
-                    type: 'ES'
+                    type: 'K8S'
                 })
 
                 var userName = localStorage.getItem("email").split('@')[0].toLowerCase();
@@ -6927,1824 +6022,172 @@
                 }
                 return false
             },
-            onSelected(newVal) {
-                var me = this
-
-                try {
-                    if (newVal && newVal.length > 0) {
-
-                       
-
-                        if (me.changedPathLists && me.changedPathLists.length > 0) {
-                            var findIdx = me.changedPathLists.indexOf(newVal[0].path)
-                            if (findIdx != -1) {
-                                me.changedPathLists.splice(findIdx, 1)
-                                if (me.changedPathLists.length == 0) {
-                                    me.showChangedPathLists = false
-                                }
-                            }
-                        }
-                        me.changedDiffCode = []
-
-                        if (newVal && newVal[0]) {
-                            var newValObj = newVal[0]
-                            var oldFullObj = me.findBeforeCodeByPath(newVal[0])
-                            var oldValObj = oldFullObj ? oldFullObj : null
-
-
-                            if (oldValObj) {
-                                var isExistDiff = jsondiffpatch.diff(newValObj.code, oldValObj.code) ? true : false
-                                if (isExistDiff) {
-                                    me.changedDiffCode.push(oldValObj)
-                                    me.changedDiffCodeViewer = true
-                                } else {
-                                    // Equals File
-                                    me.changedDiffCode = []
-                                    me.changedDiffCodeViewer = false
-                                }
-                            } else {
-                                console.log('Is New File.')
-                                // New File
-                                me.changedDiffCode = []
-                                me.changedDiffCodeViewer = false
-                            }
-                        } else {
-                            //No Selected File
-                            me.changedDiffCode = []
-                            me.changedDiffCodeViewer = false
-                        }
-
-                        if (newValObj && newValObj.path.includes('.java')) {
-
-                             ////// TODO : performance problem
-                            setTimeout(()=>{newValObj.code = me.codeAlign(newValObj.code)}, 0)
-                            
-                        }
-
-                        me.openCode = newVal
-                        if(me.openCode[0].children){
-                            me.showGpt = true;
-                        }else{
-                            me.showGpt = false;
-                        }
-                    } else if (me.changedDiffCodeViewer) {
-                        // Before Diff Mode
-                        // me.changedDiffCode = []
-                        // me.changedDiffCodeViewer = false
-                    } else {
-                        // Just Show Code
-                        me.showGpt = false;
-                        me.changedDiffCode = []
-                        me.changedDiffCodeViewer = false
-                    }
-                } catch (e) {
-                    console.log('selectedActive[Error] : ', e)
-                    me.openCode = []
-                }
-            },
-            editBreakPoint(debuggerPoint){
-                var me = this
-                // console.log(debuggerPoint, me.opennedTemplateFramework[0])
-                me.debuggerPoint = debuggerPoint
-            },
-            // generatePortAndPBC(value, options, startingPort){
-            //     let isPBCModel = options && options.isPBCModel ? options.isPBCModel : false
-            //     let PBCLists = Object.values(value.elements).filter(x => x && x._type.endsWith("PBC"));
-            //     let sortedPBCLists = PBCLists.sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
-            //
-            //     if(!isPBCModel){
-            //         Object.values(value.elements).filter(ele => ele && ele._type.endsWith('BoundedContext')).forEach(function(bc, idx){
-            //             startingPort = startingPort + idx;
-            //             bc.portGenerated = startingPort
-            //         });
-            //     }
-            //
-            //     sortedPBCLists.forEach(function(pbc,idx){
-            //         pbc.boundedContextes = _.uniqBy(pbc.boundedContextes, "elementView.id");
-            //         pbc.boundedContextes.forEach(function (bc, idx) {
-            //             // startingPort = startingPort + 1;
-            //             startingPort = options && options.isPBCModel ? startingPort + idx : startingPort + 1
-            //             bc.portGenerated = startingPort;
-            //         })
-            //     });
-            //
-            //     return {value: value, PBCLists: sortedPBCLists, startingPort: startingPort }
-            // },
-            settingSCM(elementArray, options){
+            changeTemplate(template) {
                 var me = this;
-                let array = elementArray
-
-                if( typeof array != 'object'){
-                    return;
-                }
-
-                if( !Array.isArray(array) ){
-                    array = Object.values(array);
-                }
-
-                array.forEach(function(elementObj){
-                    if(options.scm
-                        && options.scm.tag
-                        && options.scm.org
-                        && options.scm.repo
-                    ){
-                        me.convertNameForElement(elementObj);
-                        options.scm.projectName = options.projectName;
-                        elementObj.scm = options.scm;
-
-                    }
-                });
-
-                return array;
+                me.defaultTemplate = template;
             },
-            async extractBoundedContextsOfPBC( values, info ){
-                var me = this
-                let extractBoundedContext = []
-
-                try{
-                    async function callPBC( modelValue, modelInfo ){
-                        let value = JSON.parse(JSON.stringify(modelValue));
-                        let bcLists =  Object.values(value.elements).filter(x => x && x._type.endsWith("BoundedContext"));
-                        let pbcLists =  Object.values(value.elements).filter(x => x && x._type.endsWith("PBC"));
-
-                        if(modelInfo){
-                            // only BC of PBC ( set BC Info )
-                            bcLists = me.settingSCM(bcLists, modelInfo);
-                            bcLists = bcLists.filter(x => x.scm);
-                            extractBoundedContext = extractBoundedContext.concat(bcLists);
-                        }
-
-
-                        for(let pbc of pbcLists){
-                            let config = pbc.modelValue;
-                            if( config.projectId && config.projectVersion ){
-                                let modelVerInfo = await me.list(`db://definitions/${config.projectId}/versionLists/${config.projectVersion}`);
-                                let modelVerValue = {'elements': {}, 'relations': {}};
-
-                                if(modelVerInfo && modelVerInfo.valueUrl){
-                                    modelVerValue = await me.getObject(`storage://${modelVerInfo.valueUrl}`);
-                                } else {
-                                    modelVerValue = modelVerInfo.versionValue ? JSON.parse(modelVerInfo.versionValue.value) : {'elements': {}, 'relations': {}};;
-                                }
-                                await callPBC(modelVerValue, modelVerInfo);
-                            }
-                        }
-                    }
-                    await callPBC(values, info);
-
-                    return extractBoundedContext;
-
-                } catch(e) {
-                    console.log(e)
-                    return [];
-                }
-            },
-            async callGenerate(options){
-                var me = this
+            async callGenerate() {
+                var me = this;
 
                 try {
-                    console.log('>>> Generate Code] Start Main<<<', Date.now() )
+                    console.log('>>> Generate Code] Start Main<<<', Date.now());
                     me.isGeneratorDone = false;
-
-                    var isRecursion = options && options.recursion ? true: false
-
-                    // if(options && !options.editCode){
-                    //     me.isListSettingDone = false
-                    // }
-                    if( !isRecursion && !me.reGenerateOnlyModifiedTemplate){
-                        me.codeLists = []
-                    } else {
-                        if(me.reGenerateOnlyModifiedTemplate){
-                            Object.keys(me.editTemplateFrameWorkList).forEach(function (platform){
-                                Object.keys(me.editTemplateFrameWorkList[platform]).forEach(function (template){
-                                    var idx
-                                    while(idx != -1){
-                                        idx = me.codeLists.findIndex(x => x.templatePath == template)
-                                        if(idx != -1){
-                                            me.codeLists.splice(idx, 1)
-                                        }
-                                    }
-                                })
-                            })
-                        }
-                    }
-
-                    let values = JSON.parse(JSON.stringify(me.value));
-                    me.callGenerateCode(values, options);
-
-                } catch (e){
+                    me.callGenerateCode();
+                } catch (e) {
                     console.log(`ERROR] Generate ${e}`);
                 }
             },
-            // async callGenerate(options){
-            //     var me = this
-            //
-            //     try {
-            //         console.log('>>> Generate Code] Start Main<<<')
-            //         me.generateCodeStartCnt = -1;
-            //         me.generateCodeEndCnt = -1;
-            //         var isRecursion = options && options.recursion ? true: false
-            //         let startingPort = 8082;
-            //
-            //         if(options && !options.editCode){
-            //             me.isListSettingDone = false
-            //         }
-            //         if( !isRecursion ){
-            //             me.codeLists = []
-            //         }
-            //
-            //         console.log('>>> extractBoundedContextForPBC] Start Main<<<')
-            //         let bcforPBC = await me.extractBoundedContextForPBC(JSON.parse(JSON.stringify(me.value)));
-            //         console.log(bcforPBC);
-            //         console.log('>>> extractBoundedContextForPBC] End Main<<<')
-            //
-            //         function callPBCCode(value, options){
-            //             let values = JSON.parse(JSON.stringify(value));
-            //             let PBCLists = [];
-            //
-            //             if(values && Object.values(values.elements).filter(x=> x).length > 0) {
-            //                 // before
-            //                 // me.callGenerateCode(values,options)
-            //                 // var PBCLists = Object.values(values.elements).filter(x => x && x._type.endsWith("PBC"))
-            //
-            //                 // after
-            //                 let generateValue = me.generatePortAndPBC(values, options, startingPort);
-            //                 values = generateValue.value;
-            //                 PBCLists = generateValue.PBCLists;
-            //                 startingPort = generateValue.startingPort;
-            //                 me.callGenerateCode(values, options);
-            //
-            //                 if(PBCLists.length > 0){
-            //                     PBCLists.forEach(async function(pbc){
-            //                         let config = pbc.modelValue;
-            //                         let modelInfo = await me.list(`db://definitions/${config.projectId}/versionLists/${config.projectVersion}`);
-            //                         let modelValue = null;
-            //
-            //                         if(modelInfo && modelInfo.valueUrl){
-            //                             modelValue = await me.getObject(`storage://${modelInfo.valueUrl}`);
-            //                         } else {
-            //                             modelValue = modelInfo.versionValue ? JSON.parse(modelInfo.versionValue.value) : {'elements': {}, 'relations': {}};;
-            //                         }
-            //
-            //                         var rootPath = options && options.rootPath ? options.rootPath : ''
-            //
-            //                         // values
-            //                         modelValue.projectName = config.projectName;
-            //
-            //                         //options
-            //                         config.rootPath = `${rootPath}${config.projectName}/`
-            //                         config.pbcId = pbc.elementView.id;
-            //                         config.isPBCModel = true;
-            //
-            //                         // set BC of startingPort
-            //                         pbc.boundedContextes.forEach(function(bc){
-            //                             modelValue.elements[bc.elementView.id] = bc;
-            //                         });
-            //
-            //                         callPBCCode(modelValue, config)
-            //                         me.generateCodeStartCnt ++;
-            //                     })
-            //                 }
-            //             } else {
-            //                 // me.isListSettingDone = true
-            //                 // me.templateSendCnt ++;
-            //                 // me.templateDoneCnt ++;
-            //                 me.generateCodeStartCnt ++;
-            //                 me.generateCodeEndCnt ++;
-            //             }
-            //         }
-            //         callPBCCode(me.value)
-            //     } catch (e){
-            //
-            //     }
-            // },
-            async callGenerateCode(values, options) {
-                var me = this
+            async callGenerateCode() {
+                var me = this;
 
-                return new Promise( async(resolve, reject) => {
-                    var value = values  ? values : me.value
-                    var rootModelAndElement
-                    if(me.reGenerateOnlyModifiedTemplate){
-                        rootModelAndElement = me.rootModelAndElementMap
+                return new Promise(await function (resolve, reject) {
+                    me.newTreeList = [];
+                    var copyValue = JSON.parse(JSON.stringify(me.value));
+
+                    if (me.defaultTemplate.length > 0) {
+                        var template = me.defaultTemplate;
                     } else {
-                        rootModelAndElement = me.core.convertModelForCodeGen(value, options);
-                        rootModelAndElement = await me.convertK8sModelForCodeGen(value, rootModelAndElement);
-                        me.rootModelAndElementMap = rootModelAndElement
-                    }
-                    if(me.rootModelAndElementMap.modelForElements.BoundedContext.length === 1){
-                        me.isOneBCModel = true
-                        me.onlyOneBcId = me.rootModelAndElementMap.modelForElements.BoundedContext[0].id
+                        var template = 'Separate File per kind';
                     }
 
-                    var rootModel = rootModelAndElement.rootModel
-                    var modelForElements = rootModelAndElement.modelForElements
+                    if (template == 'Separate File') {
+                        var codeValue = {};
 
-                    var basePlatforms =  value.basePlatform ? value.basePlatform : ( options && options.baseTemplate ? options.baseTemplate : me.defaultTemplate )
-                    var basePlatformConf =  value.basePlatformConf ? value.basePlatformConf : {}
-                    var preferredPlatforms = rootModelAndElement.preferredPlatforms
-                    var toppingPlatforms = value.toppingPlatforms;
-                    var toppingPlatformsConf = value.toppingPlatformsConf ? value.toppingPlatformsConf : {}
-
-                    var rootPath = options && options.rootPath ? options.rootPath : ''
-                    var platforms ={
-                        preferredPlatforms: preferredPlatforms,
-                        basePlatform: basePlatforms,
-                        basePlatformConf: basePlatformConf,
-                        toppingPlatforms: toppingPlatforms,
-                        toppingPlatformsConf: toppingPlatformsConf,
-                        rootPath: rootPath,
-                    }
-                    let scmInfo = {
-                        projectName: rootModel.projectName,
-                        scm: value.scm
-                    }
-
-                    if(me.reGenerateOnlyModifiedTemplate){
-                        rootModel.boundedContexts = me.rootModelBoundedContexts
-                    } else {
-                        rootModel.boundedContexts = me.settingSCM(rootModel.boundedContexts, scmInfo );
-                        me.rootModelBoundedContexts = rootModel.boundedContexts
-                    }
-
-                    let bcOfPBC = await me.extractBoundedContextsOfPBC(JSON.parse(JSON.stringify(value)));
-                    rootModel.boundedContexts = [...rootModel.boundedContexts, ...bcOfPBC];
-
-
-                    //////////////////////////////////////////////// TEMPLATE START ////////////////////////////////////////////////
-                    // setting Template
-                    if(basePlatforms == "Custom Template"){
-                        basePlatforms = "spring-boot"
-                    }
-                    // setting of Base Template
-                    if((localStorage.getItem("loginType") && localStorage.getItem("loginType") == "github") || me.gitAccessToken){
-                        if(!basePlatforms.includes("http")){
-                            basePlatforms = "https://github.com/msa-ez/template-" + basePlatforms
-                        }
-                        await me.gitTemplate('BASE', basePlatforms)
-                    } else if((basePlatforms.includes("http") && !basePlatforms.includes("https://github.com/msa-ez/template-"))){
-                        me.isCustomTemplateForLoad = true
-                        // me.isListSettingDone = true
-                        return false
-                    }
-
-                    if(!me.baseTemplateList.find(tmp => tmp.template == basePlatforms)){
-                        me.baseTemplateList.push({
-                            display: basePlatforms,
-                            template: basePlatforms
-                        })
-                    }
-
-                    // setting of Custom Template
-                    if(preferredPlatforms.length > 0){
-                        for(let idx in preferredPlatforms) {
-                            let preferredPlatform = preferredPlatforms[idx];
-                            if(preferredPlatform == "Custom Template"){
-                                preferredPlatform = "spring-boot"
+                        Object.keys(copyValue.elements).forEach((key) => {
+                            var item = copyValue.elements[key];
+                            if (item && item._type != "DestinationRuleSubset" && 
+                                    item._type != "WorkflowDag" && 
+                                    item._type != "WorkflowStep"
+                            ) {
+                                codeValue = {
+                                    'key': item.elementView.id,
+                                    'name': item.object.metadata.name + '.yaml',
+                                    'code': me.yamlFilter(json2yaml.stringify(item.object)),
+                                    'file': me.fileType('.yaml')
+                                };
+                                me.newTreeList.push(codeValue);
+                                resolve();
                             }
-                            if((localStorage.getItem("loginType") && localStorage.getItem("loginType") == "github") || me.gitAccessToken){
-                                if(!preferredPlatform.includes("http")){
-                                    preferredPlatform = "https://github.com/msa-ez/template-" + preferredPlatform
-                                }
-                                await me.gitTemplate('TEMPLATE', preferredPlatform)
-                            } else if((preferredPlatform.includes("http") && !preferredPlatform.includes("https://github.com/msa-ez/template-"))){
-                                me.isCustomTemplateForLoad = true
-                                // me.isListSettingDone = true
-                                return false
-                            }
-                            // me.$http.defaults.headers.common['Authorization'] = `token ${me.gitAccessToken}`;
-                            if(!me.templateList.find(tmp => tmp.template == preferredPlatform)){
-                                var obj = {
-                                    display: preferredPlatform,
-                                    template: preferredPlatform
-                                }
-                                me.templateList.push(obj)
-                            }
-                        }
-                    }
-
-                    // setting of Topping Template
-                    if(toppingPlatforms.length > 0 ){
-                        toppingPlatforms = toppingPlatforms.filter(topping => {
-                            return !Array.isArray(topping)
                         });
-                        for(let idx in toppingPlatforms){
-                            let toppingPlatform = toppingPlatforms[idx];
-                            await me.setToppingList(toppingPlatform);
-                        }
-                    }
-                    //////////////////////////////////////////////// TEMPLATE END ////////////////////////////////////////////////
+                    } else if (template == 'Single File') {
+                        var yaml = '';
 
-                    //Data Preprocessing
-                    me.core.afterProcessing(rootModel,modelForElements,platforms);
-
-                    //Generate Code
-                    if(!me.githubTokenError){
-                        var codeList = me.generateCode(rootModel, modelForElements, platforms);
-                        Promise.all([codeList]).then(async function () {
-                            me.addTemplateCode();
-                            if(!me.reGenerateOnlyModifiedTemplate){
-                                me.treeLists = me.generateTree(options)
+                        Object.keys(copyValue.elements).forEach((key) => {
+                            var item = copyValue.elements[key]
+                            if (item && item._type != "DestinationRuleSubset" &&
+                                    item._type != "WorkflowDag" &&
+                                    item._type != "WorkflowStep"
+                            ) {
+                                yaml += '--- \n' + me.yamlFilter(json2yaml.stringify(item.object));
                             }
-                            me.setBeforeCode()
-                            me.$ModelingBus.$emit("clearOld");
+                        });
 
-                            me.isGeneratorDone = true;
-                            resolve()
-                        }).catch(()=>{
-
-                            me.isGeneratorDone = true;
-                        })
-                    }
-
-                    // K8s CodeViewer show GuideLine
-                    if(me.embeddedK8s){
-                        me.showIntroduceK8sCodeViewer();
-                    }
-                })
-            },
-            
-            convertNameForElement(item){
-                item.namePascalCase = changeCase.pascalCase(item.name)
-                item.nameCamelCase = changeCase.camelCase(item.name)
-                item.namePlural = pluralize(item.nameCamelCase);
-            },
-            async convertK8sModelForCodeGen(flatModel, rootModelAndElement){
-                var me = this
-                // let flatModel = JSON.parse(JSON.stringify(flat));
-
-                let rootModel = rootModelAndElement.rootModel
-                let modelForElements = rootModelAndElement.modelForElements
-                let preferredPlatforms = rootModelAndElement.preferredPlatforms
-
-                var k8sModelForElements= {
-                    'k8s.Service':[],
-                    'k8s.Deployment':[],
-                    'k8s.Pod': [],
-                    'k8s.PersistentVolume': [],
-                    'k8s.PersistentVolumeClaim': [],
-                    'k8s.StorageClass': [],
-                    'k8s.Ingress': [],
-                    'k8s.HorizontalPodAutoscaler': [],
-                    'k8s.ConfigMap': [],
-                    'k8s.Namespace': [],
-                    'k8s.Secret': [],
-                    'k8s.ServiceAccount': [],
-                    'k8s.Role': [],
-                    'k8s.RoleBinding': [],
-                    'k8s.ClusterRole': [],
-                    'k8s.ClusterRoleBinding': [],
-                }
-
-                try {
-                    //<<<<<<<<<< K8s
-                    if(flatModel.k8sValue){
-
-                        var k8sElement = flatModel.k8sValue.elements
-                        var k8sRelations = flatModel.k8sValue.relations
-                        var k8sElementsCopy = JSON.parse(JSON.stringify(k8sElement))
-                        var k8sModelCopy = Object.values(k8sElementsCopy)
-                        var userEmail = localStorage.getItem("email")
-
-                        for(let index=0; index< k8sModelCopy.length; index++){
-                            let item = k8sModelCopy[index];
-                            if(item){
-                                item.isPassedElement = true
-
-                                var yamlPath = await me.getURL(`storage://yamlStorage/${me.modelingProjectId}/${userEmail}/${item._type}/${ item.object.metadata.name + ".yaml"}`);
-                                item.yamlPath = yamlPath;
-
-
-                                if (item._type == 'Service') {
-                                    k8sModelForElements['k8s.Service'].push(item);
-                                } else if (item._type == 'Deployment') {
-                                    k8sModelForElements['k8s.Deployment'].push(item);
-                                } else if (item._type == 'Pod') {
-                                    k8sModelForElements['k8s.Pod'].push(item);
-                                } else if (item._type == 'PersistentVolume') {
-                                    k8sModelForElements['k8s.PersistentVolume'].push(item);
-                                } else if (item._type == 'PersistentVolumeClaim') {
-                                    k8sModelForElements['k8s.PersistentVolumeClaim'].push(item);
-                                } else if (item._type == 'StorageClass') {
-                                    k8sModelForElements['k8s.StorageClass'].push(item);
-                                } else if (item._type == 'Ingress') {
-                                    k8sModelForElements['k8s.Ingress'].push(item);
-                                } else if (item._type == 'HorizontalPodAutoscaler') {
-                                    k8sModelForElements['k8s.HorizontalPodAutoscaler'].push(item);
-                                } else if (item._type == 'ConfigMap') {
-                                    k8sModelForElements['k8s.ConfigMap'].push(item);
-                                } else if (item._type == 'Namespace') {
-                                    k8sModelForElements['k8s.Namespace'].push(item);
-                                } else if (item._type == 'Secret') {
-                                    k8sModelForElements['k8s.Secret'].push(item);
-                                } else if (item._type == 'ServiceAccount') {
-                                    k8sModelForElements['k8s.ServiceAccount'].push(item);
-                                } else if (item._type == 'Role') {
-                                    k8sModelForElements['k8s.Role'].push(item);
-                                } else if (item._type == 'RoleBinding') {
-                                    k8sModelForElements['k8s.RoleBinding'].push(item);
-                                } else if (item._type == 'ClusterRole') {
-                                    k8sModelForElements['k8s.ClusterRole'].push(item);
-                                } else if (item._type == 'ClusterRoleBinding') {
-                                    k8sModelForElements['k8s.ClusterRoleBinding'].push(item);
-                                }
-                            }
-                        }
-                    }
-
-                } catch (e) {
-                    console.log(`Error]convert K8sModel ForCodeGen:${e}`)
-                }
-                return {
-                    rootModel: rootModel,
-                    modelForElements: Object.assign(modelForElements, k8sModelForElements),
-                    preferredPlatforms: preferredPlatforms
-                }
-            },
-
-            generateCode(rootModel, modelForElements, platforms) { //change from getTemplateSetting
-                var me = this
-                return new Promise(async function (resolve, reject) {
-                    try {
-                        var preferredPlatforms = platforms.preferredPlatforms
-                        let basePlatform = platforms.basePlatform
-                        let basePlatformConf = platforms.basePlatformConf
-                        let toppingPlatforms = platforms.toppingPlatforms
-                        let toppingPlatformsConf = platforms.toppingPlatformsConf
-                        var rootPath = platforms.rootPath
-                        let projectName = rootModel.projectName
-
-
-                        var filteredProjectName = me.core.filterProjectName(projectName)
-
-                        if (preferredPlatforms.length == 0) {
-                            preferredPlatforms.push(me.defaultTemplate)
-                        }
-
-                        //Hash
-                        if (!me.newTreeHashLists) me.newTreeHashLists = {}
-                        me.oldTreeHashLists = JSON.parse(JSON.stringify(me.newTreeHashLists))
-                        me.newTreeHashLists = {}
-
-                        // if (!me.newTreeHashLists) me.$emit('update:newTreeHashLists',{})
-                        // me.$emit('update:oldTreeHashLists',JSON.parse(JSON.stringify(me.newTreeHashLists)))
-                        // me.$emit('update:newTreeHashLists',{})
-
-                        var templateContext ={
-                            modelForElements: modelForElements,
-                            filteredProjectName: filteredProjectName,
-                            preferredPlatforms: preferredPlatforms,
-                            basePlatform: basePlatform,
-                            basePlatformConf: basePlatformConf,
-                            toppingPlatforms: toppingPlatforms,
-                            toppingPlatformsConf: toppingPlatformsConf,
-                            rootPath: rootPath,
-                            rootModel: rootModel,
+                        var codeValue = {
+                            'key': 'local',
+                            'name': 'local.yaml',
+                            'code': yaml,
+                            'file': me.fileType('.yaml')
                         };
 
-
-                        Promise.all([me.generateBaseTemplate(templateContext), me.generateTemplate(templateContext), me.generateToppingTemplate(templateContext)])
-                            .then( function () {
-                                resolve()
-                            });
-
-                    } catch (e) {
-                        // me.isListSettingDone = true
-                        reject()
+                        me.newTreeList.push(codeValue);
+                        resolve();
+                    } else if (template == 'Separate File per kind') {
+                        me.setYamlPerKind(me.newTreeList);
+                        resolve();
+                    } else if (template == 'Helm') {
+                        me.setHelmChart();
+                        resolve();
                     }
-                })
+                    
+                    me.isGeneratorDone = true;
+                });
             },
-            generateBaseTemplate(templateContext){
+            setYamlPerKind(treeList) {
                 var me = this;
-                return new Promise(function (resolve, reject) {
-                    try{
-                        if( me.canvasName == 'event-storming-model-canvas' && templateContext.modelForElements.BoundedContext.length == 1){
-                            resolve()
-                            return;
-                        }
-                        var modelForElements = templateContext.modelForElements
-                        var filteredProjectName = templateContext.filteredProjectName
-                        var rootModel = templateContext.rootModel
-                        var rootPath = templateContext.rootPath
-                        var basePlatform = templateContext.basePlatform
-                        let basePlatformConf = templateContext.basePlatformConf;
+                var copyValue = JSON.parse(JSON.stringify(me.value));
 
-                        var manifestTemplate
+                Object.keys(copyValue.elements).forEach((key) => {
+                    var item = copyValue.elements[key];
+                    if (item && item._type != "DestinationRuleSubset" && 
+                            item._type != "WorkflowDag" && 
+                            item._type != "WorkflowStep"
+                    ) {
+                        var name = (item._type).toLowerCase();
+                        var codeValue = {
+                            'key': item.elementView.id,
+                            'name': name + '.yaml',
+                            'code': '--- \n' + me.yamlFilter(json2yaml.stringify(item.object)),
+                            'file': me.fileType('.yaml')
+                        };
 
-                        if(me.reGenerateOnlyModifiedTemplate && me.editTemplateFrameWorkList && me.editTemplateFrameWorkList[basePlatform]){
-                            manifestTemplate = Object.keys(me.editTemplateFrameWorkList[basePlatform])
-                        } else {
-                            manifestTemplate = me.$manifestsPerBaseTemplate[basePlatform] ? me.$manifestsPerBaseTemplate[basePlatform] : (me.$manifestsPerBaseTemplate[basePlatform.replaceAll("https://github.com/msa-ez/template-", "")] ? me.$manifestsPerBaseTemplate[basePlatform.replaceAll("https://github.com/msa-ez/template-", "")]:[]);
-                            manifestTemplate = JSON.parse(JSON.stringify(manifestTemplate))
-                        }
-                        var manifestTemplateLastIndex = manifestTemplate.length - 1
-                        manifestTemplate =  manifestTemplate.filter(path => path.includes('for-model/'))
-                        manifestTemplateLastIndex = manifestTemplate.length - 1
-
-                        if( manifestTemplateLastIndex == -1 ){
-                            resolve()
-                        } else {
-                            var xHttpSendCnt = -1
-                            var xHttpDoneCnt = -1
-
-                            manifestTemplate.forEach(function (element, index) {
-                                element = element.replace('./', '')
-
-                                var processContext ={
-                                    element: element,
-                                    modelForElements: modelForElements,
-                                    filteredProjectName: filteredProjectName,
-                                    template: basePlatform,
-                                    rootModel: rootModel,
-                                    rootPath: rootPath,
-                                    basePlatform: basePlatform,
-                                    basePlatformConf: basePlatformConf,
-                                    generatedType: "BASE",
-                                };
-
-                                var xhttp = new XMLHttpRequest();
-                                xhttp.onreadystatechange = function () {
-
-                                    if (this.readyState == 4 && this.status == 200) {
-                                        // DONE && SUCCESS
-                                        xHttpDoneCnt++;
-
-                                        // if (me.selectedBaseTemplate.includes("http")) {
-                                        try {
-                                            var gitCodeObj = JSON.parse(this.responseText);
-                                            var gitCodeTmp = Base64.decode(gitCodeObj.content)
-                                        } catch(e) {
-                                            var gitCodeTmp = this.responseText
-                                        }
-                                        if (!this.responseText.includes("<!-- Is Not Template -->")) {
-                                            me.onLoadTemplateContent(gitCodeTmp, processContext)
-                                        }
-
-                                        if (xHttpSendCnt == xHttpDoneCnt) {
-                                            resolve()
-                                        }
-                                    }
-                                };
-
-                                if( xHttpSendCnt == -1 && (manifestTemplateLastIndex == index) ){
-                                    resolve()
-                                }
-
-                                if((localStorage.getItem("loginType") && localStorage.getItem("loginType") == "github") || me.gitAccessToken){
-                                    // var loadTemplate = localStorage.getItem(me.selectedBaseTemplate)
-                                    // var loadTemplate = me.templateFrameWorkList[basePlatform]
-                                    var platformFullName = basePlatform
-                                    if(!platformFullName.includes("http")){
-                                        platformFullName = "https://github.com/msa-ez/template-" + platformFullName
-                                    }
-                                    var loadTemplate = me.templateFrameWorkList[platformFullName];
-                                    if( loadTemplate ){
-                                        let content = null;
-                                        if(loadTemplate[element] && loadTemplate[element].content){
-                                           content = loadTemplate[element].content;
-                                           content = JSON.parse(JSON.stringify(content));
-                                        }
-                                        if(content){
-                                            me.onLoadTemplateContent(content, processContext)
-                                            return;
-                                        }
-                                    }
-                                    // xhttp.open("GET", me.gitCodeUrl[element], true);
-                                    if(me.templateFrameWorkList[platformFullName] && me.templateFrameWorkList[platformFullName][element] && me.templateFrameWorkList[platformFullName][element].requestUrl){
-                                        xhttp.open("GET", me.templateFrameWorkList[platformFullName][element].requestUrl, true);
-                                        xhttp.setRequestHeader('Authorization', 'token ' + me.gitAccessToken);
-                                        xhttp.send();
-                                        xHttpSendCnt++;
-                                    }
-                                } else {
-                                    if(basePlatform.includes("https://github.com/msa-ez/template-") || !basePlatform.includes("http")){
-                                        var platform = basePlatform.replaceAll("https://github.com/msa-ez/template-", "")
-                                        try {
-                                            xhttp.open("GET", `/static/templates/${platform}/${element}`, true);
-                                            xhttp.setRequestHeader("Cache-Control", "no-cache");
-                                            xhttp.send();
-                                            xHttpSendCnt++;
-                                        } catch(e){
-                                            console.log(e)
-                                        }
-                                    }
-                                    // else {
-                                    //     // me.isCustomTemplateForLoad = true
-                                    //     // me.isListSettingDone = true
-                                    // }
-                                }
-
-                            });
-                        }
-                    }  catch(e) {
-                        console.log(`Error] GenerateBaseTemplate : ${e}`)
-                        reject()
-                    }
-                })
-            },
-            generateTemplate(templateContext){
-                var me = this
-                // me.changedValueCustomTemplate = false
-                return new Promise( function (resolve, reject) {
-                    try {
-                        if( me.canvasName == 'context-mapping-model-canvas' ){
-                            resolve()
-                            return;
-                        }
-                        var modelForElements = templateContext.modelForElements
-                        var preferredPlatforms = templateContext.preferredPlatforms
-                        var basePlatform = templateContext.basePlatform
-                        let basePlatformConf = templateContext.basePlatformConf;
-                        var filteredProjectName = templateContext.filteredProjectName
-                        var rootModel = templateContext.rootModel
-                        var rootPath = templateContext.rootPath
-                        var xHttpSendCnt = -1
-                        var xHttpDoneCnt = -1
-
-                        preferredPlatforms.forEach(async function (preferredPlatform ,index) {
-
-                            var template = JSON.parse(JSON.stringify(preferredPlatform));
-                            if(template && !template.includes("http") && me.gitAccessToken){
-                                template = `https://github.com/msa-ez/template-${template}`
+                        var index = treeList.findIndex((val) => {
+                            if (val.name == codeValue.name) {
+                                val.code += codeValue.code;
                             }
-
-
-                            var manifestTemplate
-
-                            if(me.reGenerateOnlyModifiedTemplate && me.editTemplateFrameWorkList && me.editTemplateFrameWorkList[template]){
-                                manifestTemplate = Object.keys(me.editTemplateFrameWorkList[template])
-                            } else {
-                                // 아래 데이터는 npm 빌드때 파일시스템 tree 탐색을 통해 자동으로 생성하거나 일일이 작업해줘야 한다.
-                                manifestTemplate = me.$manifestsPerTemplate[template] ? me.$manifestsPerTemplate[template] : (me.$manifestsPerTemplate[template.replace("https://github.com/msa-ez/template-", "")] ? me.$manifestsPerTemplate[template.replace("https://github.com/msa-ez/template-", "")]:[]);
-                                manifestTemplate = JSON.parse(JSON.stringify(manifestTemplate))
-                                manifestTemplate =  manifestTemplate.filter(path => !path.includes('for-model/'))
-
-                            }
-
-                            let manifestTemplateLastIndex = manifestTemplate.length - 1
-
-                            if( manifestTemplateLastIndex == -1 ){
-                                if(preferredPlatforms.length - 1 == index){
-                                    resolve()
-                                }
-                            }else{
-                                // 템플릿별 파일목록들
-                                manifestTemplate.forEach(function (element, index) {
-                                    element = element.replace('./', '')
-
-                                    var processContext ={
-                                        element: element,
-                                        modelForElements: modelForElements,
-                                        filteredProjectName: filteredProjectName,
-                                        template: template,
-                                        rootModel: rootModel,
-                                        rootPath: rootPath,
-                                        basePlatform: basePlatform,
-                                        basePlatformConf: basePlatformConf,
-                                        generatedType: "MAIN",
-                                    };
-
-                                    var xhttp = new XMLHttpRequest();
-                                    xhttp.onreadystatechange = function () {
-                                        if (this.readyState == 4 && this.status == 200) {
-                                            // DONE && SUCCESS
-                                            xHttpDoneCnt ++;
-                                            try {
-                                                var gitCodeObj = JSON.parse(this.responseText);
-                                                var gitCodeTmp = Base64.decode(gitCodeObj.content)
-                                            } catch(e) {
-                                                var gitCodeTmp = this.responseText
-                                            }
-                                            if (!this.responseText.includes("<!-- Is Not Template -->")) {
-                                                me.onLoadTemplateContent(gitCodeTmp, processContext)
-                                            }
-                                            if (xHttpSendCnt == xHttpDoneCnt) {
-                                                resolve()
-                                            }
-                                        }
-                                    };
-
-                                    if( xHttpSendCnt == -1 && (manifestTemplateLastIndex == index) ){
-                                        resolve()
-                                    }
-
-                                    if((localStorage.getItem("loginType") && localStorage.getItem("loginType") == "github") || me.gitAccessToken){
-                                        // var loadTemplate = localStorage.getItem(template)
-                                        var platformFullName = template
-                                        if(!platformFullName.includes("http")){
-                                            platformFullName = "https://github.com/msa-ez/template-" + platformFullName
-                                        }
-                                        var loadTemplate = me.templateFrameWorkList[platformFullName];
-                                        if(loadTemplate){
-                                            // loadTemplate = JSON.parse(loadTemplate)
-                                            let content = null;
-                                            if(loadTemplate[element] && loadTemplate[element].content){
-                                                content = loadTemplate[element].content
-                                            }
-                                            if(content){
-                                                me.onLoadTemplateContent(content, processContext)
-                                                return;
-                                            }
-                                        }
-                                        // xhttp.open("GET", me.gitCodeUrl[element], true);
-                                        if(me.templateFrameWorkList[platformFullName] && me.templateFrameWorkList[platformFullName][element] && me.templateFrameWorkList[platformFullName][element].requestUrl){
-                                            xhttp.open("GET", me.templateFrameWorkList[platformFullName][element].requestUrl, true);
-                                            xhttp.setRequestHeader('Authorization', 'token ' + me.gitAccessToken);
-                                            xhttp.send();
-                                            xHttpSendCnt ++;
-                                        }
-                                    } else {
-                                        if(template.includes("https://github.com/msa-ez/template-") || !template.includes("http")){
-                                            var platform = template.replaceAll("https://github.com/msa-ez/template-", "")
-
-                                            xhttp.open("GET", `/static/templates/${platform}/${element}`, true);
-                                            xhttp.setRequestHeader("Cache-Control", "no-cache");
-                                            xhttp.send();
-                                            xHttpSendCnt++;
-                                        }
-                                        // else {
-                                        //     // me.isCustomTemplateForLoad = true
-                                        //     // me.isListSettingDone = true
-                                        // }
-                                    }
-
-                                });
-                            }
-
-                        })
-                    } catch(e) {
-                        console.log(`Error] Generate Template : ${e}`)
-                        reject()
-                    }
-                })
-            },
-            generateToppingTemplate(templateContext){
-                var me = this;
-                return new Promise( function (resolve, reject) {
-                    try {
-                        // if( me.canvasName == 'context-mapping-model-canvas' ) {
-                        //     resolve()
-                        //     return;
-                        // }
-
-                        var modelForElements = templateContext.modelForElements
-                        var toppingPlatforms = templateContext.toppingPlatforms
-                        var basePlatform = templateContext.basePlatform
-                        let basePlatformConf = templateContext.basePlatformConf;
-                        var filteredProjectName = templateContext.filteredProjectName
-                        var rootModel = templateContext.rootModel
-                        var rootPath = templateContext.rootPath
-
-
-                        var xHttpSendCnt = -1
-                        var xHttpDoneCnt = -1
-
-                        if (toppingPlatforms && toppingPlatforms.length > 0) {
-                            toppingPlatforms.forEach(function (preferredPlatform, index) {
-                                var template = JSON.parse(JSON.stringify(preferredPlatform));
-                                if(template && !template.includes("http")){
-                                    template = `https://github.com/msa-ez/topping-${template}`
-                                }
-
-                                var manifestTemplate
-
-                                if(me.reGenerateOnlyModifiedTemplate && me.editTemplateFrameWorkList && me.editTemplateFrameWorkList[template]){
-                                    manifestTemplate = Object.keys(me.editTemplateFrameWorkList[template])
-                                } else {
-                                    // 아래 데이터는 npm 빌드때 파일시스템 tree 탐색을 통해 자동으로 생성하거나 일일이 작업해줘야 한다.
-                                    manifestTemplate = me.$manifestsPerToppings[template] ? me.$manifestsPerToppings[template] : [];
-                                }
-                                
-                                var manifestTemplateLastIndex = manifestTemplate.length - 1
-
-                                if( manifestTemplateLastIndex == -1 ){
-                                    if(toppingPlatforms.length - 1 == index){
-                                        resolve()
-                                    }
-                                }else{
-                                    manifestTemplate.forEach(function (element, index) {
-                                        element = element.replace('./', '')
-
-                                        var processContext ={
-                                            element: element,
-                                            modelForElements: modelForElements,
-                                            filteredProjectName: filteredProjectName,
-                                            template: template,
-                                            rootModel: rootModel,
-                                            rootPath: rootPath,
-                                            basePlatform: basePlatform,
-                                            basePlatformConf: basePlatformConf,
-                                            generatedType: "TOPPING",
-                                        };
-
-                                        var xhttp = new XMLHttpRequest();
-                                        xhttp.onreadystatechange = function () {
-                                            if (this.readyState == 4 && this.status == 200) {
-                                                // DONE && SUCCESS
-                                                xHttpDoneCnt ++;
-                                                try {
-                                                    var gitCodeObj = JSON.parse(this.responseText);
-                                                    var gitCodeTmp = Base64.decode(gitCodeObj.content)
-                                                } catch(e) {
-                                                    var gitCodeTmp = this.responseText
-                                                }
-                                                if (!this.responseText.includes("<!-- Is Not Template -->")) {
-                                                    me.onLoadTemplateContent(gitCodeTmp, processContext)
-                                                }
-                                                if (xHttpSendCnt == xHttpDoneCnt) {
-                                                    resolve()
-                                                }
-                                            }
-                                        };
-
-                                        if( xHttpSendCnt == -1 && (manifestTemplateLastIndex == index) ){
-                                            resolve()
-                                        }
-
-                                        if((localStorage.getItem("loginType") && localStorage.getItem("loginType") == "github") || me.gitAccessToken){
-                                            // var loadTemplate = localStorage.getItem(template)
-                                            var platformFullName = template
-                                            if(!platformFullName.includes("http")){
-                                                platformFullName = "https://github.com/msa-ez/topping-" + platformFullName
-                                            }
-                                            var loadTemplate = me.gitToppingList[platformFullName]
-                                            if(loadTemplate){
-                                                // loadTemplate = JSON.parse(loadTemplate)
-                                                let content = null;
-                                                if(loadTemplate[element] && loadTemplate[element].content){
-                                                    content = loadTemplate[element].content
-                                                }
-                                                if(content){
-                                                    me.onLoadTemplateContent(content, processContext)
-                                                    return;
-                                                }
-                                            }
-                                            // xhttp.open("GET", me.gitCodeUrl[element], true);
-                                            if(me.gitToppingList[platformFullName][element] && me.gitToppingList[platformFullName][element].requestUrl){
-                                                xhttp.open("GET", me.gitToppingList[platformFullName][element].requestUrl, true);
-                                                xhttp.setRequestHeader('Authorization', 'token ' + me.gitAccessToken);
-                                                xhttp.send();
-                                                xHttpSendCnt ++;
-                                            }
-                                        }
-                                        // else {
-                                        //     if(template.includes("https://github.com/msa-ez/topping-") || !template.includes("http")){
-                                        //         var platform = template.replaceAll("https://github.com/msa-ez/topping-", "")
-                                        //
-                                        //         xhttp.open("GET", `/static/templates/${platform}/${element}`, true);
-                                        //         xhttp.setRequestHeader("Cache-Control", "no-cache");
-                                        //         xhttp.send();
-                                        //         xHttpSendCnt++;
-                                        //     } else {
-                                        //         me.isCustomTemplateForLoad = true
-                                        //         me.isListSettingDone = true
-                                        //     }
-                                        // }
-                                    });
-                                }
-                            });
-                        } else {
-                            resolve()
-                        }
-                    } catch(e) {
-                        console.log(`Error] GenerateToppingTemplate : ${e}`)
-                        reject()
-                    }
-
-                })
-            },
-            generateTroubleShooting(values){
-                var me = this
-                var originValue = values ? values : me.value
-                var copyValue =  JSON.parse(JSON.stringify(originValue));
-
-                if( !copyValue.k8sValue ){
-                    copyValue.k8sValue = {'elements': {}, 'relations': {}};
-                }
-
-                Object.values(copyValue.elements).forEach(function (el) {
-                    if (el) {
-                        if (el._type.endsWith("BoundedContext")) {
-                            me.boundedContextList.push(el);
-                        }
-                    }
-                })
-
-            },
-            onLoadTemplateContent(content, processContext){
-                var me = this;
-                try{
-                    let originContent = JSON.parse(JSON.stringify(content));
-                    var element = processContext.element;
-                    var modelForElements = processContext.modelForElements;
-                    var template = processContext.template;
-                    var basePlatform = processContext.basePlatform;
-                    let basePlatformConf = processContext.basePlatformConf;
-                    var filteredProjectName = processContext.filteredProjectName;
-                    var rootModel = processContext.rootModel;
-                    var rootPath = processContext.rootPath
-                    let generatedType = processContext.generatedType;
-
-                    if (element.includes('.template/') || element === '.template.md' || element === '.template.yml') {
-                        return;
-                    }
-
-                    var test = ''
-                    var count = 0
-                    let splitDivision = content.split('---');
-                    var optionsCheck = splitDivision[0];
-                    // Setting For ForEach
-                    if (!optionsCheck.includes('forEach:')) {
-                        count = count + 1
-                        if (element.includes('for-model')) {
-                            var forEach = 'Model'
-                            test = test.concat('forEach: ' + forEach)
-                        } else {
-                            var forEach = 'BoundedContext'
-                            test = test.concat('forEach: ' + forEach)
-                        }
-                    } else {
-                        var forEach = optionsCheck.split("forEach:")[1].split("\n")[0].trim();
-                    }
-
-                    // Setting For FileName
-                    if (!optionsCheck.includes('fileName:')) {
-                        count = count + 1
-                        if (element.split('/')) {
-                            var fileName = element.substring(element.lastIndexOf("/") + 1);
-                            test = test.concat('\n')
-                            if (fileName == 'gitignore') {
-                                fileName = '.gitignore'
-                            }
-                            if (fileName == 'msaez') {
-                                fileName = '.msaez'
-                            }
-                            test = test.concat('fileName: ' + fileName)
-                        }
-                    }else{
-                        // var fileName = element.substring(element.lastIndexOf("/") + 1)
-                        var fileName = optionsCheck.split("fileName:")[1].split("\n")[0].trim();
-                        if (fileName == 'gitignore') {
-                            fileName = '.gitignore'
-                        }
-                        if (fileName == 'msaez') {
-                            fileName = '.msaez'
-                        }
-                    }
-
-                    // Setting For Path
-                    if (!optionsCheck.includes('path:')) {
-                        var pathData = element.substring(0, element.lastIndexOf("/") + 1);
-                        count = count + 1
-                        if (element.includes('for-model')) {
-                            test = test.concat('\n')
-                            test = test.concat(`path: ${path.dirname(element).replace('./', '')}`)
-                        } else if (optionsCheck.includes('forEach:')) {
-                            test = test.concat('\n')
-                            test = test.concat(`path: {{boundedContext.name}}/${path.dirname(element).replace('./', '')}`)
-                        } else {
-                            test = test.concat('\n')
-                            test = test.concat(`path: {{name}}/${path.dirname(element).replace('./', '')}`)
-                        }
-                    } else if (!optionsCheck.includes('forEach:')) {
-                        // ????? 왜 존재 하는지 ??
-                        var pathData = element.substring(0, element.lastIndexOf("/") + 1);
-                        if (element.includes('for-model')) {
-                            test = test.concat('\n')
-                        } else if (!optionsCheck.includes('path:')) {
-                            count = count + 1
-                            test = test.concat('\n')
-                            test = test.concat(`path: {{name}}/${path.dirname(element).replace('./', '')}`)
-                        } else {
-                            test = test.concat('\n')
-                        }
-                    }
-
-                    if (count == 3) {
-                        // temp fix
-                        if( splitDivision.length > 1 &&
-                            ( optionsCheck.includes('ifDuplicated:')
-                            || optionsCheck.includes('representativeFor:')
-                            || optionsCheck.includes('priority:')
-                            || optionsCheck.includes('except:')
-                            )
-                        ){  test = optionsCheck.concat(test) }
-                        test = test.concat('\n---\n')
-                    } else {
-                        test = test.concat('\n')
-                    }
-
-                    if (test.length > 0) {
-                        content = test.concat(content)
-                    }
-
-                    let model = forEach == 'Model' ? rootModel : modelForElements[forEach];
-                    if( !model ) return;
-
-                    if( forEach != 'Model' && !Array.isArray(model) ) {
-                        Object.keys(model).forEach(function(key){
-                            if(Array.isArray(model[key])){
-                                model[key] = model[key]
-                            }
+                            return val.name == codeValue.name;
                         });
-                    }
 
-                    // model = forEach == 'Model' ? model : model.filter(x=>x && !x.pbcId || x.pbcId == pbcId)
-                    // model.boundedContexts = model.boundedContexts.filter(x=>x.pbcId == pbcId)
-
-                    // if(rootPath && content.includes('---')){
-                    //     var splitOptions = content.split('\n---\n')[0]
-                    //     var splitLine= splitOptions.split('\n').filter(x=>x.includes('path'))[0]
-                    //
-                    //     // var originPath= splitLine.split(':')[1].trim()
-                    //     // var replacePath = originPath.startsWith('/') ? `${rootPath}${originPath.substring(1)}`: `${rootPath}${originPath}`
-                    //
-                    //     let originPath = splitLine.split(':')[1].trim();
-                    //     let replaceWords = forEach == 'Model' ? element.split('/').slice(0,-1).join('/').trim() : splitLine.split(':')[1].trim();
-                    //     let replacePath = replaceWords.startsWith('/') ? `${rootPath}${replaceWords.substring(1)}`: `${rootPath}${replaceWords}`
-                    //     // if(processContext.type == 'BASE' && forEach != 'Model' && originPath.startsWith(rootPath)){
-                    //     if( forEach != 'Model' && originPath.startsWith(rootPath) ){
-                    //         replacePath = originPath
-                    //     }
-                    //     content = content.replace(`path: ${originPath}`, `path: ${replacePath}`)
-                    // }
-
-                    let baseOptions = {};
-                    if(!basePlatform) basePlatform = me.defaultTemplate;
-
-                    if( me.isExistConfTemplate('BASE', basePlatform) ){
-                        if( !(basePlatformConf && basePlatformConf[basePlatform]) ){
-                            if( !basePlatformConf[basePlatform] ) basePlatformConf[basePlatform] = {};
-                            if( !basePlatformConf[basePlatform].package ){
-                                basePlatformConf[basePlatform].package = `${filteredProjectName.trim().replace(/ /gi, "/").replace("-", "")}`;
-                                basePlatformConf[basePlatform].packagePath = `src/main/java/${filteredProjectName.trim().replace(/ /gi, "/").replace("-", "")}`;
-                            }
-                        }
-                        baseOptions = basePlatformConf[basePlatform];
-                    } else {
-                        baseOptions = {
-                            "package": `${filteredProjectName.trim().replace(/ /gi, "/").replace("-", "")}`,
-                            "packagePath": `src/main/java/${filteredProjectName.trim().replace(/ /gi, "/").replace("-", "")}`
+                        if (index == -1) {
+                            treeList.push(codeValue);
                         }
                     }
-
-                    //
-                    baseOptions["rootPackage"] = `${me.core.filterProjectName(me.projectName).trim().replace(/ /gi, "/").replace("-", "")}`;
-
-
-                    var templateProcessContext = {
-                        templateFile: element,
-                        template: template,
-                        content: content,
-                        originContent: originContent,
-                        filteredProjectName: filteredProjectName,
-                        forEach: forEach,
-                        element: element,
-                        rootModel: rootModel,
-                        rootPath: rootPath,
-                        options: baseOptions,
-                        generatedType: generatedType,
-                    }
-
-                    if (Array.isArray(model)) { // elements 별로 돌림
-                        model.forEach(function (modelElement) {
-                            if ( (template == modelElement.preferredPlam || template.includes(modelElement.preferredPlatform)) || !processContext.generatedType.includes('MAIN') || modelElement.isPassedElement ) {
-                                if(forEach == 'BoundedContext' ){
-                                    if( me.isExistConfTemplate('TEMPLATE', modelElement.preferredPlatform)
-                                        && modelElement.preferredPlatformConf
-                                        && modelElement.preferredPlatformConf[modelElement.preferredPlatform] ){
-                                        // setting of Configuration
-                                        templateProcessContext.options = JSON.parse(JSON.stringify(modelElement.preferredPlatformConf[modelElement.preferredPlatform]));
-                                    } else{
-                                        // setting of base
-                                        templateProcessContext.options = JSON.parse(JSON.stringify(me.isExistConfTemplate('BASE', basePlatform) ? basePlatformConf[basePlatform] : templateProcessContext.options))
-                                    }
-                                } else if( modelElement.boundedContext
-                                        && modelElement.boundedContext.preferredPlatform
-                                        && modelElement.boundedContext.preferredPlatformConf
-                                        && modelElement.boundedContext.preferredPlatformConf[modelElement.boundedContext.preferredPlatform]
-                                        && me.isExistConfTemplate('TEMPLATE', modelElement.boundedContext.preferredPlatform) ){
-                                    // setting of Configuration
-                                    templateProcessContext.options = JSON.parse(JSON.stringify(modelElement.boundedContext.preferredPlatformConf[modelElement.boundedContext.preferredPlatform]));
-                                } else { // setting of base
-                                    if (me.isExistConfTemplate('BASE', basePlatform)) {
-                                        templateProcessContext.options = JSON.parse(JSON.stringify(basePlatformConf[basePlatform]));
-                                    }
-                                    // templateProcessContext.options = JSON.parse(JSON.stringify(me.isExistConfTemplate('BASE', basePlatform) ? basePlatformConf[basePlatform] : templateProcessContext.options));
-                                }
-
-                                me.processTemplate(modelElement, templateProcessContext);
-                            }
-                        });
-                    } else {
-                        me.processTemplate(model, templateProcessContext);
-                    }
-                }catch (e) {
-                    console.error(`Error] Load TemplateContent :${e}`)
-                }
+                });
             },
-            processTemplate(ele, processContext) {
+            setHelmChart() {
                 var me = this;
-                var frameWork = processContext.content;
-                var frameWorkelement = processContext.element;
-
-                var content = processContext.content;
-                var originContent = processContext && processContext.originContent ? JSON.parse(JSON.stringify(processContext.originContent)) : content
-                var template = processContext.template;
-                var forEach = processContext.forEach;
-                var element = processContext.element;
-                var rootModel = processContext.rootModel;
-                var rootPath = processContext.rootPath;
-                var options = processContext.options;
-                let generatedType = processContext.generatedType;
-
-                let fullPath
-
-                var isEditTemplate = false
-                if( me.editTemplateFrameWorkList[template] && me.editTemplateFrameWorkList[template][frameWorkelement] ){
-                    isEditTemplate = true 
-                    frameWork = me.editTemplateFrameWorkList[template][frameWorkelement].code
-                    
-                    if(me.editTemplateFrameWorkList[template][frameWorkelement].code.includes("---")){
-                        content = me.editTemplateFrameWorkList[template][frameWorkelement].code
-                    } else {
-                        let editTempContent = [content.split("---")[0], me.editTemplateFrameWorkList[template][frameWorkelement].code]
-                        content = editTempContent.join("---")
-                    }
-                }
-
-                try {
-                    if(!me.codeLists){
-                        me.codeLists = []
-                    }
-
-                    var space = "  "
-                    var replaceRoof = true;
-                    var gen = null;
-
-                    if(options && options.package){
-                        // source code package name
-                        options.package = options.package.replace(/ /gi, ".").replace("-", "").replace(/\//gi, '.');
-                        // options.packagePath = options.packagePath.replace(/ /gi, ".").replace("-", "").replace(/\//gi, '.');
-                        options.packagePath = options.packagePath.replace(/ /gi, ".").replace("-", "");
-                    }
-
-                    ele.options = options;
-                    ele.contexts = {};
-                    ele.k8sValue = me.value.k8sValue
-                    ele.options.rootModel = me.value
-
-
-                    while(replaceRoof){
-                        if(processContext.filteredProjectName.includes(space)){
-                            processContext.filteredProjectName = processContext.filteredProjectName.replaceAll(space, " ")
-                            space = space + " "
-                        } else {
-                            replaceRoof = false
-                        }
-                    }
-                    if(processContext.filteredProjectName.at(-1) == " "){
-                        processContext.filteredProjectName = processContext.filteredProjectName.replace(/.$/, "");
-                    }
-
-                    //mustach
-                    // var gen = window.$Mustache.render(content, ele);
-
-                    //$HandleBars
-                    var currentFile
-                    if(me.opennedTemplateFramework && content == me.opennedTemplateFramework[0].code){
-                        currentFile = true
-                    }
-
-                    if (content.split("<function>")[1]) {
-                        var functionBlock = content.split("<function>")[1];
-                        functionBlock = functionBlock.replace("\n</function>", "");
-                        content = content.replace("\n</function>", "");
-                        content = content.replace("<function>\n", "");
-                        content = content.replace("<function>", "");
-                        content = content.replace(functionBlock, "");
-
-                        if(currentFile){
-                            var code = functionBlock.split("\n")
-                            var idx = -1
-                            me.debuggerPoint.forEach(function (lineNum){
-                                code.splice(lineNum + idx, 0, 'debugger;');
-                                idx++;
-                            })
-                            functionBlock = code.join("\n")
-                        }
-
-                        functionBlock += "\n//# sourceURL=templates/"+ processContext.template.replaceAll(" ", "-") + "/"+processContext.templateFile+".js"
-
-                        try{
-                            var result = function(str){
-                                return eval(str);
-                            }.call(ele,functionBlock);
-                        }catch(e){
-                            throw e;
-                        }
-
-                    }
-                    // try{
-                    
-                    var compileTemplate = window.$HandleBars.compile(content);
-                    gen = compileTemplate(ele);
-
-                    
-                    if(processContext.element.includes('for-model/kubernetes/docs')){
-                        compileTemplate = window.$HandleBars.compile(gen);
-                        gen = compileTemplate(ele);
-
-                        // 임시조치 (추가될 템플릿에 따라 정규표현으로 처리 예정)
-                        gen = gen.replaceAll("&#x60;", "`"); // 코드 블록 변환
-                        gen = gen.replaceAll("&gt;", ">"); // 꺽쇠(>) 변환
-                    }
-
-                    var metadataAndSource = gen.split("---"); // 소스와 구분
-
-                    var header = yamlpaser.load(metadataAndSource[0].replace(/\n\n/gi, "\n"))
-                    var headerOptions = {}
-                    Object.keys(header).forEach(function (keyValue, idx) {
-                        var key = keyValue
-                        var value = Object.values(header)[idx]
-                        if (key == 'path' && (value.lastIndexOf('.') == value.length - 1)) {
-                            value = value.substring(0, value.lastIndexOf(".") - 1)
-                        }
-                        headerOptions[key] = value;
-                    })
-
-                    if(element.includes('/for-model')){
-                        // topping관련: topping-apollo-graphql-shl/apollo-graphql/for-model/apollo-graphQL/
-                        // element = element.replace(`${element.split('/for-model')[0]}/for-model`,'for-model')
-                        headerOptions['path'] = headerOptions['path'].replace(`${headerOptions['path'].split('/for-model')[0]}/for-model`,'for-model')
-                    }
-
-                    let optionsPathString = '';
-                    if(forEach == 'Model'){
-                        // Setting path of for-model( BASE)
-                        var optionsMetadataAndSource = content.split("---"); // 소스와 구분
-                        var optionsPathHeader = yamlpaser.load(optionsMetadataAndSource[0])
-                        var elementPath = element.split('/');
-                        var elementPathString = elementPath[0] + '/' + elementPath[1];
-                        var removeRootPath = rootPath ? optionsPathHeader['path'].replace(rootPath,'') : optionsPathHeader['path']
-
-                        if(elementPathString){
-                            if (removeRootPath && (removeRootPath.includes(elementPathString) || elementPathString.includes(removeRootPath)) ) {
-                                optionsPathHeader['path'] = rootPath ? elementPathString.replace('for-model/', `for-model/${rootPath}`) : elementPathString
-                            } else {
-                                var lastWord = elementPath[1]
-                                var replaceRootPath  = rootPath.replaceAll('/',`/${lastWord}/`)
-                                if(optionsPathHeader['path']){
-                                    optionsPathHeader['path'] = optionsPathHeader['path'].replace(elementPathString,replaceRootPath)
-                                }
-                            }
-                        }
-                        if(optionsPathHeader['path']){
-                            var optionsPath = optionsPathHeader['path'].split('/');
-                            for (var o = 1; o < optionsPath.length; o++) {
-                                if (o == 1) {
-                                    optionsPathString = optionsPathString.concat(optionsPath[o]);
-                                } else {
-                                    optionsPathString = optionsPathString.concat('/' + optionsPath[o]);
-                                }
-                            }
-                        }
-                    }
-                    var optionsPath = headerOptions['path']=='/' ? '' : headerOptions['path'];
-
-                    // Generate packageName to filePath
-                    optionsPath = optionsPath && optionsPath.startsWith('.') ? optionsPath.replace('.','/') : optionsPath
-                    if(optionsPath && optionsPath != ""){
-                        fullPath = optionsPath+ '/' + headerOptions['fileName'];
-                    } else {
-                        fullPath = headerOptions['fileName'];
-                    }
-                    if( forEach == 'Model' && fullPath.startsWith('/') ){
-                        fullPath = elementPathString.concat(fullPath)
-                    }
-
-                    if(!me.modelForElement[template]){
-                        me.modelForElement[template] = {}
-                    }
-
-                    if(forEach != 'Model'){
-                        if(!me.modelForElement[template][frameWorkelement]){
-                            me.modelForElement[template][frameWorkelement] = {}
-                        }
-                        if (headerOptions['except'] == true) {
-                            if(!me.modelForElement[template][frameWorkelement][fullPath]){
-                                me.modelForElement[template][frameWorkelement][fullPath] = ele
-                            }
-                        } else {
-                            me.modelForElement[template][frameWorkelement][fullPath] = ele
-                        }
-                    }
-
-
-
-                    var representativeFor = headerOptions['representativeFor']
-                    var priority = headerOptions['priority']
-
-                    var fileName = headerOptions['fileName']
-                    if (template == 'spring-boot' && headerOptions['fileName'] && headerOptions['fileName'].includes("Impl")) {
-                        if (!ele.boundedContext.fallback) {
-                            return;
-                        }
-                    }
-                    if (headerOptions['except'] == true) {
-                        return;
-                    }
-
-                    var source = ''
-                    if (metadataAndSource && metadataAndSource.length > 1) {
-                        for (var data in metadataAndSource) {
-
-                            if (data != 0 && data < metadataAndSource.length - 1) {
-                                source = source.concat(metadataAndSource[data] + '---\n')
-                            } else if (data == metadataAndSource.length - 1) {
-                                source = source.concat(metadataAndSource[data])
-                            }
-                        }
-                    }
-
-                    if(fullPath.includes('_template/')){
-                        if(!me._templateLists) me._templateLists = {}
-                        if(fullPath.startsWith('for-model')){
-                            me.$set(me._templateLists, fullPath.replace('for-model', template.split('/')[template.split('/').length-1]), source)
-                        }else{
-                            me.$set(me._templateLists, fullPath, source)
-                        }
-                        return;
-                    }
-
-                    if(!me.templateFrameWorkList[template]) me.templateFrameWorkList[template] = {}
-                    if(!me.templateFrameWorkList[template][frameWorkelement]) {
-                        me.templateFrameWorkList[template][frameWorkelement] = {}
-                    }
-                    if(!me.templateFrameWorkList[template][frameWorkelement].refList){
-                        me.templateFrameWorkList[template][frameWorkelement].refList = []
-                    }
-
-                    me.templateFrameWorkList[template][frameWorkelement].content = originContent;
-                    // me.templateFrameWorkList[template][frameWorkelement].content = frameWork;
-                    if(!me.templateFrameWorkList[template][frameWorkelement].refList.find(x => x == fullPath)){
-                        me.templateFrameWorkList[template][frameWorkelement].refList.push(fullPath.replace('for-model/', ''))
-                    }
-
-                    // set of Design Patterns
-                    let patterns = [{start: '//<<<', end:'//>>>'}, {start: '#<<<', end:'#>>>'}];
-
-                    patterns.forEach(function(pattern){
-                        if(source.indexOf(pattern.start) > 0){
-                            var copySource = fullPath.endsWith('.java') ? JSON.parse(JSON.stringify(source)) : source
-                            // var matchPatternLen = copySource.match(pattern.start).length;
-                            var matchPatternLen =  copySource.split('\n').filter(x=>x.includes(pattern.start)).length;
-
-                            for ( var matchNum = 0; matchNum < matchPatternLen; matchNum ++ ){
-                                var lineObj = {}
-                                let patternSearch = copySource.split(pattern.start)[1].split('\n')[0];
-                                let patternName = copySource.split(pattern.start)[1].split('\n')[0];
-
-                                lineObj.search = patternSearch.trim();
-                                if(patternSearch.match('for (.*) (.*)')){
-                                    lineObj.type = patternSearch.match('for (.*) "(.*)"')[1];
-                                    lineObj.elementName = patternSearch.match('for (.*) "(.*)"')[2];
-                                    patternName = patternSearch.replace(patternSearch.match(/\(.+/gi)[0],'');
-                                }
-
-                                var endPatternIndex = copySource.split('\n').filter(line => line.includes(pattern.start) || line.includes(pattern.end)).findIndex(item => item.includes(`${pattern.end}${patternSearch}`))
-                                var startLineNumber =  copySource.substring(0,copySource.indexOf(`${pattern.start}${patternSearch}`)).split('\n').length;
-                                copySource = copySource.replace(`${pattern.start}${patternName}\n`, '')
-                                var endLineNumber =  copySource.substring(0,copySource.indexOf(`${pattern.end}${patternSearch}`)).split('\n').length
-                                if(copySource.split('\n').length == endLineNumber){
-                                    copySource = copySource.replace(`${pattern.end}${patternSearch}`,'')
-                                }else{
-                                    copySource = copySource.replace(`${pattern.end}${patternSearch}\n`,'')
-                                }
-
-                                lineObj.start = startLineNumber - 1
-                                lineObj.end = endLineNumber - (endPatternIndex + 1)
-
-                                lineObj.path = fullPath
-                                patternName = patternName.trim()
-
-                                if( me.designPatterns[patternName] ){
-                                    if(me.designPatterns[patternName].filter( obj => JSON.stringify(obj) == JSON.stringify(lineObj)).length == 0 ){
-                                        me.designPatterns[patternName].push(lineObj)
-                                    }
-                                }else{
-                                    me.designPatterns[patternName] = []
-                                    me.designPatterns[patternName].push(lineObj)
-                                }
-                            }
-                        }
-                    });
-                    // end of Design Patterns
-
-
-
-                    // var codeValue = {}
-                    // var fullValue = {}
-
-                    source = source.replace('\n', '')
-                    let codeObj
-                    if (source.length > 1) {
-                        var uuid = me.uuid();
-                        // if (source == undefined) {
-                        //     console.log(source, fullPath)
-                        // }
-                        // var hashName = JSON.parse(JSON.stringify(fileName))
-                        // var hashValue = JSON.parse(JSON.stringify(source))
-                        // var hashPath = JSON.parse(JSON.stringify(fullPath))
-
-                        //템플릿단에서 BC 파악 위해서 element의 BC 파악.
-                        var getBcId = null
-                        if (ele && ele.boundedContext && ele.boundedContext.elementView) {
-                            getBcId = ele.boundedContext.elementView.id
-                        }
-
-                        codeObj = {
-                            'element': null,
-                            'key': uuid,
-                            'fileName': fileName,
-                            'code': source,
-                            'file': me.fileType(fileName),
-                            'boundedContext': fullPath.split("/")[0],
-                            'bcId': getBcId,
-                            'fullPath': fullPath.replace('for-model/', ''),
-                            'priority': priority,
-                            'options': options,
-                            'templatePath': frameWorkelement,
-                            'generatedType': generatedType,
-                            'template': template
-                        }
-
-                        codeObj.fullPath = fullPath.replace('for-model/', '')
-
-                        // set Hash.
-                        let hashConcat = fileName.concat(source).concat(codeObj.fullPath)
-                        var sourceHash = Math.abs(me.hashCode(hashConcat))
-                        codeObj.hash = sourceHash;
-
-                        if (ele._type && ele._type.endsWith("Model")) {
-                            // /src/main/java/com/example/Application.java
-                            // gateway2/src/main/java/com/example/template/Application.java
-                            codeObj.element = ele.elementView ? ele.elementView.id : null;
-                        } else {
-                            if (ele._type && ele._type.endsWith("BoundedContext")) {
-                                codeObj.isMirrorElement = ele.mirrorElement ? true: false;
-                                if(element.includes("for-model/")){
-                                    codeObj.boundedContext = 'for-model';
-                                    codeObj.bcId = null;
-                                } else {
-                                    codeObj.element = ele.elementView ? ele.elementView.id : null;
-                                    codeObj.bcId = ele.elementView ? ele.elementView.id : null;
-                                    codeObj.representativeFor = representativeFor ? representativeFor : null;
-                                    codeObj.forEach = forEach ? forEach : null;
-                                    codeObj.fullPath = fullPath;
-                                }
-                            } else {
-                                //////// why key is requred?
-                                // -> Code view 관련 key 설정 없을시, 중복선택 막음
-                                if(element.includes("for-model/") && fullPath.split("/")[0] == "for-model"){
-                                    codeObj.boundedContext = 'for-model';
-                                    codeObj.bcId = null;
-                                    codeObj.fullPath = fullPath.replace(fullPath.split("/")[0] + '/', '');
-                                } else {
-                                    codeObj.element = ele.elementView ? ele.elementView.id : null;
-                                    codeObj.representativeFor = representativeFor ? representativeFor : null;
-                                    codeObj.forEach = forEach ? forEach : null;
-                                    codeObj.fullPath = fullPath;
-                                }
-                            }
-                        }
-
-                        // var diffObj = me.fullPathList.find(x => x.fullPath === fullPath);
-
-                        if(me.codeLists){
-                            let dupObj = me.codeLists.find(x => x.fullPath === codeObj.fullPath);
-
-                            if (dupObj) {
-                                if( headerOptions['ifDuplicated'] && headerOptions['ifDuplicated'] === "merge") {
-                                    //ifDuplicate
-                                    // _codeMerger(compare, origin, type of compare)
-                                    var mergedCode = me._codeMerger(codeObj.code, dupObj.code, codeObj.fileName);
-
-                                    dupObj.code = mergedCode;
-                                } else {
-                                    // priority 1 이상....
-                                    if ( priority && (priority < dupObj.priority) || codeObj.generatedType =="TOPPING" ) {
-                                        dupObj.code = codeObj.code;
-                                    }else{
-                                        return;
-                                    }
-                                }
-                            } else {
-                                me.codeLists.push(codeObj);
-                            }
-                        }
-
-
-
-                        me.$set(me.newTreeHashLists, sourceHash, fullPath)
-
-                        // if(isEditTemplate){
-                        //     me.editTemplateFrameWorkList[template][frameWorkelement].elementResult = null
-                        //     me.editTemplateFrameWorkList[template][frameWorkelement].elementResult = codeObj
-                        // }
-
-                        // treeLists beforeFullPath 미포함.
-                        if(me.openCode && me.openCode[0]){
-                            if(me.openCode[0].path == codeObj.fullPath || me.openCode[0].fullPath == codeObj.fullPath || (me.openCode[0].template == codeObj.template && me.openCode[0].templatePath == codeObj.templatePath)){
-                                me.openCode[0].code = codeObj.code
-                            } 
-                            // else {
-                            //     if(!me.opennedTemplateFramework[0].templateErrMsg){
-                            //         var platform = me.getPlatformPath()
-                            //         var tempPath = me.getTempPath()
-                            //         if(me.editTemplateFrameWorkList[platform] && me.editTemplateFrameWorkList[platform][tempPath] && me.editTemplateFrameWorkList[platform][tempPath].elementResult){
-                            //             me.openCode[0].code = me.editTemplateFrameWorkList[platform][tempPath].elementResult.code
-                            //         }
-                            //     }
-                            // }
-                        } 
-
-
-                        var fileNameCheckArray = content.split("---");
-                        if (fileNameCheckArray[0].includes("fileName: {{")) {
-                            if (ele.name != ele.oldName && ele.oldName != undefined && ele.oldName.length > 0) {
-                                var nameCamelCase = _.camelCase(ele.oldName);
-                                var namePascalCase = nameCamelCase.substring(0, 1).toUpperCase() + nameCamelCase.substring(1);
-                                var beforeFullPath = "";
-                                var stringArray = codeObj.fullPath.split("/");
-                                stringArray.forEach(function (value, index) {
-                                    if (index != stringArray.length - 1) {
-                                        beforeFullPath = beforeFullPath.concat(value + "/");
-                                    } else {
-                                        beforeFullPath = beforeFullPath.concat(value.replace(ele.namePascalCase, namePascalCase));
-                                    }
-                                })
-                                codeObj.beforeFullPath = beforeFullPath;
-                            }
-                        }
-                        if (ele.boundedContext || options.forEach == "BoundedContext") {
-                            if (options.forEach == "BoundedContext") {
-                                if (ele.oldName != undefined)
-                                    if (ele.name != ele.oldName) {
-                                        codeObj.beforeFullPath = fullPath.replace(ele.name, ele.oldName);
-                                    }
-                            } else if (ele.boundedContext) {
-                                if (ele.boundedContext.oldName != undefined) {
-                                    if (codeObj.beforeFullPath) {
-                                        codeObj.beforeFullPath = codeObj.beforeFullPath.replace(ele.boundedContext.name, ele.boundedContext.oldName)
-                                    } else {
-                                        codeObj.beforeFullPath = codeObj.fullPath.replace(ele.boundedContext.name, ele.boundedContext.oldName)
-                                    }
-                                }
-                            }
-                        }
-                        // treeLists beforeFullPath 포함.
-                        // fullValue.beforeFullPath = fullValue.beforeFullPath ? fullValue.beforeFullPath : null
-                        // me.getCodeList.push(codeValue)
-                        // me.fullPathList.push(fullValue)
-                        // me.$set(me.newTreeHashLists, sourceHash, fullPath)
-                        // if(me.templateResultPath && me.filteredOpenCode && me.filteredOpenCode[0]){
-                        //     if((me.filteredOpenCode[0].fullPath && me.filteredOpenCode[0].fullPath == codeObj.fullPath) || (me.filteredOpenCode[0].path && me.filteredOpenCode[0].path == codeObj.path)){
-                        //         var selectedRef = me.filteredPrettierCodeLists.find(x => x.fullPath == me.filteredOpenCode[0].fullPath)
-                        //         if(!selectedRef){
-                        //             selectedRef = me.filteredPrettierCodeLists.find(x => x.path == me.filteredOpenCode[0].path)
-                        //         } 
-                        //         me.openCode[0].code = selectedRef.code
-                        //         me.editModeResultViewerRenderKey++;
-                        //     }
-                        // }
-                        if (me.ideWindow) {
-                            console.log("canvas code");
-                            var projectId;
-                            if (me.information && me.information.projectId) {
-                                projectId = me.information.projectId;
-                            } else {
-                                projectId = me.params.projectId;
-                            }
-                            var message = {
-                                "message": "code",
-                                "type": "update",
-                                "path": projectId + "/" + codeObj.fullPath,
-                                "content": codeObj.code,
-                            }
-                            if (codeObj.beforeFullPath) {
-                                message.beforePath = projectId + "/" + codeObj.beforeFullPath;
-                            }
-                            // if (me.fullPathList.length == 1) {
-                            if (me.codeLists.length == 1) {
-                                message.start = true
-                            }
-                            if (options.mergeType) {
-                                message.mergeType = options.mergeType
-                            }
-                            me.ideWindow.postMessage(message);
-                        }
-                    }
-                    if(me.editTemplateFrameWorkList[template] && me.editTemplateFrameWorkList[template][frameWorkelement]){
-                        if(me.editTemplateFrameWorkList[template][frameWorkelement].failedGenerate == true){
-                            me.editTemplateFrameWorkList[template][frameWorkelement].failedGenerate = false
-                            me.editTemplateFrameWorkList[template][frameWorkelement].errorMessage = null
-                            if(me.editTemplateFrameWorkList[template][frameWorkelement].isEditted == true){
-                                me.editTemplateFrameWorkList[template][frameWorkelement].isFixed = true
-                                me.editTemplateFrameWorkList[template][frameWorkelement].isEditted = false
-                            } 
-                        }
-                    }
-
-                    if(!(me.openCode && me.openCode[0]) && me.opennedTemplateFramework && me.opennedTemplateFramework[0]){
-                        if(me.opennedTemplateFramework[0].templatePath == codeObj.templatePath || me.opennedTemplateFramework[0].path == codeObj.templatePath){
-                            me.opennedTemplateFramework[0].templateErrMsg = null 
-                            me.setTemplateResult(codeObj.templatePath)
-                        }
-                    }
-
-                } catch (e) {
-                    var filePath = processContext.element
-                    var template = processContext.template
-                    // var code = originContent
-                    var fileName = filePath.split('/')
-                    var subFileName = filePath.replace(fileName.at(-1), "")
-                    console.log(filePath, ": ", e)
-                    var elementObj =
+                var templates = [];
+                var notes = {
+                    'key': 'notes',
+                    'name': 'NOTES.txt',
+                    'code': '',
+                    'file': 'txt'
+                };
+                templates.push(notes);
+                me.setYamlPerKind(templates);
+
+                me.chartJson = {
+                    "apiVersion": "v1",
+                    "name": me.projectName,
+                    "version": "0.1.0",
+                    "description": "A Helm chart for Kubernetes"
+                };
+
+                var folder = {
+                    'name': me.projectName,
+                    'children': [
                         {
-                            'code' : frameWork,
-                            'failedGenerate': true,
-                            'isFixed': false,
-                            'errorMessage': e.message,
-                            'element': [
-                                {
-                                    'templatePath': filePath,
-                                    'computedFileName': fileName.at(-1),
-                                    'computedSubFileName': subFileName ? subFileName : null,
-                                    'code': frameWork,
-                                    'template': template
-                                }
-                            ]
+                            'key': 'chart',
+                            'name': 'Chart.yaml',
+                            'code': me.yamlFilter(json2yaml.stringify(me.chartJson)),
+                            'file': me.fileType('.yaml')
+                        },
+                        {
+                            'name': 'templates',
+                            'children': templates
+                        },
+                        {
+                            'key': 'values',
+                            'name': 'values.yaml',
+                            'code': me.valuesYaml,
+                            'file': me.fileType('.yaml')
                         }
-                    if(localStorage.getItem("editTemplateList") && me.firstSetEditTemplateList){
-                        var CircularJSON = require('circular-json');
-                        var obj = CircularJSON.parse(localStorage.getItem("editTemplateList"));
-                        if(obj && obj.projectId == me.modelingProjectId){
-                            me.editTemplateFrameWorkList = obj.editTemplateList
-                        }
-                        me.firstSetEditTemplateList = false
-                    }
-                    if( !(me.editTemplateFrameWorkList[template] && me.editTemplateFrameWorkList[template][frameWorkelement]) ){
-                        if(!me.editTemplateFrameWorkList[template]) {
-                            me.editTemplateFrameWorkList[template] = {}
-                        }
-                        me.$set(me.editTemplateFrameWorkList[template], filePath, elementObj)
-                    } else {
-                        me.editTemplateFrameWorkList[template][frameWorkelement].errorMessage = e.message
-                    }
-
-                    me.$set(me.editTemplateFrameWorkList[template], filePath, elementObj);
-                    
-                    if(fullPath){
-                        if(!me.errTempResultList[template]){
-                            me.errTempResultList[template] = {}
-                        } 
-                        if(!me.errTempResultList[template][filePath]){
-                            me.errTempResultList[template][filePath] = {}
-                        } 
-                        me.errTempResultList[template][filePath][fullPath] = e.message
-                        console.log(fullPath, e.message)
-                    }
-                    if(me.openCode && me.openCode[0]){
-                        if(filePath == me.openCode[0].templatePath){
-                            me.setTemplateResult(filePath)
-                        }
-                    }
-                }
+                    ]
+                };
+                me.newTreeList.push(folder);
             },
-            showIntroduceK8sCodeViewer(){
-                let me = this
-
-                if(me.embeddedK8s){
-                    if(me.treeLists){
-                        me.openCode = [];
-                        me.treeLists.forEach(function (obj) {
-                            obj.children.forEach(function (obj2) {
-                                if(obj2.name=='docs'){
-                                    obj2.children.forEach(function (obj3) {
-                                        if(obj3.path.includes('introduce.md')){
-                                            me.openCode.push(obj3);
-                                            return false;
-                                        }
-                                    });
-                                }
-                            });
-                        });
-                    }
+            yamlFilter(yamlText) {
+                let lines = yamlText.split('\n');
+                lines.splice(0, 1);
+                for (let i in lines) {
+                    lines[i] = lines[i].substring(2, lines[i].length);
                 }
-            }
-
+                yamlText = lines.join('\n');
+                yamlText = yamlText.replace(/ null/g, ' ');
+                return yamlText;
+            },
         }
     }
 </script>
+
 <style>
 </style>

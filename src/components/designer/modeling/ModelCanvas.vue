@@ -1588,20 +1588,20 @@
                     if (window.opener) {
                         obj = null;
                         me.postParentWindow();
+                    } else if (me.isServerModel) {
+                        obj.action = 'backup'
+                        obj.title = 'Save New Version'
+
+                        let nextVer = me.information.lastVersionName ? me.information.lastVersionName : me.defaultVersion;
+                        if(me.information.lastVersionName){
+                            let nextVersion = nextVer.substr(-1);
+                            nextVersion =  !isNaN(Number(nextVersion)) ? Number(nextVersion)+1: ''
+                            nextVer = `${nextVer.substr(0, nextVer.length - 1)}${nextVersion}`
+                        }
+                        obj.version = nextVer
+                    } else{
+                        // SAVE
                     }
-                    
-                    obj.action = 'backup';
-                    obj.title = 'Save New Version';
-
-                    let nextVer = me.information.lastVersionName ? me.information.lastVersionName : me.defaultVersion;
-
-                    if (me.information.lastVersionName) {
-                        let nextVersion = nextVer.substr(-1);
-                        nextVersion =  !isNaN(Number(nextVersion)) ? Number(nextVersion)+1 : '';
-                        nextVer = `${nextVer.substr(0, nextVer.length - 1)}${nextVersion}`;
-                    };
-                    obj.version = nextVer;
-                    
                 } else if (state == 'fork') {
                     var forkBy ={
                         org : me.scmOrg,

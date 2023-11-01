@@ -150,7 +150,7 @@
         </div>
         <course-navigator v-if="courseNavi && $route.path.includes('eventstorming')"
                           :value.sync="naviObject"></course-navigator>
-        <v-content :style="headerFloating == true ? 'margin-top:-64px;':'margin-top:0px;'">
+        <v-main :style="headerFloating == true ? 'margin-top:-64px;':'margin-top:0px;'">
             <v-progress-linear v-if="progressValue" fixed indeterminate color="orange" height="10"></v-progress-linear>
             <v-container :style="labTool == 'quiz' ? 'background-color: #E3F2FD':''" fluid fill-height>
                 <v-layout row wrap>
@@ -192,7 +192,7 @@
                     </v-flex>
                 </v-layout>
             </v-container>
-        </v-content>
+        </v-main>
 
         <!--  설명 Dialog -->
         <v-dialog
@@ -466,8 +466,7 @@
             participantLists: [],
             customizationHome: 'https://intro.msaez.io',
             paymentLists: [
-                {key: 'showMemo', display: `메모장 사용하기`},
-                {key: 'logout', display: `로그아웃`}
+                {key: 'logout', display: `loginList.logout`}
             ],
             loginText: 'Login',
             LoginHover: false,
@@ -576,7 +575,7 @@
                         })
                     }
                 } else {
-                    console.log('k8sez')
+                    console.log('k8sez');
                 }
             },
             "openMenu": function () {
@@ -615,6 +614,10 @@
         },
         async mounted() {
             var me = this;
+
+            if (window.location.search.includes("oauth=gitlab")) {
+                me.$router.push("/oauth/gitlab")
+            }
 
             me.$EventBus.$on('isMounted-ModelCanvas', function (data) {
                 if(data == 'true') {
@@ -1290,11 +1293,36 @@
                     me.putObject(`db://users/${me.userInfo.uid}`, obj)
                 }
                 
-                localStorage.clear();
-                me.$EventBus.$emit('login', null);
-                me.$gtag.event('logout', {method: 'google'});
-                var newURL = window.location.protocol + "//" + window.location.host + "/";
-                window.location.href = newURL;
+                if(window.MODE == 'onprem') {
+                    localStorage.clear();
+                    me.$EventBus.$emit('login', null);
+                    me.$gtag.event('logout', {method: 'google'});
+                    var newURL = window.location.protocol + "//" + window.location.host + "/";
+                    window.location.href = newURL;
+                } else {
+                    me.getRef('auth').signOut().then(function (result) {
+                        window.localStorage.removeItem("gitAccessToken");
+                        window.localStorage.removeItem("accessToken");
+                        window.localStorage.removeItem("author");
+                        window.localStorage.removeItem("userName");
+                        window.localStorage.removeItem("email");
+                        window.localStorage.removeItem("projectName");
+                        window.localStorage.removeItem("picture");
+                        window.localStorage.removeItem("loadData");
+                        window.localStorage.removeItem("uid");
+                        window.localStorage.removeItem("authorized");
+                        window.localStorage.removeItem("connectionKey");
+
+                        window.localStorage.removeItem("loginType");
+                        window.localStorage.removeItem("gitUserName");
+                        window.localStorage.removeItem("gitOrgName");
+
+                        me.$EventBus.$emit('login', null)
+                        me.$gtag.event('logout', {method: 'google'})
+                        var newURL = window.location.protocol + "//" + window.location.host + "/";
+                        window.location.href = newURL;
+                    })
+                }
             },
             saveSetting() {
                 var me = this;

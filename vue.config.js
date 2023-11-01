@@ -5,6 +5,7 @@ module.exports = {
         devServer: {
             https: true,
             port: '8081',
+            disableHostCheck: true,
         },
         module: {
             rules: [

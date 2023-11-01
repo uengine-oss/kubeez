@@ -12,11 +12,59 @@ class GitAPI {
     gitRepoUrl(org, repo, tag) {
         return this._git.gitRepoUrl(org, repo, tag)
     }
-
+    getCommit(org, repo, branch) {
+        let me = this;
+        return new Promise(async function (resolve, reject) {
+            const result = await me._git.getCommit(org, repo, branch)
+            .then((res) => {
+                resolve(res)
+            })
+            .catch((e) => {
+                reject(e)
+            })   
+        })
+    }
     getBranch(org, repo, forkedTag) {
         let me = this;
         return new Promise(async function (resolve, reject) {
             const result = await me._git.getBranch(org, repo, forkedTag)
+            .then((res) => {
+                resolve(res)
+            })
+            .catch((e) => {
+                reject(e)
+            })   
+        })
+    }
+    
+    setGitList(element, repository, gitRepoUrl) {
+        let me = this;
+        return new Promise(async function (resolve, reject) {
+            const result = await me._git.setGitList(element, repository, gitRepoUrl)
+            .then((res) => {
+                resolve(res)
+            })
+            .catch((e) => {
+                reject(e)
+            })   
+        })
+    }
+    getTemplateURL(repo) {
+        let me = this;
+        return new Promise(async function (resolve, reject) {
+            const result = await me._git.getTemplateURL(repo)
+            .then((res) => {
+                resolve(res)
+            })
+            .catch((e) => {
+                reject(e)
+            })   
+        })
+    }
+    getToppingURL(repo) {
+        let me = this;
+        return new Promise(async function (resolve, reject) {
+            const result = await me._git.getToppingURL(repo)
             .then((res) => {
                 resolve(res)
             })
@@ -133,6 +181,18 @@ class GitAPI {
             })
         })
     }
+    getFile(repo, org, filePath) {
+        let me = this;
+        return new Promise(async function (resolve, reject) {
+            const result = await me._git.getFile(repo, org, filePath)
+            .then((res) => {
+                resolve(res)
+            })
+            .catch((e) => {
+                reject(e)
+            })
+        })
+    }
     getFiles(options) {
         let me = this;
         return new Promise(async function (resolve, reject) {
@@ -189,7 +249,18 @@ class GitAPI {
             })
         })
     }
-
+    getTree(org, repo, sha) {
+        let me = this;
+        return new Promise(async function (resolve, reject) {
+            let tree = await me._git.getTree(org, repo, sha)
+            .then((res) => {
+                resolve(res)
+            })
+            .catch((e) => {
+                reject(e)
+            })
+        })
+    }
     postTree(org, repo, treeList, treesha) {
         let me = this;
         return new Promise(async function (resolve, reject) {
@@ -205,6 +276,19 @@ class GitAPI {
 
     startCommitTemplate() {
         
+    }
+
+    getActionLogs(org, repo) {
+        let me = this;
+        return new Promise(async function (resolve, reject) {
+            await me._git.getActionLogs(org, repo)
+            .then((res) => {
+                resolve(res)
+            })
+            .catch((e) => {
+                reject(e)
+            })
+        })
     }
 
 }

@@ -24,7 +24,6 @@
                 }
             }
         },
-        // mixins: [LabBase, TenantAware],
         mixins: [CommonStorageBase],
         data: () => ({
             tab: 'main',
@@ -119,32 +118,8 @@
             async signInGitlab() {
                 var me = this
                 try {
-                    //%2Fauth%2Fgitlab%2Fcallback
-                    window.open(`https://gitlab.msaez.io/oauth/authorize?client_id=8eb94ad361085009155d495af28e6a822d7b64bb2397807a9e93cf269d28d1c8&redirect_uri=https%3A%2F%2Fwww.msaez.io%3A8081%2Foauth%2Fgitlab&response_type=code&scope=api&state=devopssystem`,"_blank");
-                    // me.$http.get('https://gitlab.msastudy.io/auth/gitlab/authorize')
-                    // var app = this.getComponent('App')
-                    // if(me.userInfo.email && me.userInfo.password){
-                    //     // var result = await me.signIn('db://login', me.userInfo);
-                    //     // if(result){
-                    //     //     window.localStorage.setItem("author", result.user.email)
-                    //     //     window.localStorage.setItem("userName", result.user.username)
-                    //     //     window.localStorage.setItem("email", result.user.email)
-                    //     //     window.localStorage.setItem("picture", result.user.picture)
-                    //     //     window.localStorage.setItem("accessToken", result.accessToken)
-                    //     //     window.localStorage.setItem("uid", result.user.uid)
-                    //     //     if (result.user.email && result.user.email.includes('@uengine.org')) {
-                    //     //         window.localStorage.setItem("authorized", 'admin');
-                    //     //     } else {
-                    //     //         window.localStorage.setItem("authorized", 'student');
-                    //     //     }
-                    //     //     me.writeUserData(result.user.uid, result.user.username, result.user.email, result.user.picture)
-                    //     //     me.$EventBus.$emit('login', result.accessToken)
-                    //     //     me.$emit('login')
-                    //     //     me.$emit('close')
-                    //     // }
-                    // }else{
-                    //     me.loginText = '로그인 실패: 로그인 정보를 확인해주세요.'
-                    // }
+                    let origin = window.GITLAB ? window.GITLAB : window.location.hostname.replace("www.", "");
+                    window.open(`https://gitlab.${origin}/oauth/authorize?client_id=8eb94ad361085009155d495af28e6a822d7b64bb2397807a9e93cf269d28d1c8&redirect_uri=https%3A%2F%2F${encodeURIComponent(window.location.host)}%3Foauth%3Dgitlab&response_type=code&scope=api&state=devopssystem`,"_blank");
                 } catch (e) {
                     if(e.code == 'not_found'){
                         me.loginText = '로그인 실패: 존재하지 않은 계정입니다.'

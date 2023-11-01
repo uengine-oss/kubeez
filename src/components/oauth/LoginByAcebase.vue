@@ -1,6 +1,6 @@
 <template>
-    <v-card class="elevation-12"
-            v-if="standard"
+    <v-card v-if="standard"
+            class="elevation-12"
             style="background: #FFFFFF;
                 min-width:300px;
                 max-width:300px;
@@ -13,10 +13,10 @@
     >
         <div v-if="tab == 'main'">
             <div style="font-weight:700;
-                font-size:20px;
-                color:#424242;
-                text-align:center;
-                margin:20px 0 20px 0;"
+                    font-size:20px;
+                    color:#424242;
+                    text-align:center;
+                    margin:20px 0 20px 0;"
             >
                 LOGIN
             </div>
@@ -39,9 +39,9 @@
                         @keydown.enter="signInAcebase()"
                 ></v-text-field>
                 <div style="font-size: 13px;
-                    color: grey;
-                    margin-bottom: 10px;
-                    margin-top: -12px;"
+                        color: grey;
+                        margin-bottom: 10px;
+                        margin-top: -12px;"
                 >
                     {{ loginText }}
                 </div>
@@ -51,15 +51,15 @@
             </v-col>
             <v-divider></v-divider>
             <v-col>
-                <v-btn block small  @click="signUpPage()">
+                <v-btn block small @click="signUpPage()">
                     Sign Up
                 </v-btn>
                 <div style="width:290px;
-                    margin-left:5px;
-                    text-align:center;
-                    font-size: small;
-                    color:#BDBDBD;
-                    margin-top:5px;"
+                        margin-left:5px;
+                        text-align:center;
+                        font-size: small;
+                        color:#BDBDBD;
+                        margin-top:5px;"
                 >
                     Please ensure 3rd party cookies are enabled if <br>
                     login fails.
@@ -76,15 +76,16 @@
                 </v-btn>
             </div>
             <div style="font-weight:700;
-                font-size:20px;
-                color:#424242;
-                text-align:center;
-                margin:20px 0 20px 0;"
+                    font-size:20px;
+                    color:#424242;
+                    text-align:center;
+                    margin:20px 0 20px 0;"
             >
                 Sign Up
             </div>
             <v-col>
-                <v-text-field v-model="userInfo.username"
+                <v-text-field 
+                        v-model="userInfo.username"
                         label="NAME"
                 ></v-text-field>
                 <v-text-field
@@ -105,9 +106,9 @@
                         @keydown.enter="signUpAcebase()"
                 ></v-text-field>
                 <div style="font-size: 13px;
-                    color: grey;
-                    margin-bottom: 10px;
-                    margin-top: -12px;"
+                        color: grey;
+                        margin-bottom: 10px;
+                        margin-top: -12px;"
                 >
                     {{ loginText }}
                 </div>

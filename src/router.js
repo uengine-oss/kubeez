@@ -13,6 +13,10 @@ const KubernetesModelCanvas = () =>
     import(
         /* webpackChunkName: "KubernetesModelCanvas" */ "./components/designer/k8s-modeling/KubernetesModelCanvas"
     );
+const GitlabRedirectPage = () =>
+    import(
+      /* webpackChunkName: "Provision" */ "./components/oauth/GitlabRedirectPage"
+    );
 ////////////////////////
 
 export default new Router({
@@ -28,6 +32,11 @@ export default new Router({
             path: '/kubernetes/:projectId',
             name: 'KubernetesModelCanvas',
             component: KubernetesModelCanvas
+        },
+        {
+            path: "/oauth/gitlab",
+            name: "GitlabRedirectPage",
+            component: GitlabRedirectPage,
         },
     ]
 });

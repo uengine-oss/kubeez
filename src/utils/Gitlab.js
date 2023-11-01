@@ -15,32 +15,62 @@ class Gitlab extends Git {
     gitRepoUrl(org, repo) {
         return `https://gitlab.${this.getOrigin()}/${org}/${repo}`
     }
+    getTemplateURL(repo) {
+        let me = this;
+        return new Promise((resolve, reject) => {
+            let result = `https://gitlab.${me.getOrigin()}/root/${repo}`
+            resolve(result)
+        })
+        
+    }
+    getToppingURL(repo) {
+        let me = this;
+        return new Promise((resolve, reject) => {
+            let result = `https://gitlab.${me.getOrigin()}/root/topping-${repo}`
+            resolve(result)
+        })
+    }
+    getCommit(org, repo, branch) {
+        let me = this;
+        return new Promise(async function (resolve, reject) {
+            let repoInfo = me.getRepoId(repo, org)
+            .then(async function (info) {
+                let file = await axios.get(`https://gitlab.${me.getOrigin()}/api/v4/projects/${info.id}/repository/commits?ref_name=${branch}`, { headers: me.getHeader() })
+                .then(res => {
+                    resolve(res)
+                })
+                .catch(err => reject(err))
+            })
+            .catch(e => reject(e))
+        })
+    }
     getHeader() {
         return {
             Authorization: 'Bearer ' + localStorage.getItem("gitToken"),
             Accept: 'application/json'
         }
     }
-    getUser() {
+    getUser(org) {
         let me = this
         return new Promise(async function (resolve, reject) {
-            let userName = localStorage.getItem('gitUserName')
-            let getUserInfo = await axios.get(`https://gitlab.${me.getOrigin()}/api/v4/users?username=${userName}`, {headers: me.getHeader()})
+            let userName = org ? org : localStorage.getItem('gitUserName')
+            let getUserInfo = await axios.get(`https://gitlab.${me.getOrigin()}/api/v4/users?username=${userName}`)
             .then(function (res) {
                 resolve(res.data[0])
             })
             .catch(e => reject(e))
         })
     }
-    getRepoId(repo) {
+    getRepoId(repo, org) {
         let me = this
         return new Promise(async function (resolve, reject) {
-            let userInfo = me.getUser()
+            let userName = org ? org : localStorage.getItem('gitUserName')
+            let userInfo = await me.getUser(userName)
             .then(async function (info) {
-                const result = axios.get(`https://gitlab.${me.getOrigin()}/api/v4/users/${info.id}/projects`, {headers: me.getHeader()})
+                const result = axios.get(`https://gitlab.${me.getOrigin()}/api/v4/users/${info.id}/projects?search=${repo}`, {headers: me.getHeader()})
                 .then((res) => {
                     for(const repoInfo in res.data) {
-                        console.log(res.data[repoInfo].name, repo)
+                        
                         if(res.data[repoInfo].name == repo) {
                             resolve(res.data[repoInfo])
                         }
@@ -48,7 +78,9 @@ class Gitlab extends Git {
                     // console.log("*****")
                     resolve({id:null})
                 })
-                .catch(e => reject(e))
+                .catch(e => {
+                    reject(e)
+                })
             })
             .catch(error => reject(error))
         })
@@ -72,26 +104,64 @@ class Gitlab extends Git {
             })
         })
     }
-    getRepo() {
-        let me = this
-        return new Promise(async function (resolve, reject) {
+    // getRepo() {
+    //     let me = this
+    //     return new Promise(async function (resolve, reject) {
 
+    //     })
+    // }
+    getFile(repo, org, filePath, repoId) {
+        let me = this;
+        return new Promise(async function (resolve, reject) {
+            
+            // let results = []
+            // msa-ez의 경우 root에서 가지고 와야하므로 1을 부여함,
+            let id = null;
+            if(org.includes("msa-ez"))
+                id = "root"
+
+            if(!repoId) {
+                let repoInfo = await me.getRepoId(repo, id)
+                .then(function (info) {
+                    repoId = info.id
+                })
+            }
+
+            // let repoInfo = me.getRepoId(repo, id)
+            // .then(async function (info) {
+            let url = `https://gitlab.${me.getOrigin()}/api/v4/projects/${repoId}/repository/files/${encodeURIComponent(filePath)}?ref=main`
+            let file = await axios.get(url, { headers: me.getHeader() })
+            .then(res => {
+                let result = {
+                    data: decodeURIComponent(escape(atob(res.data.content))),
+                    url: url
+                }
+                // let result = decodeURIComponent(escape(atob(res.data.content)))
+
+                resolve(result)
+            })
+            .catch(err => {
+                console.log(url)
+                reject(err)   
+            })
+            // })
+            // .catch(e => reject(e))
         })
     }
-    // getRepoFiles(options) {
-
-    // }
     getFiles(options) {
         let me = this
         return new Promise(async function (resolve, reject) {
             let result = []
-            let repoInfo = me.getRepoId(options.repo)
+            let repoInfo = me.getRepoId(options.repo, options.org)
             .then(async function (info) {
                 let firstPage = await axios.get(`https://gitlab.${me.getOrigin()}/api/v4/projects/${info.id}/repository/tree?ref=${options.name}&id=${info.id}&page=1&per_page=100&recursive=true`, {headers: me.getHeader()})
                 .then(async function (firstRes) {
                     result = result.concat(firstRes.data)
                     // resolve(res.data)
                     let totalPages = parseInt(firstRes.headers['x-total-pages'])
+                    if(totalPages == 1) 
+                        resolve(result)
+
                     for (var i = 2; i <= totalPages; i++) {
                         let otherPages = await axios.get(`https://gitlab.${me.getOrigin()}/api/v4/projects/${info.id}/repository/tree?ref=${options.name}&id=${info.id}&page=${i}&per_page=100&recursive=true`, {headers: me.getHeader()})
                         .then(function (otherRes) {
@@ -106,6 +176,184 @@ class Gitlab extends Git {
                 })
                 .catch(error => (reject(error)))
             })
+        })
+    }
+    setGitList(element, repository, gitRepoUrl) {
+        let me = this;
+        return new Promise(async function (resolve, reject) {
+            let isToppingSetting = false
+            if(gitRepoUrl.includes("topping-")){
+                isToppingSetting = true
+            }
+            let toppingName = ""
+            if(isToppingSetting){
+                toppingName = repository
+            }
+            let gitTemplateContents = {};
+            let manifestsPerTemplate = {}
+            manifestsPerTemplate[gitRepoUrl] = []
+            let templateFrameWorkList = {}
+            let manifestsPerToppings = {}
+            manifestsPerToppings[gitRepoUrl] = []
+            let gitToppingList = {}
+            // let result = null;
+            let org = gitRepoUrl.split('/')[gitRepoUrl.split('/').length - 2].trim()
+            let repo = gitRepoUrl.split('/')[gitRepoUrl.split('/').length - 1].trim()
+            
+            // let result = await axios.get(element.url + '?recursive=1', { headers: me.getHeader() })
+            // console.log(element)
+            let repoId;
+            // let userId = null;
+            // if(org == "root") {
+            //     userId = 
+            // }
+            let repoInfo = await me.getRepoId(repo, org)
+            .then(function (info) {
+                repoId = info.id
+            })
+            let callCnt = 0;
+            let filteredElement = element.filter(ele => ele.type != 'tree')
+            filteredElement.forEach(async function (ele) {
+                // let ele = filteredElement[idx]
+                
+                let result = await me.getFile(repo, org, ele.path, repoId)
+                .then(async function(res) {
+                    if(isToppingSetting){
+                        try{
+                            //var elePath = ele.path.replace(`${toppingName}/`, '')
+                            var elePath = ele.path
+                            manifestsPerToppings[gitRepoUrl].push(elePath)
+                            if(!gitToppingList[gitRepoUrl]){
+                                gitToppingList[gitRepoUrl] = {}
+                            }
+                            if(!gitToppingList[gitRepoUrl][elePath]){
+                                gitToppingList[gitRepoUrl][elePath] = {}
+                            }
+                            gitToppingList[gitRepoUrl][elePath].requestUrl = res.url
+
+                            // var gitSha = await axios.get(ele.url, { headers: me.githubHeaders })
+                            if(!gitTemplateContents[elePath]) gitTemplateContents[elePath] = null
+                            gitTemplateContents[elePath] = res.data;
+                        }catch(e){
+                            console.log(`Error] Set ToppingLists: ${e}`)
+                        }finally {
+                            callCnt ++ ;
+                            console.log(filteredElement.length , callCnt)
+                            if(filteredElement.length == callCnt) {
+                                Object.keys(gitTemplateContents).forEach(function (fileName) {
+                                    if(!gitToppingList[gitRepoUrl][fileName]){
+                                        gitToppingList[gitRepoUrl][fileName] = {}
+                                    }
+                                    gitToppingList[gitRepoUrl][fileName].content = gitTemplateContents[fileName]
+                                });
+                                console.log(`>>> Generate Code] Topping(${gitRepoUrl}) DONE`)
+                                if(ele.path.includes("helper.js")){
+                                    me.loadHandleBarHelper(res.data);
+                                }
+                                gitTemplateContents[ele.path] = res.data;
+                                let result = {
+                                    gitToppingList: gitToppingList,
+                                    manifestsPerToppings: manifestsPerToppings,
+                                    gitTemplateContents: gitTemplateContents
+                                }
+                                resolve(result);
+                            }
+                            
+                            // var gitSha = await axios.get(ele.url, { headers: me.githubHeaders });
+                            // if(!gitTemplateContents[ele.path]) gitTemplateContents[ele.path] = null
+                            // gitTemplateContents[ele.path] = Base64.decode(gitSha.data.content);
+                            
+                        }
+                    } else {
+                        try {
+                            
+                            if(gitRepoUrl){
+                                manifestsPerTemplate[gitRepoUrl].push('./' + ele.path)
+                            }
+
+                            if(!templateFrameWorkList[gitRepoUrl]){
+                                templateFrameWorkList[gitRepoUrl] = {}
+                            }
+                            if(!templateFrameWorkList[gitRepoUrl][ele.path]){
+                                templateFrameWorkList[gitRepoUrl][ele.path] = {}
+                            }
+                            templateFrameWorkList[gitRepoUrl][ele.path].requestUrl = res.url
+
+                            // var gitSha = await axios.get(ele.url, { headers: me.githubHeaders });
+                            if(!gitTemplateContents[ele.path]) gitTemplateContents[ele.path] = null
+                            gitTemplateContents[ele.path] = res.data;
+                            
+                        } catch (e) {
+                            console.log(`Error] Set GitLists: ${e}`)
+                        } finally {
+                            let manifestsPerBaseTemplate = {}
+                            callCnt++;
+                            if(filteredElement.length == callCnt) {
+                                manifestsPerBaseTemplate[gitRepoUrl] = manifestsPerTemplate[gitRepoUrl];
+                                Object.keys(gitTemplateContents).forEach(function (fileName) {
+                                    if(!templateFrameWorkList[gitRepoUrl][fileName]){
+                                        templateFrameWorkList[gitRepoUrl][fileName] = {}
+                                    }
+                                    templateFrameWorkList[gitRepoUrl][fileName].content = gitTemplateContents[fileName]
+                                });
+                                console.log(`>>> Generate Code] Template(${gitRepoUrl}) DONE`);
+                                let result = {
+                                    manifestsPerBaseTemplate: manifestsPerBaseTemplate,
+                                    templateFrameWorkList: templateFrameWorkList,
+                                    manifestsPerTemplate: manifestsPerTemplate,
+                                }
+                                resolve(result);
+                            }
+                        }
+                    }
+                })
+                .catch(e => {
+                    callCnt++
+                })
+                
+            })
+            // let result = await me.getFile(o)
+            // .then(function(res) {
+            //     if( res && res.data && res.data.tree.length > 0 ) {
+            //         let callCnt = 0;
+            //         res.data.tree.forEach(async function (ele, idx) {
+                        
+            //         });
+            //     } else {
+            //         resolve();
+            //     }
+            // })
+            // .catch(e => (reject(e)))
+        })
+    }
+    loadHandleBarHelper(handler){
+        try{
+            if( !handler ){
+                return;
+            }
+            (new Function(handler))();
+        }catch(e){
+            console.log(`Error] Load HandleBar Helper.js: ${e} `)
+        }
+    }
+    getTree(org, repo) {
+        let me = this
+        return new Promise(async function (resolve, reject) {
+            // TODO: 우선 Main Branch 받아오는 용도로 사용
+            let treeOptions = {
+                name: "main",
+                repo: repo,
+                org: org
+            }
+            let result = await me.getFiles(treeOptions)
+            .then(function (res) {
+                resolve(res)
+            })
+            .catch(e => {
+                reject(e)
+            })
+
+            
         })
     }
     setPushList(options) {
