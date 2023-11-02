@@ -1,34 +1,38 @@
 <template>
+
+
 </template>
 
 <script>
-    import json2yaml from 'json2yaml';
+    import json2yaml from 'json2yaml'
     
-    import Element from '../modeling/ModelElement';
+    var changeCase = require('change-case');
+    var pluralize = require('pluralize');
+    // import StorageBase from "../modeling/StorageBase";
+    import Element from '../modeling/ModelElement'
 
     export default {
-        mixins:[Element],
         name: 'kubernetes-model-element',
         props: {
             value: Object
         },
-        created() {
+        mixins:[Element],
+        created: function () {
             var me = this;
 
-            me.modelCanvasComponent = me.getComponent('kubernetes-model-canvas');
-
-            if (me.value.elementView && me.modelCanvasComponent.autoOpenPanel) {
-                me.selectedActivity();
-                me.showProperty();
+            if (me.value.elementView && me.canvas.autoOpenPanel) {
+                me.selectedActivity()
+                me.showProperty()
             }
 
-            if (me.modelCanvasComponent && me.value.connectableType) {
+            //sub-controll componet get
+            if (me.canvas && me.value.connectableType) {
                 me.filterConnectionTypes = []
                 me.value.connectableType.forEach(function (connectableType) {
-                    if (connectableType && me.modelCanvasComponent.mergeElementTypes) {
-                        var item = me.modelCanvasComponent.mergeElementTypes.find(element => element.component.toLowerCase() == connectableType.toLowerCase())
+                    if (connectableType && me.canvas.mergeElementTypes) {
+                        var item = me.canvas.mergeElementTypes.find(element => element.component.toLowerCase() == connectableType.toLowerCase())
                         if (connectableType === "DestinationRuleSubset") {
-                            item = me.modelCanvasComponent.mergeElementTypes.find(
+                            item = me.canvas.mergeElementTypes.find(
                                 element => element.component === "destinationRule"
                             )
                         }
@@ -54,7 +58,7 @@
                 }
             }
 
-            if(!me.modelCanvasComponent.embedded && me.value.relationView) {
+            if(!me.canvas.embedded && me.value.relationView) {
                 if(me.value.sourceElement.object.metadata.annotations) {
                     var type = me.value.targetElement._type
                     var name = me.value.targetElement.name ? me.value.targetElement.name : me.value.targetElement.object.metadata.name
@@ -85,19 +89,27 @@
                     }
                 }
             }
-            me.validate();
+
+            me.validate(false)
+
         },
         data: function () {
             return {
+                //kube
                 selected: false,
                 autoOpenPanel: false,
+
+                //tmp Vari
                 namePanel: '',
                 modelCanvasComponent: null,
                 filterConnectionTypes: null,
+
                 messageRef: {},
                 deploySuccess: false,
                 menuList: [],
+
                 isMovedElement: false,
+
                 ESE_NOT_NAME: 0,
                 validationCodeLists: {
                     0: {
@@ -135,48 +147,41 @@
             filteredElementValidationResults(){
                 var me = this
                 var levelSort = ['error','warning','info']
-                try {
+                try{
                     return me.elementValidationResults.sort(function compare(a, b) {
-                        var aIdx = levelSort.findIndex(x => x == a.level);
-                        var bIdx = levelSort.findIndex(x => x == b.level);
+                        var aIdx = levelSort.findIndex(x=>x == a.level)
+                        var bIdx = levelSort.findIndex(x=>x == b.level)
                         return aIdx - bIdx;
                     });
-                } catch (e) {
-                    return me.elementValidationResults;
-                } finally {
-                    me.refreshImg();
+                }catch (e) {
+                    return me.elementValidationResults
+                }finally {
+                    me.refreshImg()
                 }
             },
             storage() {
-                if (this.modelCanvasComponent) {
-                    return this.modelCanvasComponent.storage;
+                if (this.canvas) {
+                    return this.canvas.storage
                 } else {
-                    return 'localstorage';
-                }
-            },
-            isReadOnly() {
-                if (this.modelCanvasComponent) {
-                    return this.modelCanvasComponent.readOnly;
-                } else {
-                    return false;
+                    return 'localstorage'
                 }
             },
             isEmbedded() {
-                if (this.modelCanvasComponent) {
-                    return this.modelCanvasComponent.embedded;
+                if (this.canvas) {
+                    return this.canvas.embedded
                 } else {
-                    return false;
+                    return false
                 }
             },
             style: {
-                get() {
+                get: function () {
                     var style;
+                    //스타일이 없다면 디폴트 스타일을 사용한다.
                     if (this.value) {
-                        if (this.value.elementView){
+                        if (this.value.elementView)
                             style = this.value.elementView.style;
-                        } else {
+                        else
                             style = this.value.relationView.style;
-                        }
                     }
 
                     if (style) {
@@ -190,105 +195,99 @@
                         return this.defaultStyle;
                     }
                 },
-                set(val) {
+                set: function (val) {
                     if (this.value) {
-                        if (this.value.elementView) {
+                        if (this.value.elementView)
                             this.value.elementView.style = JSON.stringify(val);
-                        } else {
+                        else
                             this.value.relationView.style = JSON.stringify(val);
-                        }
                     }
                 }
             },
             statusColor() {
                 if (this.deploySuccess) {
-                    return '#27ae60';
+                    return '#27ae60'
                 } else {
-                    return '#e74c3c';
+                    return '#e74c3c'
                 }
             },
         },
         watch: {
             "value.elementView.width": {
                 handler(newVal) {
-                    var me = this;
+                    var me = this
                     var obj = {
                         type: me.value._type,
                         width: newVal,
                         height: me.value.elementView.height
-                    };
-                    me.$store.dispatch('resize', obj);
+                    }
+                    me.$store.dispatch('resize', obj)
                     if(me.value.object && me.value.object.metadata) {
                         if (!me.value.object.metadata.annotations) {
-                            me.value.object.metadata.annotations = {};
+                            me.value.object.metadata.annotations = {}
                         }
-                        me.value.object.metadata.annotations['msaez.io/width'] = String(newVal);
+                        me.value.object.metadata.annotations['msaez.io/width'] = String(newVal)
                     }
                 }
             },
             "value.elementView.height": {
                 handler(newVal) {
-                    var me = this;
+                    var me = this
                     var obj = {
                         type: me.value._type,
                         width: me.value.elementView.width,
                         height: newVal
-                    };
-                    me.$store.dispatch('resize', obj);
+                    }
+                    me.$store.dispatch('resize', obj)
                     if(me.value.object && me.value.object.metadata) {
                         if (!me.value.object.metadata.annotations) {
-                            me.value.object.metadata.annotations = {};
+                            me.value.object.metadata.annotations = {}
                         }
-                        me.value.object.metadata.annotations['msaez.io/height'] = String(newVal);
+                        me.value.object.metadata.annotations['msaez.io/height'] = String(newVal)
                     }
                 }
             },
             "value.elementView.x": {
                 handler(newVal) {
-                    var me = this;
+                    var me = this
                     if(me.value.object && me.value.object.metadata) {
                         if (!me.value.object.metadata.annotations) {
-                            me.value.object.metadata.annotations = {};
+                            me.value.object.metadata.annotations = {}
                         }
-                        me.value.object.metadata.annotations['msaez.io/x'] = String(newVal);
+                        me.value.object.metadata.annotations['msaez.io/x'] = String(newVal)
                     }
                 }
             },
             "value.elementView.y": {
                 handler(newVal) {
-                    var me = this;
+                    var me = this
                     if(me.value.object && me.value.object.metadata) {
                         if (!me.value.object.metadata.annotations) {
-                            me.value.object.metadata.annotations = {};
+                            me.value.object.metadata.annotations = {}
                         }
-                        me.value.object.metadata.annotations['msaez.io/y'] = String(newVal);
+                        me.value.object.metadata.annotations['msaez.io/y'] = String(newVal)
                     }
                 }
             },
-            "value.name": function (newVal) {
+            "value.name": function (newVal, oldVal) {
                 this.namePanel = newVal;
-                this.validate();
+                this.validate(false)
             },
         },
-        mounted() {
+        mounted: function () {
             var me = this;
-            var elementId = me.value.elementView ? me.value.elementView.id : me.value.relationView.id;
 
-            me.$EventBus.$on(`${elementId}`, (obj) => {
+            var elementId = me.value.elementView ? me.value.elementView.id : me.value.relationView.id
+            me.$EventBus.$on(`${elementId}`, function (obj) {
 
                 if (obj.action == "delete") {
-                    var location = obj.element.elementView ? 
-                        me.modelCanvasComponent.value.elements : me.modelCanvasComponent.value.relations;
-                    location[elementId] = null;
-                    me.$EventBus.$off(`${elementId}`);
+                    var location = obj.element.elementView ? me.canvas.value.elements : me.canvas.value.relations
+                    location[elementId] = null
+                    this.$EventBus.$off(`${elementId}`)
                 }
 
-                if (obj.action == "getStatus" &&
-                        obj.element &&
-                        obj.element.kind == me.value.object.kind
-                ) {
+                if (obj.action == "getStatus" && obj.element && obj.element.kind == me.value.object.kind) {
                     me.value.status = "created";
-
                     if (obj.element.status) {
                         me.value.status = obj.element.status;
                         if (obj.element.kind == "Deployment" || obj.element.kind == "ReplicaSet") {
@@ -297,7 +296,6 @@
                             me.setStatus();
                         }
                     }
-
                     me.refreshImg();
                 }
 
@@ -307,77 +305,84 @@
                 }
 
                 if(obj.action == 'deleteAnnotations' && me.value.object.metadata.annotations) {
-                    var name = obj.element.targetElement.name ?
-                        obj.element.targetElement.name : obj.element.targetElement.object.metadata.name;
-                    var key = 'msaez.io/' + obj.element.targetElement._type + '_' + name;
-                    delete me.value.object.metadata.annotations[key];;
+                    var name = obj.element.targetElement.name ? obj.element.targetElement.name : obj.element.targetElement.object.metadata.name
+                    var key = 'msaez.io/' + obj.element.targetElement._type + '_' + name
+                    delete me.value.object.metadata.annotations[key]
+                    // console.log(key)
                 }
-            });
 
-            me.$EventBus.$on('isMovedElement', (id) => {
+            })
+
+            if(me.canvas.embedded) {
+                me.refreshImg()
+            }
+
+            me.$EventBus.$on('isMovedElement', function (id) {
                 if (me.value.elementView) {
+                    //only Element
                     if (me.value.elementView.id == id) {
-                        me.isMovedElement = true;
-                        me.movedNewActivity();
+                        me.isMovedElement = true
+                        me.movedNewActivity()
                     } else {
                         if (me.isMovedElement == true) {
-                            me.isMovedElement = false;
-                            me.movedOldActivity();
+                            me.isMovedElement = false
+                            me.movedOldActivity()
                         }
                     }
                 }
-            });
+            })
 
-            if(me.modelCanvasComponent.embedded) {
-                me.refreshImg();
-            }
         },
         beforeDestroy() {
         },
         methods: {
+            setElementCanvas(){
+                var me = this
+                me.modelCanvasComponent = me.getComponent('kubernetes-model-canvas');
+                me.canvas = me.getComponent('kubernetes-model-canvas');
+            },
             movedNewActivity() {
-                var me = this;
-                if (me.modelCanvasComponent.isLogin && !me.isReadOnly) {
+                var me = this
+                if (me.canvas.isLogin && me.canvas.isServerModel && !me.canvas.isClazzModeling && !me.canvas.isReadOnlyModel) {
                     var obj = {
                         action: 'userMovedOn',
                         editUid: me.userInfo.uid,
                         name: me.userInfo.name,
                         picture: me.userInfo.profile,
                         timeStamp: Date.now(),
+                        // editElement: me.value.elementView.id
                         editElement: me.value.elementView ? me.value.elementView.id : me.value.relationView.id
-                    };
-                    me.pushObject(`db://definitions/${me.params.projectId}/queue`, obj);
+                    }
+                    me.pushObject(`db://definitions/${me.params.projectId}/queue`, obj)
                 }
             },
             movedOldActivity() {
                 var me = this
-                if (me.modelCanvasComponent.isLogin && !me.isReadOnly) {
+                if (me.canvas.isLogin && me.canvas.isServerModel && !me.canvas.isClazzModeling && !me.canvas.isReadOnlyModel) {
                     var obj = {
                         action: 'userMovedOff',
                         editUid: me.userInfo.uid,
                         name: me.userInfo.name,
                         picture: me.userInfo.profile,
                         timeStamp: Date.now(),
+                        // editElement: me.value.elementView.id
                         editElement: me.value.elementView ? me.value.elementView.id : me.value.relationView.id
-                    };
-                    me.pushObject(`db://definitions/${me.params.projectId}/queue`, obj);
+                    }
+                    me.pushObject(`db://definitions/${me.params.projectId}/queue`, obj)
                 }
             },
-            onMoveShape() {
-                this.$EventBus.$emit('isMovedElement', this.value.elementView.id);
+            onMoveShape: function () {
+                this.$EventBus.$emit('isMovedElement', this.value.elementView.id)
             },
             mergeDeep(target, sources) {
-                if (!sources.length) {
-                    return target;
-                }
+                // console.log(target)
+                if (!sources.length) return target;
                 const source = sources.shift();
 
                 if (isObject(target) && isObject(source)) {
                     for (const key in source) {
                         if (isObject(source[key])) {
-                            if (!target[key]) {
-                                Object.assign(target, {[key]: {}});
-                            }
+                            if (!target[key]) Object.assign(target, {[key]: {}});
                             mergeDeep(target[key], source[key]);
                         } else {
                             Object.assign(target, {[key]: source[key]});
@@ -392,11 +397,11 @@
                     function changes(object, base) {
                         return _.transform(object, function (result, value, key) {
                             if (!_.isEqual(value, base[key])) {
-                                result[key] = (_.isObject(value) && _.isObject(base[key])) ?
-                                    changes(value, base[key]) : value;
+                                result[key] = (_.isObject(value) && _.isObject(base[key])) ? changes(value, base[key]) : value;
                             }
                         });
                     }
+
                     return changes(object, base);
                 }, 100
             ),
@@ -404,8 +409,12 @@
                 console.log("onLabelChanged", be, af);
             },
             onRotateShape: function (me, angle) {
-                this.value.elementView.angle = angle;
+                this.value.elementView.angle = angle
             },
+            connected: function () {
+                // console.log(this.value)
+            },
+
             selectedActivity: function () {
                 var me = this
                 if (this.value) {
@@ -415,6 +424,7 @@
                     var elementType = me.value._type ? me.value._type : null
                     me.$EventBus.$emit('selectedElementObj', {selected: true, id: me.getId, type: elementType, isEmbedded: me.isEmbedded})
                 }
+
             },
             deSelectedActivity: function () {
                 var me = this
@@ -485,7 +495,7 @@
                 }
 
             },
-            uuid() {
+            uuid: function () {
                 function s4() {
                     return Math.floor((1 + Math.random()) * 0x10000)
                         .toString(16)
@@ -493,7 +503,7 @@
                 }
 
                 return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-                        s4() + '-' + s4() + s4() + s4();
+                    s4() + '-' + s4() + s4() + s4();
             },
             getComponent(componentName) {
                 let component = null
@@ -506,46 +516,49 @@
                 }
                 return component
             },
-            onRemoveShape(value) {
-                var me = this;
+            onRemoveShape: function (value) {
+                var me = this
                 var obj = {
                     action: 'delete',
                     element: value
-                };
+                }
                 if (me.value.relationView) {
-                    me.$EventBus.$emit(`${me.value.relationView.id}`, obj);
-                    me.deleteAnnotations(obj.element);
+                    me.$EventBus.$emit(`${me.value.relationView.id}`, obj)
+                    me.deleteAnnotations(obj.element)
                 } else {
-                    me.$EventBus.$emit(`${me.value.elementView.id}`, obj);
+                    me.$EventBus.$emit(`${me.value.elementView.id}`, obj)
                 }
 
                 try {
-                    if ( me.isCustomMoveExist ) {
-                        me.removeShapeQueue();
+                    if ( me.canvas.isCustomMoveExist ) {
+                        me.removeShapeQueue()
                     } else {
-                        me.removeShapeLocal();
+                        me.removeShapeLocal()
                     }
-                    me.validate();
+                    me.validate()
                 } catch (e) {
-                    alert(`[Error] KubernetesModelElement-onRemoveShape: ${e}`);
+                    alert(`[Error] ModelElement-onRemoveShape: ${e}`)
                 }
+                // console.log("============== Storage Location Search Test 1-2 (Delete Btn) ============= ")
             },
-            deleteRelation(id) {
-                var me = this;
+            deleteRelation: function (relationId) {
+                var me = this
                 var obj = {
                     action: "delete",
                     element: me.value
-                };
-                me.$EventBus.$emit(id, obj);
+                }
+                me.$EventBus.$emit(relationId, obj)
+            },
+            handleClick(event) {
+                var me = this
             },
             async optionClicked(event) {
                 var me = this
                 var code = event.option.name;
-                var designer = me.getComponent('kubernetes-model-canvas');
                 var yamlName = localStorage.getItem("email") + "_" + me.value.name + ".yaml"
                 if (code.includes('create')) {
                     code = 'kubectl create -f'
-                    var yaml = designer.yamlFilter(json2yaml.stringify(me.value.object))
+                    var yaml = me.canvas.yamlFilter(json2yaml.stringify(me.value.object))
                     try {
                         var put = await me.putString(`storage://yamlStorage/${yamlName}`, yaml)
                         var presignedUrl = await me.getURL(`storage://yamlStorage/${yamlName}`)
@@ -555,16 +568,17 @@
                     }
                 } else if (code.includes('apply')) {
                     code = 'kubectl apply -f'
-                    var yaml = designer.yamlFilter(json2yaml.stringify(me.value.object))
+                    var yaml = me.canvas.yamlFilter(json2yaml.stringify(me.value.object))
                     try {
-                        var presignedUrl = await me.getURL(`storage://yamlStorage/${yamlName}`);
+                        var put = await me.putString(`storage://yamlStorage/${yamlName}`, yaml)
+                        var presignedUrl = await me.getURL(`storage://yamlStorage/${yamlName}`)
                         code += ' "'+ presignedUrl + "\"";
                     } catch (error) {
                         code += '- <<EOF \n' + yaml + 'EOF\n'
                     }
                 } else if (code.includes('Terminal')) {
                     code = ''
-                    designer.functionCluster('Terminal')
+                    me.canvas.functionCluster('Terminal')
                     return
                 }
                 code += '\n';
@@ -585,63 +599,140 @@
             },
             async drawFrame(yamlSrc) {
                 var me = this
+                me.$EventBus.$emit('progressValue', true)
+                await me.$http.get(yamlSrc).then(function (res) {
+                    var yamlData = res.data
+                    var lists = yamlData.split("---")
 
-                me.$EventBus.$emit('progressValue', true);
-                
-                await me.$http.get(yamlSrc).then((res) => {
-                    var yamlData = res.data;
-                    var lists = yamlData.split("---");
-                    var parentX = 0;
-                    var parentY = 0;
-                    var jsonList = [];
+                    var parentX = 0
+                    var parentY = 0
+                    var jsonList = []
                     
-                    lists.forEach((item) => {
+                    lists.forEach(function (item, idx) {
                         if (item.length > 1) {
-                            var parseItem = YAML.parse(item);
+                            var parseItem = YAML.parse(item)
                             if(parseItem.kind == me.value.elementView._type) {
-                                parentX = me.value.elementView.x - Number(parseItem.metadata.annotations['msaez.io/x']);
-                                parentY = me.value.elementView.y - Number(parseItem.metadata.annotations['msaez.io/y']);
-                                me.value.object = parseItem;
+                                parentX = me.value.elementView.x - Number(parseItem.metadata.annotations['msaez.io/x'])
+                                parentY = me.value.elementView.y - Number(parseItem.metadata.annotations['msaez.io/y'])
+                                me.value.object = parseItem
                             } else {
-                                jsonList.push(parseItem);
+                                jsonList.push(parseItem)
                             }
                         }
-                    });
+                    })
                     
-                    yamlData = '';
-                    jsonList.forEach((obj) => {
-                        yamlData += '--- \n' + me.modelCanvasComponent.yamlFilter(json2yaml.stringify(obj));
-                    });
-                    me.modelCanvasComponent.drawFrameYaml(yamlData, {'parentX': parentX, 'parentY': parentY});
-                });
+                    yamlData = ''
+                    jsonList.forEach(function (obj, idx) {
+                        yamlData += '--- \n' + me.canvas.yamlFilter(json2yaml.stringify(obj))
+                    })
+                    me.canvas.drawFrameYaml(yamlData, {'parentX': parentX, 'parentY': parentY})
+                    
+                })
 
-                me.$nextTick(() => {
-                    me.$EventBus.$emit('progressValue', false);
-                });
+                me.$nextTick(function() {
+                    me.$EventBus.$emit('progressValue', false)
+                })
             },
             deleteAnnotations(value) {
-                var me = this;
+                var me = this
                 var obj = {
                     action: 'deleteAnnotations',
                     element: value
-                };
-                me.$EventBus.$emit(`${me.value.sourceElement.elementView.id}`, obj);
+                }
+                me.$EventBus.$emit(`${me.value.sourceElement.elementView.id}`, obj)
             },
             validationFromCode(code) {
-                if (code == null || code == undefined) {
-                    return null;
+
+                if (code == null) {
+                    return null
                 }
 
-                var validationCode = this.validationCodeLists[code];
+                if (code == undefined) {
+                    return null
+                }
+
+                var validationCode = this.validationCodeLists[code]
                 if (validationCode) {
-                    validationCode.code = code;
-                    return validationCode;
+                    validationCode.code = code
+                    return validationCode
                 }
 
-                return null;
+                return null
             },
             validate() {
-                var me = this;
+                var me = this
+                // var changedAttachedElement = false
+
+                // if (me.canvas.attachedLists && me.canvas.attachedLists.boundedContextLists) {
+                //     me.attachedBoundedContext =  Object.values(me.canvas.attachedLists.boundedContextLists).find(bc => me.isAggAttached(bc))
+
+                //     if( me.attachedBoundedContext ){
+                //         var newAttachedBoundedContextId = null
+
+                //         me.value.boundedContext = {name: me.attachedBoundedContext.name, id: me.attachedBoundedContext.elementView.id}
+                //         newAttachedBoundedContextId = me.attachedBoundedContext.elementView.id
+
+                //         // 움직일때 BC 변화 파악.
+                //         if (me.value && newAttachedBoundedContextId != me.attachedBoundedContextId) {
+                //             me.attachedBoundedContextId = newAttachedBoundedContextId
+                //             changedAttachedElement = true
+                //         }
+
+                //         // validationResults
+                //         var validationResultIndex = me.elementValidationResults.findIndex(x => (x.code == me.ESE_NOT_BC))
+                //         var isExistValidationResult = validationResultIndex == -1 ? false : true
+                //         if (isExistValidationResult) {
+                //             me.elementValidationResults.splice(validationResultIndex, 1)
+                //         }
+
+                //     } else {
+                //         me.value.boundedContext = undefined
+                //         me.attachedBoundedContextId = null
+
+                //         // validationResults
+                //         var validationResultIndex = me.elementValidationResults.findIndex(x => (x.code == me.ESE_NOT_BC))
+                //         var isExistValidationResult = validationResultIndex == -1 ? false : true
+                //         if (!isExistValidationResult) {
+                //             me.elementValidationResults.push(me.validationFromCode(me.ESE_NOT_BC))
+                //         }
+                //     }
+
+                    // me.attachedBoundedContext = Object.values(me.canvas.attachedLists.boundedContextLists).some(bc => {
+                    //     if (me.isAttached(bc)) {
+                    //         var newAttachedBoundedContextId = null
+                    //
+                    //         me.value.boundedContext = {name: bc.name, id: bc.elementView.id}
+                    //         newAttachedBoundedContextId = bc.elementView.id
+                    //
+                    //         // 움직일때 BC 변화 파악.
+                    //         if (me.value && newAttachedBoundedContextId != me.attachedBoundedContextId) {
+                    //             me.attachedBoundedContextId = newAttachedBoundedContextId
+                    //             changedAttachedElement = true
+                    //         }
+                    //
+                    //         // validationResults
+                    //         var validationResultIndex = me.elementValidationResults.findIndex(x => (x.code == me.ESE_NOT_BC))
+                    //         var isExistValidationResult = validationResultIndex == -1 ? false : true
+                    //         if (isExistValidationResult) {
+                    //             me.elementValidationResults.splice(validationResultIndex, 1)
+                    //         }
+                    //
+                    //     } else {
+                    //         me.value.boundedContext = undefined
+                    //         me.attachedBoundedContextId = null
+                    //
+                    //         // validationResults
+                    //         var validationResultIndex = me.elementValidationResults.findIndex(x => (x.code == me.ESE_NOT_BC))
+                    //         var isExistValidationResult = validationResultIndex == -1 ? false : true
+                    //         if (!isExistValidationResult) {
+                    //             me.elementValidationResults.push(me.validationFromCode(me.ESE_NOT_BC))
+                    //         }
+                    //     }
+                    //
+                    //     return me.isAttached(bc);
+                    // })
+                // }
+
             },
         }
     }
