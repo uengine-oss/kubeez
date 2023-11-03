@@ -1,296 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <base href="/" />
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="title" content="EventStorming2Code" />
-    <meta name="description" content="EventStorming to Code Generator" />
-    <meta
-      name="image"
-      content="https://user-images.githubusercontent.com/54785805/120609107-dbfa1f80-c48c-11eb-8928-2bba293d464e.png"
-    />
-    <meta name="description" content="비대면 MSAEZ 교육 도구" />
-    <meta
-      name="keywords"
-      content="eventstorming, eventstorming2code, msa, micro service architecture,  microservicearchitecture"
-    />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <!-- <script src = 'static/acebase.js'></script> -->
-    <link rel="icon" href="favicon.ico" />
-    <title>MSA Easy</title>
-    <link rel="stylesheet" href="/github-markdown.css" />
-    <link rel="stylesheet" href="/global-style.css" />
+    <head>
+        <base href="/"/>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="title" content="EventStorming2Code">
+        <meta name="description" content="EventStorming to Code Generator">
+        <meta name="keywords"
+            content="kubernetes, kuberez, k8s, msa, micro service architecture,  microservicearchitecture">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <link rel="icon" href="<%= BASE_URL %>favicon.ico">
 
-    <!-- $ 관련-->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <title>Kubernetes Easy</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
-    <script
-      type="javascript"
-      src="static/lib/jqueryXML2JSON/jquery.xml2json.js"
-    ></script>
-    <script
-      type="javascript"
-      src="static/slimscroll/jquery.slimscroll.min.js"
-    ></script>
-    <!--    google-->
-    <script src="https://apis.google.com/js/client.js"></script>
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
+        <script type="javascript" src="static/lib/jqueryXML2JSON/jquery.xml2json.js"></script>
+        <script type="text/javascript" src="static/lib/opengraph/OpenGraph-0.1.3-SNAPSHOT.js"></script>
+        <script type="text/javascript" src="static/lib/jquery-contextMenu/jquery.contextMenu.js"></script>
+        <script type="javascript" src="static/slimscroll/jquery.slimscroll.min.js"></script>
+        <!--    google-->
+        <script src="https://apis.google.com/js/client.js"></script>
+        <script src="https://apis.google.com/js/api.js"></script>
+        <script src="https://apis.google.com/js/platform.js" async defer></script>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-153107610-1"></script>
+        <!--i18n-->
+        <!-- <script src="https://unpkg.com/vue-i18n/dist/vue-i18n.js"></script> -->
+        <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.min.js"></script>-->
+        <script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+        <!--<script src="static/iam-client/iam-api-2.0.1.js"></script>-->
+        <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+        <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="//unpkg.com/vue-material@0.7.4/dist/vue-material.css"> -->
+        <link rel="stylesheet" href="static/external/font-awesome.min.css">
+        <link rel="stylesheet" href="static/external/fonts.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons">
+        <link href="static/bpmn/css/bpmn.css" rel="stylesheet" type="text/css">
+        <!-- jquery-ui, jquery.contextmenu -->
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.min.css"/>
+        <link rel="stylesheet" type="text/css" href="/static/lib/jquery-contextMenu/jquery.contextMenu.css"/>
+        <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/acebase-client@latest/dist/browser.min.js"></script>
 
-    <!--  firebase  -->
-    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
-    <script src="https://www.gstatic.com/firebasejs/6.2.0/firebase-app.js"></script>
-    <!--    firebase storage -->
-    <script src="https://www.gstatic.com/firebasejs/6.2.0/firebase-storage.js"></script>
+        <!-- libs -->
+        <!-- TODO: please change local version -->
+        <!-- <script src="https://unpkg.com/hybind@latest/index.js"></script> -->
 
-    <!-- jQuery -->
-    <script
-      type="text/javascript"
-      src="https://code.jquery.com/jquery-1.12.4.min.js"
-    ></script>
-    <!-- iamport.payment.js -->
-    <script
-      type="text/javascript"
-      src="https://cdn.iamport.kr/js/iamport.payment-1.1.5.js"
-    ></script>
+        <script>
 
-    <!-- Add Firebase products that you want to use -->
-    <script src="https://www.gstatic.com/firebasejs/firebase/6.2.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/firebase/6.2.0/firebase-firestore.js"></script>
+            var profile = 'local';
+            var config = {};
 
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=UA-153107610-1"
-    ></script>
-    <!--i18n-->
-    <link rel="stylesheet" href="static/external/vue-i18n.global.js" />
-    <link rel="stylesheet" href="static/external/vue-i18n.js" />
-    <!--    <script src="static/external/vue-i18n.global.js"></script> -->
-    <!--    <script src="static/external/vue-i18n.js"></script> -->
-
-    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.min.js"></script>-->
-    <script
-      type="text/javascript"
-      src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
-    ></script>
-    <!--<script src="static/iam-client/iam-api-2.0.1.js"></script>-->
-    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-    <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="//unpkg.com/vue-material@0.7.4/dist/vue-material.css"> -->
-    <link rel="stylesheet" href="static/external/font-awesome.min.css" />
-    <link rel="stylesheet" href="static/external/fonts.css" />
-    <!--  algolia  -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@docsearch/css@3"
-    />
-    <link rel="stylesheet" href="static/external/reset-min.css" />
-    <link rel="stylesheet" href="static/external/satellite-min.css" />
-
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css?family=Material+Icons"
-    />
-    <link href="static/bpmn/css/bpmn.css" rel="stylesheet" type="text/css" />
-    <!-- jquery-ui, jquery.contextmenu -->
-    <link
-      rel="stylesheet"
-      href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.min.css"
-    />
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href="/static/lib/jquery-contextMenu/jquery.contextMenu.css"
-    />
-    <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
-    <link
-      rel="stylesheet"
-      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/idea.min.css"
-    />
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
-    <link rel="stylesheet" href="static/github-markdown.css" />
-    <!-- Is Not Template -->
-
-    <!-- ============= LT Script ============= -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/acebase-client@latest/dist/browser.min.js"></script>
-    <script
-      defer
-      type="text/javascript"
-      src="static/lib/jquery-contextMenu/jquery.contextMenu.js"
-    ></script>
-    <!-- html 아이콘 관련 라이브러리 https://fontawesome.com/v5.15/icons?d=gallery&p=2 사이트 접속 후 i tag 복사 후 사용 -->
-    <script
-      defer
-      src="https://use.fontawesome.com/releases/v5.2.0/js/all.js"
-    ></script>
-    <script
-      defer
-      type="text/javascript"
-      src="static/lib/opengraph/OpenGraph-0.1.3-SNAPSHOT.js"
-    ></script>
-    <!-- ============= End of LT Script ====== -->
-
-    <!-- libs -->
-    <!-- TODO: please change local version -->
-    <!-- <script src="https://unpkg.com/hybind@latest/index.js"></script> -->
-
-    <script type="text/javascript" src="static/external/marked.min.js"></script>
-    <script
-      type="text/javascript"
-      src="static/external/ansi_up.min.js"
-    ></script>
-    <script type="text/javascript" src="static/external/prism.js"></script>
-    <script type="text/javascript" src="static/external/katex.min.js"></script>
-    <script
-      type="text/javascript"
-      src="static/external/katex-auto-render.min.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="static/external/notebook.min.js"
-    ></script>
-
-    <script>
-      var profile = "local";
-      var config = {};
-
-      /**
-       * Get profile from system env given by dcos
-       */
-      //gtag
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-      gtag("config", "UA-153107610-1");
-      gtag("config", window.location.path);
-
-      $.ajax({
-        url: "../static/env.txt",
-        type: "get",
-        async: false,
-        success: function (data) {
-          var lines = data.split("\n");
-          $.each(lines, function (i, line) {
-            // if (line && line.indexOf('VUE_APP_API_HOST=') == 0) {
-            //     let value = line.split('=')[1];
-            //     window.API_HOST = value;
-            // }
-            if (line && line.indexOf('VUE_APP_DB_HOST=') == 0) {
-                let value = line.split('=')[1];
-                window.DB_HOST = value;
+            /**
+             * Get profile from system env given by dcos
+             */
+            //gtag
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
             }
-            if (line && line.indexOf('VUE_APP_DB_PORT=') == 0) {
-                let value = line.split('=')[1];
-                window.DB_PORT = value;
-            }
-            if (line && line.indexOf('VUE_APP_DB_NAME=') == 0) {
-                let value = line.split('=')[1];
-                window.DB_NAME = value;
-            }
-            if (line && line.indexOf('VUE_APP_GITLAB=') == 0) {
-                let value = line.split('=')[1];
-                window.GITLAB = value;
-            }
-            if (line && line.indexOf('VUE_APP_OAUTH_ID=') == 0) {
-                let value = line.split('=')[1];
-                window.OAUTH_ID = value;
-            }
-            if (line && line.indexOf('VUE_APP_OAUTH_SECRET=') == 0) {
-                let value = line.split('=')[1];
-                window.OAUTH_SECRET = value;
-            }
-            if (line && line.indexOf('VUE_APP_OAUTH_URL=') == 0) {
-                let value = line.split('=')[1];
-                window.OAUTH_URL_ = value;
-            }
-            // if (line && line.indexOf('VUE_APP_CLUSTER_ADDRESS=') == 0) {
-            //     let value = line.split('=')[1];
-            //     window.CLUSTER_ADDRESS = value;
-            // }
-            // if (line && line.indexOf('VUE_APP_PROXY_SERVER=') == 0) {
-            //     let value = line.split('=')[1];
-            //     window.PROXY_SERVER = value;
-            // }
+            gtag("js", new Date());
+            gtag("config", "UA-153107610-1");
+            gtag("config", window.location.path);
 
-            if (line && line.indexOf("VUE_APP_MODE=") == 0) {
-              let value = line.split("=")[1];
-              console.log(value);
-              window.MODE = value.replace(/(?:\\[rn]|[\r\n]+)+/g, "");
-            }
-          });
-        },
-        error: function (e) {
-          console.log("Failed to get env", e);
-        },
-      });
-    </script>
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css?family=Material+Icons"
-    />
-    <link
-      rel="stylesheet"
-      href="//cdn.materialdesignicons.com/5.0.45/css/materialdesignicons.min.css"
-    />
-  </head>
-  <body>
-    <script>
-        window.$acebase = new AceBaseClient({
-            host: "localhost",
-            port: 5757,
-            dbname: "mydb",
-            https: false,
-        });
-        window.$acebase.ready(() => {
-            console.log("Connected successfully");
-        
-        });
-      // window.GitpleConfig = {appCode: '0XY0AvdJ820MDsNwIZuJIgQqdn1kc3'};
-      // !function () {
-      //     function e() {
-      //         function e() {
-      //             var e = t.contentDocument, a = e.createElement("script");
-      //             a.type = "text/javascript", a.async = !0, a.src = window[n] && window[n].url ? window[n].url + "/inapp-web/gitple-loader.js" : "https://app.gitple.io/inapp-web/gitple-loader.js", a.charset = "UTF-8", e.head && e.head.appendChild(a)
-      //         }
-      //
-      //         var t = document.getElementById(a);
-      //         t || ((t = document.createElement("iframe")).id = a, t.style.display = "none", t.style.width = "0", t.style.height = "0", t.addEventListener ? t.addEventListener("load", e, !1) : t.attachEvent ? t.attachEvent("onload", e) : t.onload = e, document.body.appendChild(t))
-      //     }
-      //
-      //     var t = window, n = "GitpleConfig", a = "gitple-loader-frame";
-      //     if (!window.Gitple) {
-      //         document;
-      //         var i = function () {
-      //             i.ex && i.ex(arguments)
-      //         };
-      //         i.q = [], i.ex = function (e) {
-      //             i.processApi ? i.processApi.apply(void 0, e) : i.q && i.q.push(e)
-      //         }, window.Gitple = i, t.attachEvent ? t.attachEvent("onload", e) : t.addEventListener("load", e, !1)
-      //     }
-      // }();
-      // console.log("init")
-      // Gitple('boot');
-    </script>
-    <noscript>
-      <strong
-        >We're sorry but service-ui doesn't work properly without JavaScript
-        enabled. Please enable it to continue.</strong
-      >
-    </noscript>
-    <div id="app"></div>
-    <!-- built files will be auto injected -->
-  </body>
+            $.ajax({
+                url: "../static/env.txt",
+                type: "get",
+                async: false,
+                success: function (data) {
+                    var lines = data.split("\n");
+                    $.each(lines, function (i, line) {
+                        // if (line && line.indexOf('VUE_APP_API_HOST=') == 0) {
+                        //     let value = line.split('=')[1];
+                        //     window.API_HOST = value;
+                        // }
+                        if (line && line.indexOf('VUE_APP_DB_HOST=') == 0) {
+                            let value = line.split('=')[1];
+                            window.DB_HOST = value;
+                        }
+                        if (line && line.indexOf('VUE_APP_DB_PORT=') == 0) {
+                            let value = line.split('=')[1];
+                            window.DB_PORT = value;
+                        }
+                        if (line && line.indexOf('VUE_APP_DB_NAME=') == 0) {
+                            let value = line.split('=')[1];
+                            window.DB_NAME = value;
+                        }
+                        if (line && line.indexOf('VUE_APP_GITLAB=') == 0) {
+                            let value = line.split('=')[1];
+                            window.GITLAB = value;
+                        }
+                        // if (line && line.indexOf('VUE_APP_CLUSTER_ADDRESS=') == 0) {
+                        //     let value = line.split('=')[1];
+                        //     window.CLUSTER_ADDRESS = value;
+                        // }
+                        // if (line && line.indexOf('VUE_APP_PROXY_SERVER=') == 0) {
+                        //     let value = line.split('=')[1];
+                        //     window.PROXY_SERVER = value;
+                        // }
+                        if (line && line.indexOf("VUE_APP_MODE=") == 0) {
+                            let value = line.split("=")[1];
+                            console.log(value);
+                            window.MODE = value.replace(/(?:\\[rn]|[\r\n]+)+/g, "");
+                        }
+                    });
+                },
+                error: function (e) {
+                    console.log("Failed to get env", e);
+                },
+            });
+        </script>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons">
+        <link rel="stylesheet" href="//cdn.materialdesignicons.com/5.0.45/css/materialdesignicons.min.css">
+    </head>
+    <body>
+        <script>
+            window.$acebase = new AceBaseClient({
+                host: "localhost",
+                port: 5757,
+                dbname: "mydb",
+                https: false,
+            });
+            window.$acebase.ready(() => {
+                console.log("Connected successfully");
+            
+            });
+        </script>
+        <noscript>
+            <strong>
+                We're sorry but service-ui doesn't work properly without JavaScript enabled. Please enable it to continue.
+            </strong>
+        </noscript>
+        <div id="app"></div>
+        <!-- built files will be auto injected -->
+    </body>
 </html>

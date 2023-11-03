@@ -346,8 +346,8 @@
             "fill-cy": .5,
             fill: "#fff",
             "fill-opacity": 1,
-            font: "10px 'Sans-serif'",
-            "font-family": "'Sans-serif'",
+            font: "10px 'serif'",
+            "font-family": "'serif'",
             "font-size": "10",
             "font-style": "normal",
             "font-weight": 400,
@@ -36049,6 +36049,10 @@ OG.graph.Canvas.prototype = {
         // });
 
         sliderBarWrapper = $('<div class="scaleSliderWrapper"></div>');
+        sliderBarWrapper.css({
+            position: 'relative',
+            width: '100%'
+        });
 
         sliderText = $('<div class="scaleSliderText"></div>');
         sliderBar = $('<input type="range" min="25" max="400" class="scaleSlider"/>');

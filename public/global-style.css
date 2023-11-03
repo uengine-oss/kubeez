@@ -335,14 +335,14 @@ code[class*=language-]:nth-child(1) {
 
 
 .code-preview-left-re-size {
-    min-width:0px;
+    min-width:100px;
 }
 
-.code-preview-btn {
-    font-size:22px !important;
-    height:30px !important;
-    width:30px !important;
-    margin-right:5px;
+.code-preview-left-re-size-btn {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 30px !important;
+    
 }
 
 /* 트리뷰 관련 */
@@ -353,6 +353,7 @@ code[class*=language-]:nth-child(1) {
 .event-storming-treeview-height .v-treeview--dense .v-treeview-node__root {
     min-height:30px !important;
 }
+
 .gs-v-treeview-width .v-treeview-node .v-treeview-node__root {
     width:500px !important;
 }
@@ -371,7 +372,11 @@ code[class*=language-]:nth-child(1) {
     overflow-y: scroll;
     padding-top: 10px;
 }
-/* 트리뷰 끝 */
+
+.gs-edited-template-files-v-list-group > .v-list-group__items {
+    overflow-y: scroll;
+}
+/* --------------------------------------------------------  */
 
 
 .gs-code-viewer-in-bound-separate-panel .in-bound-pane-trigger {
@@ -380,7 +385,7 @@ code[class*=language-]:nth-child(1) {
 .gs-code-viewer-in-bound-separate-panel {
     margin-top:2px !important;
 }
-/*monaco-editor start*/
+ /*monaco-editor*/
 .minimap, .slider-mouseover {
     position: absolute !important;
     right:0 !important;
@@ -401,11 +406,7 @@ code[class*=language-]:nth-child(1) {
     width:100% !important;
 }
 
-.monaco-editor .monaco-scrollable-element, .monaco-editor .editor-scrollable, .monaco-editor .scroll-decoration{
-    width: 100% !important;
-}
-
-.monaco-editor .monaco-scrollable-element, .monaco-editor .editor-scrollable .view-lines{
+.monaco-editor .monaco-scrollable-element, .monaco-editor .editor-scrollable{
     width: 100% !important;
 }
 
@@ -452,8 +453,6 @@ code[class*=language-]:nth-child(1) {
 .monaco-editor .myContentClass {
     background: #BBDEFB;
 }
-
-/*monaco-editor end*/
 
 
 .v--modal-overlay.scrollable .v--modal-box {
@@ -519,7 +518,6 @@ code[class*=language-]:nth-child(1) {
 .gs-code-title {
     font-size: 15px;
     color: gray;
-    margin-left:10px;
 }
 
 .gs-main-page-title-box {
@@ -546,8 +544,9 @@ code[class*=language-]:nth-child(1) {
 }
 
 .gs-window-width-610-under-zoom {
-    position:relative !important;
-    margin-left:115px !important;
+    position: relative !important;
+    top: 10px !important;
+    left: 200px !important;
     opacity: 0.3;
 }
 .gs-window-width-610-under-zoom:hover {
@@ -687,7 +686,7 @@ code[class*=language-]:nth-child(1) {
 @media only screen and (max-width:600px){
     .gs-window-width-610-under-zoom {
         position:fixed !important;
-        left: 180px !important;
+        left: 155px !important;
         top: 15px !important;
         margin-left:0px !important;
         min-width:170px !important;
@@ -773,36 +772,4 @@ code[class*=language-]:nth-child(1) {
 .scrollable {
     overflow-y: scroll;
 }
-
-
-/* code-viewer 관련 */
-.gs-code-previewer-code-viewer .gs-inside-monaco-editor, .gs-code-previewer-code-viewer .gs-inside-markdown-body {
-    height: calc(100vh - 80px);
-}
-
-/* edit template code-viewer 관련  */
-
-.gs-code-previewer-edit-template-left .gs-inside-monaco-editor, .gs-code-previewer-edit-template-left .gs-inside-markdown-body {
-    height: 79vh;
-    margin:12px;
-}
-
-.gs-code-previewer-edit-template-right .gs-inside-monaco-editor, .gs-code-previewer-edit-template-right .gs-inside-markdown-body {
-    height: 75vh;
-    margin-top:7px;
-}
-
-/* expectedTemplateTestDialog.vue code-viewer 관련 */
-.gs-expected-code-viewer1 .gs-inside-monaco-editor, .gs-expected-code-viewer1 .gs-inside-monaco-editor {
-    height: 86vh;
-    overflow:hidden;
-}
-
-/* GitActionDialog.vue code-viewer 관련 */
-.gs-git-action-code-viewer .gs-inside-monaco-editor {
-    height: 86vh;
-    overflow:hidden;
-}
-
-
 

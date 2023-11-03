@@ -1,0 +1,112 @@
+body.md-theme-default {
+  font-family: "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: #F5F7FA;
+  color: #162A35;
+}
+
+.md-theme-default.md-toolbar {
+  background: #162A35;
+}
+
+.header-top-line {
+  width: 100%;
+  background: darkblue;
+  height: 3px;
+}
+.divider{
+  width: 100%;
+  background: #DFE3E6;
+  height: 1px;
+}
+
+.md-theme-default a:not(.md-button) {
+  color: #4A78B3;
+  cursor: pointer;
+}
+
+/*.md-input-container {*/
+  /*background: #E2E9F3;*/
+  /*padding-top: 0px;*/
+/*}*/
+
+/*.md-input-container .md-button {*/
+  /*min-width: 0px;*/
+/*}*/
+
+/*.md-input-container input {*/
+  /*line-height: normal;*/
+  /*height: auto;*/
+  /*padding: 0px 0px 0px 10px;*/
+/*}*/
+
+/*.md-input-container label {*/
+  /*top: 14px;*/
+/*}*/
+
+/*font*/
+.md-title-accent {
+  color: #4E88CC;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+/*button*/
+.md-theme-default.md-button:not([disabled]).md-primary.md-raised,
+.md-theme-default.md-button:not([disabled]).md-primary.md-fab {
+  background-color: #4071AF
+}
+
+.md-theme-default.md-button-toggle.md-primary .md-toggle {
+  background-color: #4071AF
+}
+
+.md-list-item .md-list-item-container {
+  font-size: 14px;
+}
+
+.md-theme-default.md-list .md-list-item.md-primary .md-list-item-container {
+  color: #162A35;
+}
+
+/* new Service Dialog*/
+.fullscreen .md-dialog {
+  max-width: 100%;
+  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+.bigscreen .md-dialog {
+  max-width: 70%;
+  max-height: 70%;
+  width: 70%;
+  height: 70%;
+  border-radius: 0;
+}
+
+.bgblack {
+  background-color: #282a36 !important;
+}
+
+.bg-white {
+  background: white;
+}
+
+.bg-default {
+  background: #F5F7FA;
+}
+
+ .bgblack >.CodeMirror {
+  height:100%;
+}
+
+.mt30 {
+  margin-top: 30px;
+}
+
+.mt10 {
+  margin-top: 10px;
+}

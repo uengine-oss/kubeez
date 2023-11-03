@@ -5908,7 +5908,7 @@ to {
   transition-duration: .3s;
   transition-delay: 0s;
   color: #fff;
-  font-family: sans-serif, Roboto, "Noto Sans", Noto ;
+  font-family: Roboto, "Noto Sans", Noto, sans-serif;
   font-size: 10px;
   line-height: 20px;
   text-transform: none;

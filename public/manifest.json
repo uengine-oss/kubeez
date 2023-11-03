@@ -1,6 +1,6 @@
 {
-  "name": "MSAEZ",
-  "short_name": "MSAEZ",
+  "name": "service-ui",
+  "short_name": "service-ui",
   "icons": [
     {
       "src": "./img/icons/android-chrome-192x192.png",
@@ -16,6 +16,5 @@
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#4DBA87",
-  "content_security_policy": "script-src 'self' https://fonts.gstatic.com https://apis.google.com https://www.googleapis.com https://securetoken.googleapis.com https://accounts.google.com https://my-project.firebaseapp.com; object-src 'self'"
+  "theme_color": "#4DBA87"
 }
