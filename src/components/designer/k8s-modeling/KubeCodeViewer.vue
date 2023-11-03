@@ -2,7 +2,7 @@
     <v-container>
         <v-card v-if="value[0]">
             <v-card-title v-if="value[0]">
-                {{value[0].name}}
+                {{value[0].name}} 1
             </v-card-title>
             <v-card-text
                     id="scroll-target"
@@ -33,10 +33,10 @@
                 ></v-img>
             </v-card-text>
             <v-card-text
-                    v-else
                     id="scroll-target"
                     style="max-height: 600px;"
                     class="overflow-auto"
+                    v-else
             >
                 <codemirror
                         v-if="value[0]"
@@ -48,27 +48,28 @@
                         @input="onCmCodeChange"
                         height="700"
                         style="width: 580px;"
-                ></codemirror>
+                >
+                </codemirror>
             </v-card-text>
         </v-card>
+
     </v-container>
 </template>
-
 <script>
-    import 'codemirror/mode/dockerfile/dockerfile';
-    import 'codemirror/mode/markdown/markdown';
-    import 'codemirror/mode/properties/properties';
-    import 'codemirror/mode/shell/shell';
-    import 'codemirror/mode/xml/xml';
-    import 'codemirror/mode/python/python';
+    import 'codemirror/mode/dockerfile/dockerfile'
+    import 'codemirror/mode/markdown/markdown'
+    import 'codemirror/mode/properties/properties'
+    import 'codemirror/mode/shell/shell'
+    import 'codemirror/mode/xml/xml'
+    import 'codemirror/mode/python/python'
 
-    import 'codemirror/mode/clike/clike';
-    import 'codemirror/mode/yaml/yaml';
-    import 'codemirror/lib/codemirror.css';
-    import 'codemirror/theme/darcula.css';
+    import 'codemirror/mode/clike/clike'
+    import 'codemirror/mode/yaml/yaml'
+    import 'codemirror/lib/codemirror.css'
+    import 'codemirror/theme/darcula.css'
 
     export default {
-        name: 'kubernetes-code-viewer',
+        name: 'code-viewer',
         props: {
             value: Array
         },

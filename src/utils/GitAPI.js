@@ -6,11 +6,14 @@ class GitAPI {
     getType() {
         return this._git.getType()
     }
-    getCloneCommand(org, repo) {
-        return this._git.getCloneCommand(org, repo)
+    getCloneCommand(org, repo, tag) {
+        return this._git.getCloneCommand(org, repo, tag)
     }
     gitRepoUrl(org, repo, tag) {
         return this._git.gitRepoUrl(org, repo, tag)
+    }
+    getGitpodUrl(org, repo, releaseTagPath) {
+        return this._git.getGitpodUrl(org, repo, releaseTagPath)
     }
     getCommit(org, repo, branch) {
         let me = this;

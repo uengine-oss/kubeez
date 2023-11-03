@@ -243,7 +243,12 @@
 </template>
 
 <script>
+    import firebase from 'firebase'
+    import LabBase from "../labs/LabBase";
+    import TenantAware from '../labs/TenantAware';
     import CommonStorageBase from "../CommonStorageBase";
+
+    require('firebase/auth');
 
     export default {
         components: {},
@@ -259,6 +264,7 @@
             LoginInformation1: String,
             LoginInformation2: String
         },
+        // mixins: [LabBase, TenantAware],
         mixins: [CommonStorageBase],
         data: () => ({
             tenantLogo: null,

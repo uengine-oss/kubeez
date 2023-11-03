@@ -7,17 +7,17 @@ spring:
   profiles: default
   cloud:
     gateway:
-#<<< API Gateway / Routes
       routes:
-        - id: tunneling
-          uri: http://localhost:8080
+        - id: java-reverse
+          uri: http://localhost:8099
           predicates:
-            - Path=/api/**, /apis/**
+            - Path=/java-reverse/**, 
         - id: frontend
+          # uri: https://localhost:8081
           uri: http://localhost:8081
           predicates:
             - Path=/**
-#>>> API Gateway / Routes
+
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -30,31 +30,39 @@ spring:
             allowCredentials: true
 
 
----
+# ---
 
-spring:
-  profiles: docker
-  cloud:
-    gateway:
-      routes:
-        - id: tunneling
-          uri: http://localhost:8080
-          predicates:
-            - Path=/api/**, /apis/**
-        - id: frontend
-          uri: http://localhost:8081
-          predicates:
-            - Path=/**
-      globalcors:
-        corsConfigurations:
-          '[/**]':
-            allowedOrigins:
-              - "*"
-            allowedMethods:
-              - "*"
-            allowedHeaders:
-              - "*"
-            allowCredentials: true
+# spring:
+#   profiles: docker
+#   cloud:
+#     gateway:
+#       routes:
+#         - id: order
+#           uri: http://order:8080
+#           predicates:
+#             - Path=/orders/**, 
+#         - id: product
+#           uri: http://product:8080
+#           predicates:
+#             - Path=/products/**, 
+#         - id: delivery
+#           uri: http://delivery:8080
+#           predicates:
+#             - Path=/deliveries/**, 
+#         - id: frontend
+#           uri: http://frontend:8080
+#           predicates:
+#             - Path=/**
+#       globalcors:
+#         corsConfigurations:
+#           '[/**]':
+#             allowedOrigins:
+#               - "*"
+#             allowedMethods:
+#               - "*"
+#             allowedHeaders:
+#               - "*"
+#             allowCredentials: true
 
-server:
-  port: 8080
+# server:
+#   port: 8080

@@ -7,9 +7,12 @@ class Gitlab extends Git {
     getType() {
         return "GitLab"
     }
-
-    getCloneCommand(org, repo) {
-        return `git clone https://gitlab.${this.getOrigin()}/${org}/${repo}.git`
+    getGitpodUrl(org, repo, releaseTagPath) {
+        // https://gitlab.handymes.com/kimsanghoon/shop/-/tree/main/
+        return `https://gitpod.${this.getOrigin()}/#https://gitlab.${this.getOrigin()}/${org}/${repo}/-/tree/main/`
+    }
+    getCloneCommand(org, repo, tag) {
+        return `git clone https://gitlab.${this.getOrigin()}/${org}/${repo}.git${tag}`
     }
 
     gitRepoUrl(org, repo) {
@@ -104,16 +107,24 @@ class Gitlab extends Git {
             })
         })
     }
-    // getRepo() {
-    //     let me = this
-    //     return new Promise(async function (resolve, reject) {
-
-    //     })
-    // }
+    getRepo(org, repo) {
+        let me = this
+        return new Promise(async function (resolve, reject) {
+            let result = await me.getRepoId(repo, org)
+            .then(res => {
+                if(res.id == null) {
+                    reject()
+                } else {
+                    resolve()
+                }
+            })
+        })
+    }
     getFile(repo, org, filePath, repoId) {
         let me = this;
         return new Promise(async function (resolve, reject) {
-            
+            let header = me.getHeader();
+            header["Cache-Control"] = 'no-store';
             // let results = []
             // msa-ez의 경우 root에서 가지고 와야하므로 1을 부여함,
             let id = null;
@@ -130,7 +141,7 @@ class Gitlab extends Git {
             // let repoInfo = me.getRepoId(repo, id)
             // .then(async function (info) {
             let url = `https://gitlab.${me.getOrigin()}/api/v4/projects/${repoId}/repository/files/${encodeURIComponent(filePath)}?ref=main`
-            let file = await axios.get(url, { headers: me.getHeader() })
+            let file = await axios.get(url, { headers: header })
             .then(res => {
                 let result = {
                     data: decodeURIComponent(escape(atob(res.data.content))),
@@ -151,10 +162,12 @@ class Gitlab extends Git {
     getFiles(options) {
         let me = this
         return new Promise(async function (resolve, reject) {
+            let header = me.getHeader();
+            header["Cache-Control"] = 'no-store';
             let result = []
             let repoInfo = me.getRepoId(options.repo, options.org)
             .then(async function (info) {
-                let firstPage = await axios.get(`https://gitlab.${me.getOrigin()}/api/v4/projects/${info.id}/repository/tree?ref=${options.name}&id=${info.id}&page=1&per_page=100&recursive=true`, {headers: me.getHeader()})
+                let firstPage = await axios.get(`https://gitlab.${me.getOrigin()}/api/v4/projects/${info.id}/repository/tree?ref=${options.name}&id=${info.id}&page=1&per_page=100&recursive=true`, {headers: header})
                 .then(async function (firstRes) {
                     result = result.concat(firstRes.data)
                     // resolve(res.data)
@@ -163,7 +176,7 @@ class Gitlab extends Git {
                         resolve(result)
 
                     for (var i = 2; i <= totalPages; i++) {
-                        let otherPages = await axios.get(`https://gitlab.${me.getOrigin()}/api/v4/projects/${info.id}/repository/tree?ref=${options.name}&id=${info.id}&page=${i}&per_page=100&recursive=true`, {headers: me.getHeader()})
+                        let otherPages = await axios.get(`https://gitlab.${me.getOrigin()}/api/v4/projects/${info.id}/repository/tree?ref=${options.name}&id=${info.id}&page=${i}&per_page=100&recursive=true`, {headers: header})
                         .then(function (otherRes) {
                             result = result.concat(otherRes.data)
                             if(totalPages == i) {
@@ -437,6 +450,7 @@ class Gitlab extends Git {
             resolve(true)
         })
     }
+    
     push(options) {
         let me = this;
         return new Promise(async function (resolve, reject) {

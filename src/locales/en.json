@@ -1,5 +1,14 @@
 {
   "message": "en",
+  "company": {
+    "name": "uEngine Solutions. Co.",
+    "address": "502, 18, Sinbanpo-ro 45-gil, Seocho-gu, Seoul, Republic of Korea",
+    "number": "02-567-8301",
+    "ceo": "Jinyoung, Jang",
+    "registrationNumber": "2118795355",
+    "refundNumber": "02-567-8301",
+    "refundUser": "Sooheon, Lee"
+  },
   "word": {
     "address": "Address",
     "number": "Tel",

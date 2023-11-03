@@ -93,8 +93,8 @@
             },
             onMoveShape: function () {
                 // console.log('onMoveShape')
-                var positionX = this.value.elementView.x / 1000 * this.modelCanvasComponent.sliderLocationScale;
-                var positionY = this.value.elementView.y / 1000 * this.modelCanvasComponent.sliderLocationScale;
+                var positionX = this.value.elementView.x / 1000 * this.canvas.sliderLocationScale;
+                var positionY = this.value.elementView.y / 1000 * this.canvas.sliderLocationScale;
                 $(`#${this.value.elementView.id}`).css('transform-origin', `${positionX}% ${positionY}%`);
                 if (this.value.rotateStatus) {
                     // $(`#${this.value.elementView.id}`).css('transform', `rotate(0deg)`);

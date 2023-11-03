@@ -1,5 +1,15 @@
 <template>
-    <div style="height: 94vh;">
+    <v-card style="height: 100vh;">
+        <v-dialog v-model="openGitActionDialog" :key="gitActionDialogRenderKey">
+            <GitActionDialog
+                @closeGitActionDialog="openGitActionDialog = false"
+                :testFile="testFile"
+                :openAiMessageList="openAiMessageList"
+                @startCommitWithSigpt="startCommit"
+            >
+
+            </GitActionDialog>
+        </v-dialog>
         <v-dialog v-model="marketplaceDialog" fullscreen>
             <MarketPlace :marketplaceDialog="marketplaceDialog"
                 @applyTemplate="applyTemplateInMarket"
@@ -8,16 +18,15 @@
                 :selectedBaseTemplateName="selectedBaseTemplateName"
             />
         </v-dialog>
-        <v-card flat style="height: 100vh; z-index:2;">
-            <v-card flat>
-                <v-card-title style="min-height: 65px;">
-                    <v-row style="margin:-30px 0px 0px 1px;">
-                        <span class="headline" v-if="changedModifying">Merge with existing changes</span>
+        <v-card style="z-index:2; margin:0px; border-radius: 0px; height:100%;">
+            <div style="padding:5px; height:64px;">
+                <v-row style="margin:0px 0px 0px 2px;">
+                    <span class="headline" v-if="changedModifying">Merge with existing changes</span>
+                    <div>
                         <div v-if="!isGeneratorDone">
                             <v-progress-circular
                                     size="15"
                                     :width="3"
-                                    style="margin:-4px 0px 0px 0px;"
                                     indeterminate
                                     color="primary"
                             ></v-progress-circular>
@@ -25,523 +34,501 @@
                         <div v-else>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ on, attrs }">
-                                    <v-btn v-on="on" class="code-preview-left-re-size-btn"
-                                           icon @click="refreshCallGenerate()"
-                                           style="z-index:1; "
-                                    >
-                                        <v-icon size="20" style="margin-left: -5px;">mdi-refresh</v-icon>
-                                    </v-btn>
+                                    <v-icon icon @click="refreshCallGenerate()"
+                                        v-on="on"
+                                        style="z-index:1;"
+                                        size="22"
+                                    >mdi-refresh
+                                    </v-icon>
                                 </template>
                                 <span>Refresh</span>
                             </v-tooltip>
                         </div>
-                        <div v-if="isGeneratorDone" class="gs-code-title"> - {{ openCodeFileName }}</div>
-                    </v-row>
-                    <v-row v-if="isGeneratorDone"
-                           style="z-index: 1;
-                        position: absolute;
-                        top: 20px;
-                        left: 29px;"
-                    >
-                        <v-tooltip bottom>
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-btn class="code-preview-left-re-size-btn"
-                                       fab icon @click="codePreviewLeftReSize()"
-                                       v-bind="attrs"
-                                       v-on="on"
-                                >
-                                    <v-icon size="22">mdi-menu</v-icon>
-                                </v-btn>
-                            </template>
-                            <span>left menu fold & unfold</span>
-                        </v-tooltip>
-                        <div>
-                            <v-menu
-                                    v-model="gitMenu"
-                                    :close-on-click="false"
-                                    :close-on-content-click="false"
-                                    offset-y
+                    </div>
+                    <div v-if="isGeneratorDone && openCodeFileName" class="gs-code-title"> - {{ openCodeFileName }}</div>
+                </v-row>
+                <v-row v-if="isGeneratorDone"
+                        style="z-index: 1; margin:0px;"
+                >
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn class="code-preview-btn"
+                                    fab icon @click="codePreviewLeftReSize()"
+                                    v-bind="attrs"
+                                    v-on="on"
                             >
-                                <template v-slot:activator="{ on: menu, attrs }">
-                                    <v-tooltip bottom>
-                                        <template v-slot:activator="{ on: tooltip }">
-                                            <v-btn
-                                                    :disabled="!isGeneratorDone"
-                                                    class="code-preview-left-re-size-btn"
-                                                    icon x-small
-                                                    v-bind="attrs"
-                                                    v-on="{ ...tooltip, ...menu }"
-                                                    style="margin:-5px 0px 0px 5px;"
-                                            >
-                                                <v-icon size="20" :color="gitMenu ? 'primary':''">
-                                                    mdi-git
-                                                </v-icon>
-                                            </v-btn>
-                                        </template>
-                                        <span>Push to Git</span>
-                                    </v-tooltip>
-                                </template>
-
-                                <div v-if="gitMenu" :key="gitMenuRenderKey">
-                                    <gitAPIMenu
-                                            v-model="value.scm"
-                                            :editTemplateMode="false"
-                                            @closeMenu="gitMenu = false"
-                                            @openIDE="openProjectIDE($event)"
-                                            @settingDone="ShowCreateRepoTab = false"
-                                            @closeGitMenu="closeGitMenu"
-                                            :information="projectInformation"
-                                            :isOnPrem="isOnPrem"
-                                            :projectId="modelingProjectId"
-                                            :projectName="projectName"
-                                            :git-users="gitUsers"
-                                            :isListSettingDone="isGeneratorDone"
-                                            :isMineProject="isMineProject"
-                                            :changedPathListsForGit="changedPathListsForGit"
-                                            :generateCodeLists="filteredPrettierCodeLists"
-                                            :ShowCreateRepoTab="ShowCreateRepoTab"
-                                            :isServerModeling="isServerModeling"
-                                            :isVersionMode="isVersionMode"
-                                            :githubTokenError="githubTokenError"
-                                            :isOneBCModel="isOneBCModel"
-                                            :onlyOneBcId="onlyOneBcId"
-                                    />
-                                </div>
-                            </v-menu>
-                        </div>
-
-                        <div>
-                            <v-menu
-                                    v-model="openaiPopup"
-                                    :close-on-click="false"
-                                    :close-on-content-click="false"
-                                    offset-y
-                            >
-                                <template v-slot:activator="{ on: menu, attrs }">
-                                    <v-tooltip bottom>
-                                        <template v-slot:activator="{ on: tooltip }">
-                                            <v-btn
-                                                    :loading="startGenerate"
-                                                    @click="stopGenerate()"
-                                                    :disabled="!isGeneratorDone"
-                                                    class="code-preview-left-re-size-btn"
-                                                    icon x-small
-                                                    v-bind="attrs"
-                                                    v-on="{ ...tooltip, ...menu }"
-                                                    style="margin:-9px 0px 0px 6px;"
-                                            >
-                                                <v-icon size="20" :color="openaiPopup ? 'primary':''">
-                                                    mdi-auto-fix
-                                                </v-icon>
-                                            </v-btn>
-                                            <!-- <div v-else>
-                                                <v-progress-circular
-                                                    size="15"
-                                                    :width="3"
-                                                    indeterminate
-                                                    color="primary"
-                                                ></v-progress-circular>
-                                            </div> -->
-                                        </template>
-                                        <span>input openai token</span>
-                                    </v-tooltip>
-                                </template>
-                                <!-- <div v-if="openaiPopup">
-                                    <v-container fluid style="background-color: white;">
-                                        <v-btn style="float: right; margin-top: -17px; margin-right: -17px;" icon @click="closeOpenaiPopup()">
-                                            <v-icon small>mdi-close</v-icon>
-                                        </v-btn>
-                                        <v-text-field
-                                                v-model="openaiToken"
-                                                style="width: 400px; font-size: small;"
-                                                :append-icon="showOpenaiToken ? 'mdi-eye' : 'mdi-eye-off'"
-                                                :type="showOpenaiToken ? 'text' : 'password'"
-                                                name="openaiToken"
-                                                label="openAI Token"
-                                                @click:append="showOpenaiToken = !showOpenaiToken"
-                                        ></v-text-field>
-                                        <div style="font-size: small;">
-                                            <v-icon small style="margin-right: 5px;">mdi-help-circle-outline</v-icon>
-                                            <a href="https://beta.openai.com/account/api-keys" target="_blank">how to get token</a>
-                                        </div>
-                                    </v-container>
-                                </div> -->
-                            </v-menu>
-                        </div>
-
-                        <v-tooltip bottom v-if="editableTemplate">
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-btn v-on="on" class="code-preview-left-re-size-btn"
-                                       icon fab @click="openTemplateEditor()"
-                                       :color="editTemplateMode ? 'primary':''"
-                                       style="margin-left:5px;"
-                                >
-                                    <v-icon size="20">mdi-code-braces</v-icon>
-                                </v-btn>
-                            </template>
-                            <span>Edit Template</span>
-                        </v-tooltip>
-
-                        <v-tooltip bottom v-if="editableTemplate">
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-btn v-on="on" class="code-preview-left-re-size-btn"
-                                       :disabled="isLoadingExpectedTemplate"
-                                       icon fab @click="testTemplateModel()"
-                                       :color="openExpectedTemplateTestDialog ? 'primary':''"
-                                       style="margin-left:5px;"
-                                >
-                                    <v-icon v-if="!startCheckDiff" size="20">mdi-code-tags-check</v-icon>
-                                    <v-icon v-else size="20">mdi-spin mdi-loading</v-icon>
-                                </v-btn>
-                            </template>
-                            <span>Test actual template using expected template</span>
-                        </v-tooltip>
-
-                        <v-tooltip bottom>
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-btn v-on="on" class="code-preview-left-re-size-btn"
-                                       :disabled="!existChangedFile || !isGeneratorDone"
-                                       icon fab @click="onOffChangedPathLists()"
-                                       style="margin-top:-3px;"
-                                >
-                                    <div>
-                                        <v-icon size="20" :color="showChangedPathLists ? 'primary':''"
-                                        >mdi-filter</v-icon>
-                                    </div>
-                                </v-btn>
-                            </template>
-                            <span>Changed File</span>
-                        </v-tooltip>
-
-                        <v-tooltip bottom>
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-btn v-on="on" class="code-preview-left-re-size-btn"
-                                       icon fab
-                                       @click="onOffDesignPatterns()"
-                                       style="margin:-2px 0px 0px 4px;"
-                                >
-                                    <div>
-                                        <Icon :color="showDesignPatterns ? 'rgb(25,118,210)' : '' "
-                                              style = "width:20px; height:20px;"
-                                              icon="mdi:file-document-check-outline"
-                                        />
-                                    </div>
-                                </v-btn>
-                            </template>
-                            <span>Design Patterns</span>
-                        </v-tooltip>
-
-                        <v-tooltip bottom>
-                            <template v-slot:activator="{ on, attrs }">
-                                <div>
-                                    <v-btn v-on="on" class="code-preview-left-re-size-btn"
-                                           icon fab @click="downloadArchive()"
-                                           style="margin:-12px 0px 0px 8px;"
-                                    >
-                                        <div>
-                                            <slot name="downloadArchive">
-                                                <v-icon size="22">
-                                                    mdi-folder-download
-                                                </v-icon>
-                                            </slot>
-                                        </div>
-                                    </v-btn>
-                                </div>
-                            </template>
-                            <span>Download Archive</span>
-                        </v-tooltip>
-
-                        <v-tooltip bottom>
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-btn v-on="on" class="code-preview-left-re-size-btn"
-                                       icon fab @click="searchForContent.onOff = !searchForContent.onOff"
-                                       style="margin:-3px 0px 0px 8px;"
-                                >
-                                    <div>
-                                        <v-icon size="22"
-                                        >mdi-magnify</v-icon>
-                                    </div>
-                                </v-btn>
-                            </template>
-                            <span>Search</span>
-                        </v-tooltip>
-
-                        <v-tooltip bottom>
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-btn v-on="on" class="code-preview-left-re-size-btn"
-                                       icon fab @click="onDiffMode()"
-                                       style="margin:0px 0px 0px 8px;"
-                                >
-                                    <Icon icon="codicon:diff"  style="font-size: smaller;" :color="diffMode ? 'rgb(25,118,210)' : '' "/>
-                                </v-btn>
-                            </template>
-                            <span>Diff Mode</span>
-                        </v-tooltip>
-                        <v-tooltip bottom>
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-btn v-on="on" class="code-preview-left-re-size-btn"
-                                       icon fab @click="showGptDialog()"
-                                       style="margin:-3px 0px 0px 8px;"
-                                >
-                                    <div>
-                                        <v-icon size="22"
-                                        >mdi-file-send</v-icon>
-                                    </div>
-                                </v-btn>
-                            </template>
-                            <span>Explain Project</span>
-                        </v-tooltip>
-                    </v-row>
-                    <v-row>
-                        <v-row style="height: 60px; display:contents;">
-                            <div style="width: 90px;
-                            position: absolute;
-                            right: 0px;
-                            top: 25px;"
-                            >
-                                <v-menu left :close-on-content-click="false" :close-on-click="false" @input="onClickToppingBox(true)">
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-btn text small
-                                               v-bind="attrs"
-                                               v-on="on"
-                                               style="width: 100%; font-size: 10px; margin-top: 5px; right:15px;"
+                                <v-icon size="22">mdi-menu</v-icon>
+                            </v-btn>
+                        </template>
+                        <span>left menu fold & unfold</span>
+                    </v-tooltip>
+                    <div>
+                        <v-menu
+                                v-model="gitMenu"
+                                :close-on-click="false"
+                                :close-on-content-click="false"
+                                offset-y
+                        >
+                            <template v-slot:activator="{ on: menu, attrs }">
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on: tooltip }">
+                                        <v-btn
+                                                :disabled="!isGeneratorDone"
+                                                class="code-preview-btn"
+                                                icon x-small
+                                                v-bind="attrs"
+                                                v-on="{ ...tooltip, ...menu }"
                                         >
-                                            Toppings
-                                            <v-icon>{{ showTopping ? ' mdi-menu-up' : 'mdi-menu-down' }}</v-icon>
+                                            <v-icon size="22" :color="gitMenu ? 'primary':''">
+                                                mdi-git
+                                            </v-icon>
                                         </v-btn>
                                     </template>
-                                    <v-card style="width:400px; height:100vh; overflow-y:scroll;" v-if="showTopping">
-                                        <v-btn @click="onClickToppingBox(false)" small icon style="position:absolute; right:5px; top:5px;">
-                                            <v-icon>mdi-close</v-icon>
-                                        </v-btn>
-                                        <v-card-text>
-                                            Java/Spring Version
-                                            <v-btn style="margin-bottom: 1px; color:gray" text @click="marketplaceDialog = true">
-                                                <v-icon style="margin-right: 5px; color:gray" small>mdi-cart</v-icon>
-                                                Marketplace
-                                            </v-btn>
+                                    <span>Push to Git</span>
+                                </v-tooltip>
+                            </template>
 
-                                            <v-divider></v-divider>
-                                            <div>
-
-                                                <v-radio-group
-                                                        v-model="selectedVersion"
-                                                        row
-                                                        style="font-size: 10px; height: 35px;"
-                                                >
-                                                    <v-radio
-                                                            label="JAVA 8"
-                                                            value="java8"
-                                                            :disabled="onlyJava15"
-                                                    ></v-radio>
-                                                    <v-radio
-                                                            label="JAVA 15"
-                                                            value="java15"
-                                                    ></v-radio>
-                                                </v-radio-group>
-                                            </div>
-
-
-                                            <div class="topping-radio-group">
-                                                <div v-for="baseToppingGroup in Object.keys(baseToppingPlatforms)">
-                                                    {{baseToppingGroup}}
-                                                    <v-divider></v-divider>
-                                                    <div v-for="baseTopping in baseToppingPlatforms[baseToppingGroup]">
-                                                        <v-row style="margin: 1px;align-items: center;">
-                                                            <v-tooltip left>
-                                                                <template v-slot:activator="{ on, attrs }">
-                                                                    <v-row style="margin-top: 1px; margin-left: 1px;" v-bind="attrs"
-                                                                           v-on="on">
-                                                                        <v-checkbox
-                                                                                class="topping-checkbox"
-                                                                                dense
-                                                                                :disabled="baseTopping.disable"
-                                                                                :label="getPreferredPlatformName(baseTopping.label, false, true)"
-                                                                                :input-value="isUsedTopping(baseTopping.value)"
-                                                                                @click="changedTopping(baseTopping.value)"
-                                                                        ></v-checkbox>
-                                                                    </v-row>
-                                                                </template>
-                                                                <span>{{`${toppingBaseUrl}${baseTopping.value}`}}</span>
-                                                            </v-tooltip>
-
-                                                            <v-menu v-if="isExistConfTemplate('TOPPING', `${toppingBaseUrl}${baseTopping.value}`)"
-                                                                    v-model="menuOpen[baseTopping]"
-                                                                    offset-y top
-                                                                    :close-on-click="false"
-                                                                    :close-on-content-click="false"
-                                                            >
-                                                                <template v-slot:activator="{ on }">
-                                                                    <v-btn
-                                                                            x-small
-                                                                            outlined
-                                                                            v-on="on"
-                                                                    >
-                                                                        Configuration
-                                                                    </v-btn>
-                                                                </template>
-                                                                <v-card flat v-if="menuOpen[baseTopping]" style="width: 300px;">
-                                                                    <CodeConfiguration
-                                                                            :instruction="configurationTemplate('TOPPING', `${toppingBaseUrl}${baseTopping.value}`)"
-                                                                            @apply="applyCodeConfiguration"
-                                                                            @close="closeCodeConfiguration"
-                                                                    ></CodeConfiguration>
-                                                                </v-card>
-                                                            </v-menu>
-                                                        </v-row>
-                                                    </div>
-                                                </div>
-                                                <!--                                                Kubernetes-->
-                                                <!--                                                <v-divider></v-divider>-->
-                                                <!--                                                <div>-->
-                                                <!--                                                    <v-checkbox-->
-                                                <!--                                                            :input-value="isUsedTopping('isVanillaK8s')"-->
-                                                <!--                                                            label="Vanilia kubernetes"-->
-                                                <!--                                                            dense-->
-                                                <!--                                                            @click="changedTopping('isVanillaK8s')"-->
-                                                <!--                                                            class="topping-checkbox"-->
-                                                <!--                                                    ></v-checkbox>-->
-                                                <!--                                                </div>-->
-
-                                                <!--                                                Security - Token based Authentication-->
-                                                <!--                                                <v-divider></v-divider>-->
-                                                <!--                                                <div>-->
-                                                <!--                                                    <v-checkbox-->
-                                                <!--                                                            :input-value="isUsedTopping('spring-security')"-->
-                                                <!--                                                            @click="changedTopping('spring-security')"-->
-                                                <!--                                                            label="Oauth by Spring Security + Spring GW"-->
-                                                <!--                                                            dense-->
-                                                <!--                                                    ></v-checkbox>-->
-                                                <!--                                                    <v-checkbox-->
-                                                <!--                                                            :input-value="isUsedTopping('keycloak-security')"-->
-                                                <!--                                                            @click="changedTopping('keycloak-security')"-->
-                                                <!--                                                            label="Oauth by Keycloak + Spring GW"-->
-                                                <!--                                                            dense-->
-                                                <!--                                                            class="topping-checkbox"-->
-                                                <!--                                                    ></v-checkbox>-->
-                                                <!--                                                </div>-->
-
-                                                <!--                                                Service Mesh-->
-                                                <!--                                                <v-divider></v-divider>-->
-                                                <!--                                                <div>-->
-                                                <!--                                                    <v-checkbox-->
-                                                <!--                                                            :input-value="isUsedTopping('istio')"-->
-                                                <!--                                                            label="Istio"-->
-                                                <!--                                                            dense-->
-                                                <!--                                                            @click="changedTopping('istio')"-->
-                                                <!--                                                    ></v-checkbox>-->
-                                                <!--                                                    <v-checkbox-->
-                                                <!--                                                            :input-value="isUsedTopping('ingress')"-->
-                                                <!--                                                            label="Ingress"-->
-                                                <!--                                                            dense-->
-                                                <!--                                                            @click="changedTopping('ingress')"-->
-                                                <!--                                                            class="topping-checkbox"-->
-                                                <!--                                                    ></v-checkbox>-->
-                                                <!--                                                </div>-->
-
-                                                <!--                                                DevOps-->
-                                                <!--                                                <v-divider></v-divider>-->
-                                                <!--                                                <div>-->
-                                                <!--                                                    <v-checkbox-->
-                                                <!--                                                            :input-value="isUsedTopping('argo')"-->
-                                                <!--                                                            label="Argo + Istio"-->
-                                                <!--                                                            dense-->
-                                                <!--                                                            @click="changedTopping('argo')"-->
-                                                <!--                                                    ></v-checkbox>-->
-                                                <!--                                                </div>-->
-
-                                                <!--                                                Data Projection-->
-                                                <!--                                                <v-divider></v-divider>-->
-                                                <!--                                                <div>-->
-                                                <!--                                                    <v-checkbox-->
-                                                <!--                                                            :input-value="isUsedTopping('apollo-graphql')"-->
-                                                <!--                                                            label="Apollo GraphQL"-->
-                                                <!--                                                            dense-->
-                                                <!--                                                            @click="changedTopping('apollo-graphql')"-->
-                                                <!--                                                    ></v-checkbox>-->
-                                                <!--                                                    <v-checkbox-->
-                                                <!--                                                            :input-value="isUsedTopping('java-graphql')"-->
-                                                <!--                                                            label="JAVA GraphQL"-->
-                                                <!--                                                            disabled-->
-                                                <!--                                                            dense-->
-                                                <!--                                                            @click="changedTopping('java-graphql')"-->
-                                                <!--                                                            class="topping-checkbox"-->
-                                                <!--                                                    ></v-checkbox>-->
-                                                <!--                                                </div>-->
-                                                <div>Custom Toppings</div>
-                                                <v-divider></v-divider>
-                                                <div v-for="customToppingPath in Object.keys(filteredCustomToppingLists)">
-                                                    <div v-for="customTopping in filteredCustomToppingLists[customToppingPath]">
-                                                        <v-row style="margin: 1px;align-items: center;">
-                                                            <v-tooltip left>
-                                                                <template v-slot:activator="{ on, attrs }">
-                                                                    <v-row style="margin-top: 1px; margin-left: 1px;" v-bind="attrs"
-                                                                           v-on="on">
-                                                                        <v-checkbox
-                                                                                class="topping-checkbox"
-                                                                                dense
-                                                                                :label="getPreferredPlatformName(customTopping, false, true)"
-                                                                                :input-value="isUsedTopping(customTopping)"
-                                                                                @click="changedTopping(customTopping)"
-                                                                        ></v-checkbox>
-                                                                    </v-row>
-                                                                </template>
-                                                                <span>{{customTopping}}</span>
-                                                            </v-tooltip>
-
-                                                            <v-menu v-if="isExistConfTemplate('TOPPING', customTopping)"
-                                                                    v-model="menuOpen[customTopping]"
-                                                                    offset-y top
-                                                                    :close-on-click="false"
-                                                                    :close-on-content-click="false"
-                                                            >
-                                                                <template v-slot:activator="{ on }">
-                                                                    <v-btn
-                                                                            x-small
-                                                                            outlined
-                                                                            v-on="on"
-                                                                    >
-                                                                        Configuration
-                                                                    </v-btn>
-                                                                </template>
-                                                                <v-card flat v-if="menuOpen[customTopping]" style="width: 300px;">
-                                                                    <CodeConfiguration
-                                                                            :instruction="configurationTemplate('TOPPING', customTopping)"
-                                                                            @apply="applyCodeConfiguration"
-                                                                            @close="closeCodeConfiguration"
-                                                                    ></CodeConfiguration>
-                                                                </v-card>
-                                                            </v-menu>
-                                                            <v-btn small icon @click="removeCustomTopping(customTopping)" style="align-self: center;"><v-icon small>mdi-close</v-icon></v-btn>
-                                                        </v-row>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </v-card-text>
-                                        <v-card-actions>
-                                            <v-btn block dark @click="openTemplateDialog('TOPPING')"> Custom Topping </v-btn>
-                                        </v-card-actions>
-                                    </v-card>
-                                </v-menu>
+                            <div v-if="gitMenu" :key="gitMenuRenderKey">
+                                <gitAPIMenu
+                                    v-model="value.scm"
+                                    :editTemplateMode="false"
+                                    @closeMenu="gitMenu = false"
+                                    @openIDE="openProjectIDE($event)"
+                                    @settingDone="ShowCreateRepoTab = false"
+                                    @closeGitMenu="closeGitMenu"
+                                    @update:git-users="val => gitUsers = val"
+                                    :information="projectInformation"
+                                    :isOnPrem="isOnPrem"
+                                    :projectId="modelingProjectId"
+                                    :projectName="projectName"
+                                    :git-users="gitUsers"
+                                    :isListSettingDone="isGeneratorDone"
+                                    :isOwnModel="isOwnModel"
+                                    :changedPathListsForGit="changedPathListsForGit"
+                                    :generateCodeLists="filteredPrettierCodeLists"
+                                    :ShowCreateRepoTab="ShowCreateRepoTab"
+                                    :isServerModel="isServerModel"
+                                    :projectVersion="projectVersion"
+                                    :githubTokenError="githubTokenError"
+                                    :isOneBCModel="isOneBCModel"
+                                    :onlyOneBcId="onlyOneBcId"
+                                    :isSIgpt="isSIgpt"
+                                />
                             </div>
-                        </v-row>
-                    </v-row>
-                </v-card-title>
-            </v-card>
+                        </v-menu>
+                    </div>
+
+                    <div>
+                        <v-menu
+                                v-model="openaiPopup"
+                                :close-on-click="false"
+                                :close-on-content-click="false"
+                                offset-y
+                        >
+                            <template v-slot:activator="{ on: menu, attrs }">
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on: tooltip }">
+                                        <v-btn
+                                                :loading="startGenerate"
+                                                @click="stopGenerate()"
+                                                :disabled="!isGeneratorDone"
+                                                class="code-preview-btn"
+                                                icon x-small
+                                                v-bind="attrs"
+                                                v-on="{ ...tooltip, ...menu }"
+                                        >
+                                            <v-icon size="22" :color="openaiPopup ? 'primary':''">
+                                                mdi-auto-fix
+                                            </v-icon>
+                                        </v-btn>
+                                        <!-- <div v-else>
+                                            <v-progress-circular
+                                                size="15"
+                                                :width="3"
+                                                indeterminate
+                                                color="primary"
+                                            ></v-progress-circular>
+                                        </div> -->
+                                    </template>
+                                    <span>input openai token</span>
+                                </v-tooltip>
+                            </template>
+                            <!-- <div v-if="openaiPopup">
+                                <v-container fluid style="background-color: white;">
+                                    <v-btn style="float: right; margin-top: -17px; margin-right: -17px;" icon @click="closeOpenaiPopup()">
+                                        <v-icon small>mdi-close</v-icon>
+                                    </v-btn>
+                                    <v-text-field
+                                            v-model="openaiToken"
+                                            style="width: 400px; font-size: small;"
+                                            :append-icon="showOpenaiToken ? 'mdi-eye' : 'mdi-eye-off'"
+                                            :type="showOpenaiToken ? 'text' : 'password'"
+                                            name="openaiToken"
+                                            label="openAI Token"
+                                            @click:append="showOpenaiToken = !showOpenaiToken"
+                                    ></v-text-field>
+                                    <div style="font-size: small;">
+                                        <v-icon small style="margin-right: 5px;">mdi-help-circle-outline</v-icon>
+                                        <a href="https://beta.openai.com/account/api-keys" target="_blank">how to get token</a>
+                                    </div>
+                                </v-container>
+                            </div> -->
+                        </v-menu>
+                    </div>
+
+                    <v-tooltip bottom v-if="editableTemplate">
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-on="on" class="code-preview-btn"
+                                    icon fab @click="openTemplateEditor()"
+                                    :color="editTemplateMode ? 'primary':''"
+                            >
+                                <v-icon size="22">mdi-code-braces</v-icon>
+                            </v-btn>
+                        </template>
+                        <span>Edit Template</span>
+                    </v-tooltip>
+
+                    <v-tooltip bottom v-if="editableTemplate">
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-on="on" class="code-preview-btn"
+                                    :disabled="isLoadingExpectedTemplate"
+                                    icon fab @click="testTemplateModel()"
+                                    :color="openExpectedTemplateTestDialog ? 'primary':''"
+                            >
+                                <v-icon v-if="!startCheckDiff" size="22">mdi-code-tags-check</v-icon>
+                                <v-icon v-else size="22">mdi-spin mdi-loading</v-icon>
+                            </v-btn>
+                        </template>
+                        <span>Test actual template using expected template</span>
+                    </v-tooltip>
+
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-on="on" class="code-preview-btn"
+                                    :disabled="!existChangedFile || !isGeneratorDone"
+                                    icon fab @click="onOffChangedPathLists()"
+                            >
+                                <div>
+                                    <v-icon size="22" :color="showChangedPathLists ? 'primary':''"
+                                    >mdi-filter</v-icon>
+                                </div>
+                            </v-btn>
+                        </template>
+                        <span>Changed File</span>
+                    </v-tooltip>
+
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-on="on" class="code-preview-btn"
+                                    icon fab
+                                    @click="onOffDesignPatterns()"
+                            >
+                                <Icon :color="showDesignPatterns ? 'rgb(25,118,210)' : '' "
+                                        icon="mdi:file-document-check-outline"
+                                        size="22"
+                                />
+                            </v-btn>
+                        </template>
+                        <span>Design Patterns</span>
+                    </v-tooltip>
+
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <div>
+                                <v-btn v-on="on" class="code-preview-btn"
+                                        icon fab @click="downloadArchive()"
+                                >
+                                    <slot name="downloadArchive">
+                                        <v-icon size="22">
+                                            mdi-folder-download
+                                        </v-icon>
+                                    </slot>
+                                </v-btn>
+                            </div>
+                        </template>
+                        <span>Download Archive</span>
+                    </v-tooltip>
+
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-on="on" class="code-preview-btn"
+                                    icon fab @click="searchForContent.onOff = !searchForContent.onOff"
+                            >
+                                <div>
+                                    <v-icon size="22"
+                                    >mdi-magnify</v-icon>
+                                </div>
+                            </v-btn>
+                        </template>
+                        <span>Search</span>
+                    </v-tooltip>
+
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-on="on" class="code-preview-btn"
+                                    icon fab @click="onDiffMode()"
+                            >
+                                <Icon size="22" icon="codicon:diff" :color="diffMode ? 'rgb(25,118,210)' : '' "/>
+                            </v-btn>
+                        </template>
+                        <span>Diff Mode</span>
+                    </v-tooltip>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-on="on" class="code-preview-btn"
+                                    icon fab @click="showGptDialog()"
+                            >
+                                <div>
+                                    <v-icon size="22"
+                                    >mdi-file-send</v-icon>
+                                </div>
+                            </v-btn>
+                        </template>
+                        <span>Explain Project</span>
+                    </v-tooltip>
+                    <v-spacer />
+                    <v-menu left :close-on-content-click="false" :close-on-click="false" @input="onClickToppingBox(true)">
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn text small
+                                v-bind="attrs"
+                                v-on="on"
+                            >
+                                Toppings
+                                <v-icon>{{ showTopping ? ' mdi-menu-up' : 'mdi-menu-down' }}</v-icon>
+                            </v-btn>
+                        </template>
+                        <v-card style="width:400px; overflow-y:scroll;" v-if="showTopping">
+                            <v-btn @click="onClickToppingBox(false)" small icon style="position:absolute; right:5px; top:5px;">
+                                <v-icon>mdi-close</v-icon>
+                            </v-btn>
+                            <v-card-text>
+                                Java/Spring Version
+                                <v-btn style="margin-bottom: 1px; color:gray" text @click="marketplaceDialog = true">
+                                    <v-icon style="margin-right: 5px; color:gray" small>mdi-cart</v-icon>
+                                    Marketplace
+                                </v-btn>
+
+                                <v-divider></v-divider>
+                                <div>
+
+                                    <v-radio-group
+                                            v-model="selectedVersion"
+                                            row
+                                            style="font-size: 10px; height: 35px;"
+                                    >
+                                        <v-radio
+                                                label="JAVA 8"
+                                                value="java8"
+                                                :disabled="onlyJava15"
+                                        ></v-radio>
+                                        <v-radio
+                                                label="JAVA 15"
+                                                value="java15"
+                                        ></v-radio>
+                                    </v-radio-group>
+                                </div>
+
+
+                                <div class="topping-radio-group">
+                                    <div v-for="baseToppingGroup in Object.keys(baseToppingPlatforms)">
+                                        {{baseToppingGroup}}
+                                        <v-divider></v-divider>
+                                        <div v-for="baseTopping in baseToppingPlatforms[baseToppingGroup]">
+                                            <v-row style="margin: 1px;align-items: center;">
+                                                <v-tooltip left>
+                                                    <template v-slot:activator="{ on, attrs }">
+                                                        <v-row style="margin-top: 1px; margin-left: 1px;" v-bind="attrs"
+                                                                v-on="on">
+                                                            <v-checkbox
+                                                                    class="topping-checkbox"
+                                                                    dense
+                                                                    :disabled="baseTopping.disable"
+                                                                    :label="getPreferredPlatformName(baseTopping.label, false, true)"
+                                                                    :input-value="isUsedTopping(baseTopping.value)"
+                                                                    @click="changedTopping(baseTopping.value)"
+                                                            ></v-checkbox>
+                                                        </v-row>
+                                                    </template>
+                                                    <span>{{`${toppingBaseUrl}${baseTopping.value}`}}</span>
+                                                </v-tooltip>
+
+                                                <v-menu v-if="isExistConfTemplate('TOPPING', `${toppingBaseUrl}${baseTopping.value}`)"
+                                                        v-model="menuOpen[baseTopping]"
+                                                        offset-y top
+                                                        :close-on-click="false"
+                                                        :close-on-content-click="false"
+                                                >
+                                                    <template v-slot:activator="{ on }">
+                                                        <v-btn
+                                                                x-small
+                                                                outlined
+                                                                v-on="on"
+                                                        >
+                                                            Configuration
+                                                        </v-btn>
+                                                    </template>
+                                                    <v-card flat v-if="menuOpen[baseTopping]" style="width: 300px;">
+                                                        <CodeConfiguration
+                                                                :instruction="configurationTemplate('TOPPING', `${toppingBaseUrl}${baseTopping.value}`)"
+                                                                @apply="applyCodeConfiguration"
+                                                                @close="closeCodeConfiguration"
+                                                        ></CodeConfiguration>
+                                                    </v-card>
+                                                </v-menu>
+                                            </v-row>
+                                        </div>
+                                    </div>
+                                    <!--                                                Kubernetes-->
+                                    <!--                                                <v-divider></v-divider>-->
+                                    <!--                                                <div>-->
+                                    <!--                                                    <v-checkbox-->
+                                    <!--                                                            :input-value="isUsedTopping('isVanillaK8s')"-->
+                                    <!--                                                            label="Vanilia kubernetes"-->
+                                    <!--                                                            dense-->
+                                    <!--                                                            @click="changedTopping('isVanillaK8s')"-->
+                                    <!--                                                            class="topping-checkbox"-->
+                                    <!--                                                    ></v-checkbox>-->
+                                    <!--                                                </div>-->
+
+                                    <!--                                                Security - Token based Authentication-->
+                                    <!--                                                <v-divider></v-divider>-->
+                                    <!--                                                <div>-->
+                                    <!--                                                    <v-checkbox-->
+                                    <!--                                                            :input-value="isUsedTopping('spring-security')"-->
+                                    <!--                                                            @click="changedTopping('spring-security')"-->
+                                    <!--                                                            label="Oauth by Spring Security + Spring GW"-->
+                                    <!--                                                            dense-->
+                                    <!--                                                    ></v-checkbox>-->
+                                    <!--                                                    <v-checkbox-->
+                                    <!--                                                            :input-value="isUsedTopping('keycloak-security')"-->
+                                    <!--                                                            @click="changedTopping('keycloak-security')"-->
+                                    <!--                                                            label="Oauth by Keycloak + Spring GW"-->
+                                    <!--                                                            dense-->
+                                    <!--                                                            class="topping-checkbox"-->
+                                    <!--                                                    ></v-checkbox>-->
+                                    <!--                                                </div>-->
+
+                                    <!--                                                Service Mesh-->
+                                    <!--                                                <v-divider></v-divider>-->
+                                    <!--                                                <div>-->
+                                    <!--                                                    <v-checkbox-->
+                                    <!--                                                            :input-value="isUsedTopping('istio')"-->
+                                    <!--                                                            label="Istio"-->
+                                    <!--                                                            dense-->
+                                    <!--                                                            @click="changedTopping('istio')"-->
+                                    <!--                                                    ></v-checkbox>-->
+                                    <!--                                                    <v-checkbox-->
+                                    <!--                                                            :input-value="isUsedTopping('ingress')"-->
+                                    <!--                                                            label="Ingress"-->
+                                    <!--                                                            dense-->
+                                    <!--                                                            @click="changedTopping('ingress')"-->
+                                    <!--                                                            class="topping-checkbox"-->
+                                    <!--                                                    ></v-checkbox>-->
+                                    <!--                                                </div>-->
+
+                                    <!--                                                DevOps-->
+                                    <!--                                                <v-divider></v-divider>-->
+                                    <!--                                                <div>-->
+                                    <!--                                                    <v-checkbox-->
+                                    <!--                                                            :input-value="isUsedTopping('argo')"-->
+                                    <!--                                                            label="Argo + Istio"-->
+                                    <!--                                                            dense-->
+                                    <!--                                                            @click="changedTopping('argo')"-->
+                                    <!--                                                    ></v-checkbox>-->
+                                    <!--                                                </div>-->
+
+                                    <!--                                                Data Projection-->
+                                    <!--                                                <v-divider></v-divider>-->
+                                    <!--                                                <div>-->
+                                    <!--                                                    <v-checkbox-->
+                                    <!--                                                            :input-value="isUsedTopping('apollo-graphql')"-->
+                                    <!--                                                            label="Apollo GraphQL"-->
+                                    <!--                                                            dense-->
+                                    <!--                                                            @click="changedTopping('apollo-graphql')"-->
+                                    <!--                                                    ></v-checkbox>-->
+                                    <!--                                                    <v-checkbox-->
+                                    <!--                                                            :input-value="isUsedTopping('java-graphql')"-->
+                                    <!--                                                            label="JAVA GraphQL"-->
+                                    <!--                                                            disabled-->
+                                    <!--                                                            dense-->
+                                    <!--                                                            @click="changedTopping('java-graphql')"-->
+                                    <!--                                                            class="topping-checkbox"-->
+                                    <!--                                                    ></v-checkbox>-->
+                                    <!--                                                </div>-->
+                                    <div>Custom Toppings</div>
+                                    <v-divider></v-divider>
+                                    <div v-for="customToppingPath in Object.keys(filteredCustomToppingLists)">
+                                        <div v-for="customTopping in filteredCustomToppingLists[customToppingPath]">
+                                            <v-row style="margin: 1px;align-items: center;">
+                                                <v-tooltip left>
+                                                    <template v-slot:activator="{ on, attrs }">
+                                                        <v-row style="margin-top: 1px; margin-left: 1px;" v-bind="attrs"
+                                                                v-on="on">
+                                                            <v-checkbox
+                                                                    class="topping-checkbox"
+                                                                    dense
+                                                                    :label="getPreferredPlatformName(customTopping, false, true)"
+                                                                    :input-value="isUsedTopping(customTopping)"
+                                                                    @click="changedTopping(customTopping)"
+                                                            ></v-checkbox>
+                                                        </v-row>
+                                                    </template>
+                                                    <span>{{customTopping}}</span>
+                                                </v-tooltip>
+
+                                                <v-menu v-if="isExistConfTemplate('TOPPING', customTopping)"
+                                                        v-model="menuOpen[customTopping]"
+                                                        offset-y top
+                                                        :close-on-click="false"
+                                                        :close-on-content-click="false"
+                                                >
+                                                    <template v-slot:activator="{ on }">
+                                                        <v-btn
+                                                                x-small
+                                                                outlined
+                                                                v-on="on"
+                                                        >
+                                                            Configuration
+                                                        </v-btn>
+                                                    </template>
+                                                    <v-card flat v-if="menuOpen[customTopping]" style="width: 300px;">
+                                                        <CodeConfiguration
+                                                                :instruction="configurationTemplate('TOPPING', customTopping)"
+                                                                @apply="applyCodeConfiguration"
+                                                                @close="closeCodeConfiguration"
+                                                        ></CodeConfiguration>
+                                                    </v-card>
+                                                </v-menu>
+                                                <v-btn small icon @click="removeCustomTopping(customTopping)" style="align-self: center;"><v-icon small>mdi-close</v-icon></v-btn>
+                                            </v-row>
+                                        </div>
+                                    </div>
+                                </div>
+                            </v-card-text>
+                            <v-card-actions>
+                                <v-btn block dark @click="openTemplateDialog('TOPPING')"> Custom Topping </v-btn>
+                            </v-card-actions>
+                        </v-card>
+                    </v-menu>
+                </v-row>
+            </div>
+            <!-- 상단 메뉴 끝 -->
             <v-divider></v-divider>
-            <v-card-text style="height: 100%;">
+            <!-- 트리뷰 + code-viewer -->
+            <v-card-text style="padding-bottom: 0px;">
                 <separate-panel-components
                         :min="separatePanelInfo.min"
                         :max="separatePanelInfo.max"
                         :triggerLength="2"
                         :paneLengthPercent.sync="separatePanelInfo.current"
                         :inBoundSeparatePanel="true"
+                        class="fill-height"
                 >
                     <template v-slot:one>
-                        <div style="height: 100%; margin-top: 7px;">
+                        <div>
                             <!-- TREE  -->
                             <v-col
-                                    style="display: flex; margin-top:-15px; height: 100%; margin: 0; padding: 0;"
+                                    style="display: flex; height: 100%; margin: 0; padding: 0; overflow:auto; height: calc(100vh - 72px);"
                                     :style="editTemplateMode ? 'overflow-x:hidden !important;':''"
                                     id="scroll-target"
                                     class="code-preview-left-re-size"
@@ -557,6 +544,7 @@
                                             open-all
                                             transition
                                             dense
+                                            style="height:100%; overflow:auto;"
                                     >
                                         <template v-slot:prepend="{ item, open }">
                                             <v-icon v-if="item.changed > 0">
@@ -574,11 +562,7 @@
                                 <div v-else
                                      class="event-storming-treeview-height"
                                      style="min-width: 0px;
-                                        margin-right: 0px;
-                                        width: 100%;
-                                        margin-left: -15px;
-                                        overflow-y: auto;
-                                        padding-right: 15px;"
+                                        width: 100%;"
                                 >
                                     <div  v-if="searchForContent.onOff" style="margin-left: 12px; width: 100%;">
                                         <v-text-field
@@ -598,8 +582,8 @@
                                         </div>
                                     </div>
                                     <div
-                                            v-if="searchForFile.onOff"
-                                            style="position: absolute; top: 0; left: 50%; width: 40%; margin-top: 20px;"
+                                        v-if="searchForFile.onOff"
+                                        style="position: absolute; top: 0; left: 50%; width: 40%; margin-top: 20px;"
                                     >
                                         <v-autocomplete
                                                 v-model="searchForFile.search"
@@ -614,7 +598,6 @@
                                                 dense
                                                 style="text-overflow: clip !important; margin-right:-50px;"
                                                 :style="editTemplateMode ? 'max-height: 70%;':''"
-                                                class="gs-v-treeview-width"
                                         >
                                             <template v-slot:item="{ item }">
                                                 <div style="font-size: 14px;">{{item.fileName}} </div>
@@ -625,8 +608,6 @@
                                         </v-autocomplete>
                                     </div>
 
-
-
                                     <!-- BASE  -->
                                     <v-menu v-if="showBaseTemplate"
                                             v-model="menuOpen.BASE"
@@ -634,7 +615,7 @@
                                             :close-on-content-click="false"
                                     >
                                         <template v-slot:activator="{ on, attrs }">
-                                            <v-row style="position: relative; top: 0; margin: 0px 0px 5px 12px; color:gray;">
+                                            <v-row style="color:gray; position: relative; margin:5px 0px 0px 13px;">
                                                 <div>Base:</div>
                                                 <v-chip
                                                         @mouseenter="showFullNameforBaseTemplate = true"
@@ -642,7 +623,8 @@
                                                         x-small
                                                         v-bind="attrs"
                                                         v-on="on"
-                                                        style="left: 40px; top:3px; position: absolute;"
+                                                        style="margin:3px 0px 0px 38px;
+                                                            position:absolute;"
                                                 >
                                                     {{ selectedBaseTemplateName }}
                                                 </v-chip>
@@ -674,7 +656,6 @@
                                             </v-tab-item>
                                             
                                         </v-tabs>
-  
                                     </v-menu>
 
                                     <div v-if="isGeneratorDone">
@@ -713,10 +694,10 @@
                                             <v-divider></v-divider>
                                         </div>
 
-                                        <v-list v-else nav dense style="margin:-15px -30px 0px -10px;">
+                                        <v-list v-else nav dense style="padding:0px;">
                                             <v-list-group :class="editTemplateMode ? 'gs-source-tree-v-list-group' : ''" :value="true">
                                                 <template v-slot:activator>
-                                                    <div style="width: 100%; min-width: 0px;  margin-left: 6px;">
+                                                    <div style="width: 100%; min-width: 0px; margin-left:6px;">
                                                         <v-list-item-title>Source Tree</v-list-item-title>
                                                     </div>
                                                 </template>
@@ -726,14 +707,13 @@
                                                         v-if="filteredTreeLists"
                                                         :items.sync='filteredTreeLists'
                                                         @update:active="onSelected"
-                                                        
                                                         :open="filteredTreeOpenList"
                                                         :active="selectedFileList"
                                                         activatable
                                                         item-key="hash"
                                                         return-object
                                                         dense
-                                                        style="text-overflow: clip !important; margin-right:-50px;"
+                                                        style="text-overflow: clip !important;"
                                                         :style="editTemplateMode ? 'max-height: 70%;':''"
                                                         class="gs-v-treeview-width"
                                                 >
@@ -745,15 +725,15 @@
                                                         >fiber_manual_record
                                                         </v-icon>
                                                         <div v-if="isNotFolderIcon">
-                                                            <v-icon size="20" :style="templatePathStyle(item)">
+                                                            <v-icon size="22" :style="templatePathStyle(item)">
                                                                 {{ icon[item.file] ? icon[item.file] : 'mdi-folder'}}
                                                             </v-icon>
                                                         </div>
                                                         <div v-else>
-                                                            <v-icon v-if="item.children && item.children.length > 0" size="20" :style="templatePathStyle(item)">
+                                                            <v-icon v-if="item.children && item.children.length > 0" size="22" :style="templatePathStyle(item)">
                                                                 {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
                                                             </v-icon>
-                                                            <v-icon v-else size="20" :style="templatePathStyle(item)">
+                                                            <v-icon v-else size="22" :style="templatePathStyle(item)">
                                                                 {{ icon[item.file] ? icon[item.file] : 'mdi-folder'}}
                                                             </v-icon>
                                                         </div>
@@ -780,6 +760,12 @@
                                                             </div>
 
                                                             <div v-else>
+                                                                <v-divider v-if="item.divisionLine && showBaseTemplate && !isOneBCModel"
+                                                                    style="margin-left: -100%;
+                                                                        width: 100%;
+                                                                        position: absolute;
+                                                                        margin-top: -4px;"
+                                                                />
                                                                 <v-menu v-if="item.showTemplateChip && !isOneBCModel"
                                                                         v-model="menuOpen[item.bcId]"
                                                                         offset-y
@@ -831,55 +817,6 @@
                                                                             ></CodeConfiguration>
                                                                         </v-tab-item>
                                                                     </v-tabs>
-
-                                                                    <!-- <v-tabs>
-                                                                        <v-tab> Change Template </v-tab>
-                                                                        <v-tab v-if="isExistConfTemplate('TEMPLATE', item.preferredPlatform)"> Configuration </v-tab>
-                                                                        <v-tab-item>
-                                                                            <v-list v-if="editableTemplate">
-                                                                                <v-list-item
-                                                                                        v-for="(tempItem, index) in templateList"
-                                                                                        :key="index"
-                                                                                        @click="openTemplateDialog('TEMPLATE', tempItem.template, item)"
-                                                                                        @mouseenter="getForkedList(tempItem.template)"
-                                                                                >
-                                                                                    <v-menu
-                                                                                            open-on-hover
-                                                                                            right
-                                                                                            offset-x
-                                                                                    >
-                                                                                        <template v-slot:activator="{ on, attrs }">
-                                                                                            <v-list-item-title v-bind="attrs" v-on="on">{{ tempItem.display }}</v-list-item-title>
-                                                                                        </template>
-                                                                                        <v-card v-if="forkedRepoList.length > 0" style="width: 600px;">
-                                                                                            <v-list>
-                                                                                                <v-list-item v-for="(repo, index) in forkedRepoList" :key="index">
-                                                                                                    <v-list-item-content @click="changePlatformToForkedRepo(repo.title, false, item)" style="cursor: pointer;">
-                                                                                                        <v-list-item-title>{{ repo.title }}</v-list-item-title>
-                                                                                                        <v-list-item-subtitle style="font-size: small;">
-                                                                                                            <v-icon small style="margin-right: 5px;">mdi-star-outline</v-icon>Star: {{ repo.starCount }}
-                                                                                                            <v-icon small style="margin-left: 10px; margin-right: 5px;">mdi-source-fork</v-icon>Fork: {{ repo.forkCount }}
-                                                                                                            <v-icon small style="margin-left: 10px; margin-right: 5px;">mdi-update</v-icon>Update: {{ repo.updateTimeStamp }}
-                                                                                                        </v-list-item-subtitle>
-                                                                                                    </v-list-item-content>
-                                                                                                    <v-list-item-action>
-                                                                                                        <v-btn icon @click="openForkedRepo(repo.title)"><v-icon>mdi-open-in-new</v-icon></v-btn>
-                                                                                                    </v-list-item-action>
-                                                                                                </v-list-item>
-                                                                                            </v-list>
-                                                                                        </v-card>
-                                                                                    </v-menu>
-                                                                                </v-list-item>
-                                                                            </v-list>
-                                                                        </v-tab-item>
-                                                                        <v-tab-item>
-                                                                            <CodeConfiguration
-                                                                                    :instruction="configurationTemplate('TEMPLATE', item)"
-                                                                                    @apply="applyCodeConfiguration"
-                                                                                    @close="closeCodeConfiguration"
-                                                                            ></CodeConfiguration>
-                                                                        </v-tab-item>
-                                                                    </v-tabs> -->
                                                                 </v-menu>
 
                                                                 <div style="color:red;">
@@ -887,13 +824,6 @@
                                                                 </div>
                                                             </div>
                                                         </v-row>
-                                                        <div style="margin-top: 8px;">
-                                                            <v-divider v-if="item.divisionLine && showBaseTemplate && !isOneBCModel"
-                                                                       style="margin-left: -96%;
-                                                                        width: 90vw;
-                                                                        position: absolute;"
-                                                            />
-                                                        </div>
                                                     </template>
                                                 </v-treeview>
                                             </v-list-group>
@@ -909,19 +839,19 @@
                                 <v-col>
                                     <v-dialog persistent no-click-animation v-if="editTemplateMode" v-model="editTemplateMode">
                                         <div v-if="editTemplateMode" :key="editModeCodeViewerRenderKey">
-                                            <v-card flat style="height: 90vh; z-index:2;">
+                                            <v-card style="z-index:2;">
                                                 <div style="display: flex;">
-                                                    <div style="width: 400px; height: 850px; overflow-y: scroll;">
+                                                    <div style="width: 400px; overflow-y: scroll; height:88vh;">
                                                         <!-- <div @click="cssUpateinVueObjViewer()" style="width: 400px; font-size: 11px;">	
                                                             <vue-object-view	
                                                                     v-model="modelData"	
                                                                     :nowrap="false"	
                                                                     style="max-height: 500px; overflow: scroll; max-width: 400px;"	
                                                             ></vue-object-view>	 -->
-                                                        <v-card-title style="margin-top: -10px; margin-bottom: -15px;">
+                                                        <v-card-title>
                                                             Model Explorer
                                                         </v-card-title>
-                                                        <div style="width: 400px;" :key="modelDataTreeKey">
+                                                        <div :key="modelDataTreeKey">
                                                             <v-treeview
                                                                 :active.sync="active_tree"
                                                                 :items="treeData"
@@ -935,7 +865,6 @@
                                                                 max-height: 70%;
                                                                 font-size:12px;
                                                                 cursor: pointer;"
-                                                                class="gs-v-treeview-width"
                                                                 open-on-click
                                                                 transition
                                                             >
@@ -969,42 +898,37 @@
                                                             </div>
                                                         </div>
 
-                                                        <v-list nav dense style="margin:-15px -30px 0px -10px;">
+                                                        <v-list nav dense>
                                                             <v-list-group :value="true">
                                                                 <template v-slot:activator>
-                                                                    <div style="width: 74%; min-width: 0px;  margin-left: 6px; display: inline-flex;">
-                                                                        <v-list-item-title>Template Explorer</v-list-item-title>
-                                                                        <v-btn
-                                                                            style="position: absolute; right: 55%; top: 3px;"
-                                                                            icon 
-                                                                            @click="openTemplateTreeEditor(null, 'add New')"
-                                                                        >
-                                                                            <v-icon small>mdi-folder-plus</v-icon>
-                                                                        </v-btn>
-                                                                    </div>
+                                                                    <v-list-item-title style="display: flex; align-items: center;">
+                                                                            <div>Template Explorer</div>
+                                                                            <v-btn @click="openTemplateTreeEditor(null, 'add New')"
+                                                                                icon 
+                                                                            >
+                                                                                <v-icon small>mdi-folder-plus</v-icon>
+                                                                            </v-btn>
+                                                                    </v-list-item-title>
                                                                 </template>
                                                                 <div v-for="(platform, index) in Object.keys(templateTreeList)" :key="index">
                                                                     <v-list-group
                                                                             :value="true"
-                                                                            style="margin-left: -15px;"
                                                                             no-action
                                                                             sub-group
                                                                     >
                                                                         <template v-slot:activator>
-                                                                            <v-list-item-content style="margin-left: -10px;">
+                                                                            <v-list-item-content>
                                                                                 <v-list-item-subtitle v-if="platform.includes('https://github.com/')" style="margin-top: -20px; font-size: x-small;">https://github.com/</v-list-item-subtitle>
                                                                                 <v-list-item-title v-if="platform.includes('https://github.com/')" style="margin-left: -100%; margin-top:5px;">{{ platform.replace('https://github.com/', '') }}</v-list-item-title>
                                                                                 <v-list-item-title v-else>{{ platform }}</v-list-item-title>
                                                                             </v-list-item-content>
                                                                             <v-btn
-                                                                                style="left: -10px;"
                                                                                 icon 
                                                                                 @click="openTemplateTreeEditor(platform, 'add file')"
                                                                             >
                                                                                 <v-icon small>mdi-file-plus</v-icon>
                                                                             </v-btn>
                                                                             <v-btn
-                                                                                style="left: -10px;"
                                                                                 icon 
                                                                                 @click="openTemplateTreeEditor(platform, 'add folder')"
                                                                             >
@@ -1035,12 +959,11 @@
                                                                                     margin-left: -55px;
                                                                                     font-size:12px;
                                                                                     cursor: pointer;"
-                                                                                    class="gs-v-treeview-width"
                                                                                     open-on-click
                                                                                 >
                                                                                     <template v-slot:prepend="{ item, open }">
                                                                                         <div v-if="isNotFolderIcon">
-                                                                                            <v-icon size="20" :style="templatePathStyle(item)">
+                                                                                            <v-icon size="22" :style="templatePathStyle(item)">
                                                                                                 {{ icon[item.file] ? icon[item.file] : 'mdi-folder'}}
                                                                                             </v-icon>
                                                                                         </div>
@@ -1048,7 +971,7 @@
                                                                                             <v-icon v-if="item.children && item.children.length > 0" size="20" :style="templatePathStyle(item)">
                                                                                                 {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
                                                                                             </v-icon>
-                                                                                            <v-icon v-else size="20" :style="templatePathStyle(item)">
+                                                                                            <v-icon v-else size="22" :style="templatePathStyle(item)">
                                                                                                 {{ icon[item.file] ? icon[item.file] : 'mdi-folder'}}
                                                                                             </v-icon>
                                                                                         </div>
@@ -1094,17 +1017,16 @@
                                                             </v-list-group>
                                                         </v-list>
 
-                                                        <div style="height: 330px;">
+                                                        <div style="height: 330px; width:500px;">
                                                             <div v-if="editTemplateMode" style=" width: 100%; position: relative; margin-top: -10px;">
                                                                 <v-divider />
                                                             </div>
                                                             <v-list v-if="editTemplateMode" :key="editTemplateListRenderKey"
                                                                     nav dense
-                                                                    style="width:105%; min-width: 390px; margin:-5px -30px 0px -10px;"
                                                             >
-                                                                <v-list-group :class="editTemplateMode ? 'gs-edited-template-files-v-list-group' : ''" :value="true">
+                                                                <v-list-group :value="true">
                                                                     <template v-slot:activator>
-                                                                        <div style="width: 100%;  margin-left: 6px; min-width: 0px;">
+                                                                        <div style="width: 100%;">
                                                                             <v-list-item-title>Edited Template Files</v-list-item-title>
                                                                         </div>
                                                                     </template>
@@ -1112,17 +1034,16 @@
                                                                         <v-list-group
                                                                                 v-if="Object.keys(editTemplateFrameWorkList[platform]).length != 0"
                                                                                 :value="true"
-                                                                                style="margin-left: -15px;"
                                                                                 no-action
                                                                                 sub-group
                                                                         >
                                                                             <template v-slot:activator>
-                                                                                <v-list-item-content style="margin-left: -10px;">
+                                                                                <v-list-item-content>
                                                                                     <v-list-item-subtitle v-if="platform.includes('https://github.com/')" style="margin-top: -20px; font-size: x-small;">https://github.com/</v-list-item-subtitle>
                                                                                     <v-list-item-title v-if="platform.includes('https://github.com/')" style="margin-left: -100%; margin-top:5px;">{{ platform.replace('https://github.com/', '') }}</v-list-item-title>
                                                                                     <v-list-item-title v-else>{{ platform }}</v-list-item-title>
                                                                                 </v-list-item-content>
-                                                                                <div style="position: absolute; right: 15%;">
+                                                                                <div>
                                                                                     <v-menu
                                                                                             v-model="templatePushDialog"
                                                                                             :close-on-click="false"
@@ -1134,7 +1055,7 @@
                                                                                             <v-tooltip bottom>
                                                                                                 <template v-slot:activator="{ on: tooltip }">
                                                                                                     <v-btn v-bind="attrs" v-on="{ ...tooltip, ...menu }" @click="pushTemplateToGit(platform)" icon>
-                                                                                                        <v-icon :color="oldPlatform == platform ? 'primary':''" small>mdi-git</v-icon>
+                                                                                                        <v-icon :color="oldPlatform == platform ? 'primary':''" size="22">mdi-git</v-icon>
                                                                                                     </v-btn>
                                                                                                 </template>
                                                                                                 <span>open git Menu</span>
@@ -1144,6 +1065,7 @@
                                                                                             <gitAPIMenu
                                                                                                     v-model="value.scm"
                                                                                                     v-if="templatePushDialog"
+                                                                                                    @update:git-users="val => gitUsers = val"
                                                                                                     @closeMenu="templatePushDialog = false"
                                                                                                     @successToPush="changePlatform"
                                                                                                     @closeGitMenu="closeGitMenu"
@@ -1157,11 +1079,11 @@
                                                                                                     :projectName="projectName"
                                                                                                     :git-users="gitUsers"
                                                                                                     :isListSettingDone="isGeneratorDone"
-                                                                                                    :isMineProject="isMineProject"
+                                                                                                    :isOwnModel="isOwnModel"
                                                                                                     :changedPathListsForGit="changedPathListsForGit"
                                                                                                     :generateCodeLists="filteredPrettierCodeLists"
                                                                                                     :ShowCreateRepoTab="ShowCreateRepoTab"
-                                                                                                    :isServerModeling="isServerModeling"
+                                                                                                    :isServerModel="isServerModel"
                                                                                                     @pushSuccessed="pushSuccessed"
                                                                                             />
                                                                                         </div>
@@ -1170,38 +1092,39 @@
                                                                             </template>
                                                                             <v-list-item v-for="(template, i) in Object.keys(editTemplateFrameWorkList[platform])" :key="i"
                                                                                          :style="selectedEditTemplateName == platform + '/' + template ? 'background-color: #e4eef9; color: #2277cf;' : ''"
+                                                                                         style="margin-left:-50px;"
                                                                             >
                                                                                 <div style="cursor: pointer;"
                                                                                      @click="setTemplateFramework(editTemplateFrameWorkList[platform][template].element)"
                                                                                      @mouseenter="setHover(platform, template)"
                                                                                      @mouseleave="setHover()"
                                                                                 >
-                                                                                    <v-row :style="editTemplateFrameWorkList[platform][template].isPushed ? 'color: darkgray;':''">
+                                                                                    <div style="display:flex; align-items: center;" :style="editTemplateFrameWorkList[platform][template].isPushed ? 'color: darkgray;':''">
                                                                                         <Icon v-if="editTemplateFrameWorkList[platform][template].isPushed"
                                                                                               icon="mdi:file-document-arrow-right-outline" width="20" height="20"
-                                                                                              style="color: darkgray; position: relative; left: -30px; top: 20px;"
+                                                                                              style="color: darkgray;"
                                                                                         />
                                                                                         <Icon v-else-if="editTemplateFrameWorkList[platform][template].isFixed"
                                                                                               icon="mdi:file-document-check-outline" width="20" height="20"
-                                                                                              style="color: green; position: relative; left: -30px; top: 20px;"
+                                                                                              style="color: green;"
                                                                                         />
                                                                                         <Icon v-else-if="editTemplateFrameWorkList[platform][template].failedGenerate"
                                                                                               icon="mdi:file-document-alert-outline" width="20" height="20"
-                                                                                              style="color: red; position: relative; left: -30px; top: 20px;"
+                                                                                              style="color: red;"
                                                                                         />
                                                                                         <Icon v-else-if="editTemplateFrameWorkList[platform][template].isAdded"
                                                                                               icon="mdi:file-document-plus-outline" width="20" height="20"
-                                                                                              style="color: #2278cf; position: relative; left: -30px; top: 20px;"
+                                                                                              style="color: #2278cf;"
                                                                                         />
                                                                                         <Icon v-else-if="editTemplateFrameWorkList[platform][template].isDeleted"
                                                                                               icon="mdi:file-document-minus-outline" width="20" height="20"
-                                                                                              style="color: red; position: relative; left: -30px; top: 20px;"
+                                                                                              style="color: red;"
                                                                                         />
                                                                                         <Icon v-else
                                                                                               icon="mdi:file-document-edit-outline" width="20" height="20"
-                                                                                              style="color: #2278cf; position: relative; left: -30px; top: 20px;"
+                                                                                              style="color: #2278cf;"
                                                                                         />
-                                                                                        <v-col style="margin-left:-35px; margin-right: 25px;">
+                                                                                        <div>
                                                                                             <v-list-item-subtitle v-if="editTemplateFrameWorkList[platform][template].element[0].computedSubFileName"
                                                                                                                   style="font-size: x-small;">
                                                                                                 {{ editTemplateFrameWorkList[platform][template].element[0].computedSubFileName }}
@@ -1209,15 +1132,15 @@
                                                                                             <v-list-item-title :style="!editTemplateFrameWorkList[platform][template].element[0].computedSubFileName ? 'margin-top:10px;' : ''"
                                                                                                                v-text="editTemplateFrameWorkList[platform][template].element[0].computedFileName">
                                                                                             </v-list-item-title>
-                                                                                        </v-col>
+                                                                                        </div>
                                                                                         <v-btn icon
                                                                                                v-if="isHoveredTemplateFilePath == platform + '/' + template"
                                                                                                @click="deleteModifiedTemplate(platform, template)"
-                                                                                               style="color: darkgray; position: relative; top: 13px; margin-left: -35px;"
+                                                                                               style="color: darkgray;"
                                                                                         >
                                                                                             <v-icon small>mdi-close</v-icon>
                                                                                         </v-btn>
-                                                                                    </v-row>
+                                                                                    </div>
                                                                                 </div>
                                                                             </v-list-item>
                                                                         </v-list-group>
@@ -1230,8 +1153,10 @@
                                                         </div>
                                                     </div>
                                                     <v-divider vertical />
-                                                    <v-card-text style="margin-top: -15px;">
-                                                        <v-btn style="float: right; margin-top: -6px; margin-right: -22px;" icon @click="editTemplateMode = false, defaultCodeViewerRenderKey++;">
+                                                    <v-card-text style="padding:1px;">
+                                                        <v-btn icon @click="editTemplateMode = false, defaultCodeViewerRenderKey++;"
+                                                            style="position:absolute; right:5px; z-index:1"
+                                                        >
                                                             <v-icon small>mdi-close</v-icon>
                                                         </v-btn>
                                                         <v-tabs
@@ -1256,7 +1181,7 @@
                                                                     v-for="item in editTemplateTabItems"
                                                                     :key="item.tab"
                                                             >
-                                                                <div style="height: 850px;" :key="editModeResultViewerRenderKey">
+                                                                <div :key="editModeResultViewerRenderKey">
                                                                     <v-card flat v-if="item.tabKey == 'edit'">
                                                                         <separate-panel-components
                                                                                 :min="codeSeparatePanelInfo.min"
@@ -1264,6 +1189,7 @@
                                                                                 :triggerLength="2"
                                                                                 :paneLengthPercent.sync="codeSeparatePanelInfo.current"
                                                                                 :inBoundSeparatePanel="true"
+                                                                                class="gs-edit-template-separate-panel"
                                                                         >
                                                                             <template v-slot:one>
                                                                                 <div>
@@ -1288,11 +1214,11 @@
                                                                                         </v-tooltip>
                                                                                     </div>
                                                                                     <code-viewer
+                                                                                            class="gs-code-previewer-edit-template-left"
                                                                                             v-model="opennedTemplateFramework"
                                                                                             :editMode="true"
                                                                                             :readOnly="false"
                                                                                             :codeSuggestionObj="opennedTemplateFramework ? opennedTemplateFramework[0].eleKeys:{}"
-                                                                                            style="padding: 0 !important; height: 100%; float: left; width:100%; margin-left:2px;"
                                                                                             @update="updatePathTmp"
                                                                                             @editCode="editCode"
                                                                                             @editBreakPoint="editBreakPoint"
@@ -1345,10 +1271,10 @@
                                                                                             @editCode="editCode"
                                                                                     ></code-viewer> -->
                                                                                     <code-viewer
+                                                                                            class="gs-code-previewer-edit-template-right"
                                                                                             v-model="openCode"
                                                                                             :editMode="true"
                                                                                             :readOnly="true"
-                                                                                            style="padding: 0 !important; height: 100%; float: left;"
                                                                                             @update="updatePathTmp"
                                                                                             @editCode="editCode"
                                                                                     ></code-viewer>
@@ -1371,7 +1297,6 @@
                                                                                             v-model="originMustacheTemplate"
                                                                                             :editMode="true"
                                                                                             :readOnly="false"
-                                                                                            style="padding: 0 !important; height: 100%; float: left;"
                                                                                             @update="updatePathTmp"
                                                                                             @editCode="editMustacheCode"
                                                                                     ></code-viewer>
@@ -1385,7 +1310,6 @@
                                                                                             v-model="modifiedMustacheTemplate"
                                                                                             :editMode="true"
                                                                                             :readOnly="true"
-                                                                                            style="padding: 0 !important; height: 100%; float: left;"
                                                                                             @update="updatePathTmp"
                                                                                     ></code-viewer>
                                                                                 </div>
@@ -1427,7 +1351,6 @@
                                                 :diff-value="openCodeWeb"
                                                 :create-value="passValue"
                                                 @update="updatePathTmp"
-                                                style="padding: 0 !important;"
                                         ></code-viewer>
                                     </div>
                                     <div v-else-if="isDiffMode" style="height: 100%;">
@@ -1436,16 +1359,15 @@
                                                 :readOnly="true"
                                                 v-model="filteredOpenCode"
                                                 :create-value="changedDiffCode"
-                                                style="padding: 0 !important;"
                                                 @update="updatePathTmp"
                                         ></code-viewer>
                                     </div>
                                     <div v-else style="height: 100%;" :key="defaultCodeViewerRenderKey">
                                         <code-viewer
+                                                class="gs-code-previewer-code-viewer"
                                                 ref="codeViewer"
                                                 :key="docsRenderKey"
                                                 v-model="filteredOpenCode"
-                                                style="padding: 0 !important;"
                                                 :readOnly="false"
                                                 :showGpt="showGpt"
                                                 @editCode="setCurrentCodeForAutoCodeGenerate"
@@ -1487,9 +1409,6 @@
                     </template>
                 </separate-panel-components>
             </v-card-text>
-            <v-card-actions>
-                <slot name="structural-bottom"></slot>
-            </v-card-actions>
         </v-card>
 
         <v-dialog width="500" v-model="templateDialog.show" persistent>
@@ -1548,7 +1467,8 @@
                 v-model="isCustomTemplateForLoad"
                 width="480"
         >
-            <Login :onlyGitLogin="true" />
+            <login-by-gitlab v-if="isOnPrem"></login-by-gitlab>
+            <Login v-else :onlyGitLogin="true" />
         </v-dialog>
         <v-dialog
                 v-model="startGenerate"
@@ -1569,7 +1489,10 @@
                 </v-card-text>
             </v-card>
         </v-dialog>
-        <v-dialog v-model="showLoginCard"><Login :onlyGitLogin="true" @login="showLoginCard = false" /></v-dialog>
+        <v-dialog v-model="showLoginCard">
+            <login-by-gitlab v-if="isOnPrem"></login-by-gitlab>
+            <Login v-else :onlyGitLogin="true" @login="showLoginCard = false" />
+        </v-dialog>
         <v-dialog v-if="showModelDataEditor" v-model="showModelDataEditor" width="auto">
             <v-card style="width: 500px;">
                 <v-card-subtitle>{{ currentModelData.subPath }}</v-card-subtitle>
@@ -1615,14 +1538,14 @@
                 </v-card-actions>
             </v-card>
         </v-dialog>
-    </div>
+    </v-card>
 </template>
 
 <!-- <script src="./speechRecognition.js"></script> -->
 <script>
     /*
-      코드생성 공통 기능.
-   */
+        코드생성 공통 기능.
+    */
     //From: https://github.com/vuetifyjs/vuetify/issues/1877
     import StorageBase from "./StorageBase";
     import SeparatePanelComponents from "../../SeparatePanelComponents";
@@ -1634,10 +1557,18 @@
     import subMenu from '../subMenu.vue';
     import AIGenerator from './generators/AIGenerator';
     import CodeGeneratorCore from './CodeGeneratorCore';
-    import Login from "../../oauth/Login";
+    // import Login from "../../oauth/Login";
+    import LoginByGitlab from "../../oauth/LoginByGitlab";
     import MarketPlace from "../MarketPlace.vue"
     import getParent from "../../../utils/getParent";
     import ExpectedTemplateTestDialog from "./ExpectedTemplateTestDialog"
+
+    import GitAPI from "../../../utils/GitAPI"
+    import Github from "../../../utils/Github"
+    import Gitlab from "../../../utils/Gitlab"
+
+    import GitActionDialog from './GitActionDialog'
+
 
     const axios = require('axios');
     const prettier = require("prettier");
@@ -1664,29 +1595,35 @@
             'code-viewer': CodeViewer,
             gitAPIMenu,
             // vueObjectView,
-            Login,
+            LoginByGitlab,
             MarketPlace,
-            ExpectedTemplateTestDialog
+            ExpectedTemplateTestDialog,
+            GitActionDialog
         },
         props: {
             value: Object,
-            isMineProject: Boolean,
+            isOwnModel: Boolean,
             projectName: String,
             projectInformation :Object,
             selectedElements: Array,
             modelInitLoad: Boolean,
             modelingProjectId: String,
-            isServerModeling: Boolean,
+            isServerModel: Boolean,
             asyncCodeForValue: Boolean,
             callCodeForValue: Boolean,
             newTreeHashLists: Object,
             oldTreeHashLists: Object,
-            isVersionMode: Boolean,
+            projectVersion: Boolean,
             canvasName: String,
             embeddedK8s: Boolean,
         },
         data() {
             return {
+                gitActionDialogRenderKey: 0,
+                isSIgpt: false,
+                testFile: [],
+                openAiMessageList: [],
+                openGitActionDialog: false,
                 isLoadingExpectedTemplate: true,
                 startCheckDiff: false,
                 templateMetaData: null,
@@ -1780,12 +1717,13 @@
                 isComputeTreeListSwitch: false,
                 debuggerPoint: [],
                 // Template
-                defaultTemplate: 'https://github.com/msa-ez/template-spring-boot',
+                defaultTemplate: 'template-spring-boot',
                 tempToppingPlatforms: [] ,
                 tempConfiguration: null,
                 menuOpen:{
-                  BASE: false,
+                    BASE: false,
                 },
+                gitAPI: null,
                 baseToppingPlatforms:{
                     'Kubernetes':[
                         {label:'Vanilla Kubernetes', value: 'isVanillaK8s'}
@@ -2014,6 +1952,7 @@
                 this.isChangedPathLists = true
             },
             "isGeneratorDone":_.debounce(function () {
+                var me = this
                 if( this.isGeneratorDone ){
                     // this.isListSettingDone = true
                     if( !this.isFirstGenerate ){
@@ -2030,7 +1969,7 @@
                     if(this.openCode && this.openCode[0]){
                         Object.keys(this.templateFrameWorkList[this.openCode[0].template]).some(function (key){
                             if(key.includes(".template/test/expected/")){
-                                this.isLoadingExpectedTemplate = false
+                                me.isLoadingExpectedTemplate = false
                                 return true;
                             }
                         })
@@ -2099,10 +2038,10 @@
         },
         computed: {
             isDiffMode(){
-              if(this.diffMode && this.changedDiffCodeViewer){
-                  return true;
-              }
-              return false;
+                if(this.diffMode && this.changedDiffCodeViewer){
+                    return true;
+                }
+                return false;
             },
             basePlatform(){
                 if(this.value && this.value.basePlatform){
@@ -2129,7 +2068,8 @@
                 return {};
             },
             toppingBaseUrl(){
-              return 'https://github.com/msa-ez/topping-'
+                // TODO: check
+                return 'https://github.com/msa-ez/topping-'
             },
             filteredCustomToppingLists(){
                 try{
@@ -2301,14 +2241,13 @@
                 return []
             },
             onlyJava15() {
-                if (this.defaultTemplate == 'https://github.com/msa-ez/template-spring-boot-mybatis') {
+                if (this.defaultTemplate == 'template-spring-boot-mybatis') {
                     this.selectedVersion = 'java15';
                     return true
                 }
                 return false
             },
             editableTemplate(){
-                // return this.isMineProject
                 return true
             },
             templateList: function () {
@@ -2324,7 +2263,7 @@
                         if(!template.includes("http")){
                             var obj = {
                                 display: template,
-                                template: "https://github.com/msa-ez/template-" + template
+                                template: "template-" + template
                             }
                         } else {
                             var obj = {
@@ -2353,7 +2292,7 @@
                         if(!template.includes("http")){
                             var obj = {
                                 display: template,
-                                template: "https://github.com/msa-ez/template-" + template
+                                template: "template-" + template
                             }
                         } else {
                             var obj = {
@@ -2650,6 +2589,7 @@
             },
             filteredCodeLists(){
                 var me = this
+                // console.log(me.codeLists)
                 var codeList = me.setAutoGenerateCodetoList ? me.setAutoGenerateCodetoList : me.codeLists
                 // var copyCodeLists = JSON.parse(JSON.stringify(codeList));
 
@@ -2684,11 +2624,19 @@
         },
         created:function () {
             let canvas = getParent(this.$parent, this.canvasName);
+            let git;
+            if(window.MODE == "onprem") {
+                git = new Gitlab();
+            } else {
+                git = new Github();
+            }
+            this.gitAccessToken = localStorage.getItem('gitAccessToken') ? localStorage.getItem('gitAccessToken') : localStorage.getItem('gitToken')
+            this.gitAPI = new GitAPI(git);
             this.core = new CodeGeneratorCore({
                 canvas: canvas,
                 projectName: this.projectName,
                 gitURLforModel: this.gitURLforModel,
-                defaultTemplate: 'https://github.com/msa-ez/template-spring-boot'
+                defaultTemplate: 'template-spring-boot'
             });
 
             // K8s Topping은 기본세팅
@@ -2702,7 +2650,7 @@
             }
             
             this.openCodeGenerator()
-            this.settingGithub()
+            // this.settingGithub()
             // this.onLoadInitTemplate();
             this.initHandleBars(window.$HandleBars);
             this.callGenerate();
@@ -2710,9 +2658,6 @@
         },
         beforeDestroy: function () {
             this.closeCodeViewer()
-            // if(!this.labId){
-            // history.pushState(null, null, '/#/storming/'+this.modelingProjectId);
-            // }
         },
         mounted: function () { 
 
@@ -2798,6 +2743,20 @@
             });
         },
         methods: {
+            startCommit(updateList){
+                var me = this
+                updateList.forEach(function (file){
+                    file['codeChanges'].forEach(function (changed){
+                        var idx = me.codeLists.findIndex(x => x.fileName == changed.fileName)
+                        if(idx){
+                            me.codeLists[idx].code = changed.modifiedFileCode
+                        }
+                    })
+                })
+                me.gitMenu = true
+                me.isSIgpt = true
+                me.gitMenuRenderKey++;
+            },
             testTemplateModel(){
                 var me = this
                 me.startCheckDiff = true
@@ -3907,16 +3866,17 @@
                     return a & a
                 }, 0);
             },
-            settingGithub(){
-                var me = this
-                if(localStorage.getItem('gitAccessToken') || localStorage.getItem('gitToken')){
-                    me.gitAccessToken = localStorage.getItem('gitAccessToken') ? localStorage.getItem('gitAccessToken') : localStorage.getItem('gitToken')
-                    me.githubHeaders = {
-                        Authorization: 'token ' + me.gitAccessToken,
-                        Accept: 'application/vnd.github+json'
-                    }
-                }
-            },
+            // API 호출은 각 Platform별 JS에서 처리하므로 필요 없음.
+            // settingGithub(){
+            //     var me = this
+            //     if(localStorage.getItem('gitAccessToken') || localStorage.getItem('gitToken')){
+            //         me.gitAccessToken = localStorage.getItem('gitAccessToken') ? localStorage.getItem('gitAccessToken') : localStorage.getItem('gitToken')
+            //         me.githubHeaders = {
+            //             Authorization: 'token ' + me.gitAccessToken,
+            //             Accept: 'application/vnd.github+json'
+            //         }
+            //     }
+            // },
             clearDesignPatterns(codeLists){
                 if(codeLists && codeLists.length > 0){
                     let patterns = [{start: '//<<<', end:'//>>>'}, {start: '#<<<', end:'#>>>'}];
@@ -4055,29 +4015,62 @@
 
             },
 
-            getSelectedFilesDeeply(){
+            getSelectedFilesDeeply(bcRoots, option){
                 let codeBag = []
-                this._collectSelectedFileContents(this.selectedFile, codeBag)
+                var files = []
 
+                if(bcRoots){
+                    files = bcRoots
+                }else{
+                    files = this.selectedFile
+                }
+
+                this._collectSelectedFileContents(files, codeBag, option)
                 return codeBag
             }
             ,
-            _collectSelectedFileContents(root, codeBag){
+            _collectSelectedFileContents(root, codeBag, option){
                 var me = this;
                 var set = new Set();
+                var option = option
 
                 
                 root.forEach((item) => {
                     if(Array.isArray(item.children)) {
-                        me._collectSelectedFileContents(item.children, codeBag);
+                        me._collectSelectedFileContents(item.children, codeBag, option);
                     }
-                    if(item.code != null && (item.name.endsWith(".vue") || item.name.endsWith(".java") || item.name.endsWith(".yaml") || item.name.endsWith(".yml")) && !item.path.includes("/test")){
+
+                    var condition
+
+                    if(!option){
+                        condition = item.code != null && (item.name.endsWith(".vue") || item.name.endsWith(".java") || item.name.endsWith(".yaml") || item.name.endsWith(".yml")) && !item.path.includes("/test/")
+                    }else{
+                        if(option.keyword == "si"){
+                            condition = item.code != null && item.name.includes(".")
+                        }
+                    }
+
+                    if(condition){
                         // if (!Array.isArray(me.gptCodes)) {
                         //     //me.gptCodes = []; // 배열로 초기화    /// very very BAD
                         // }
                         if (!set.has(item.code)) {
-                            codeBag.push("#"+ item.name + "\n" + item.code);
-                            set.add(item.code);
+                            codeBag.push("# "+ item.name + ": \n" + item.code);
+                            // if(option.keyword == "si"){ // lineNumber 관련 
+                            //     if(item.code.includes('\n')){
+                            //         var codeSplit = item.code.split('\n')
+                            //         codeSplit.forEach(function (line, idx){
+                            //             codeSplit[idx] = `${line} // lineNumber ${idx + 1} `
+                            //         })
+                            //         item.code = codeSplit.join('\n')
+                            //     }
+                            //     set.add(item.code);
+                            // } else {
+                                if(option.keyword == "si" && item.name.includes("Test.java") && item.template === "https://github.com/msa-ez/topping-unit-test"){
+                                    me.testFile.push(item)
+                                }
+                                set.add(item.code);
+                            // }
                         }
                         //me.$refs.codeViewer.$refs.collectedCodes = me.gptCodes   /// Very BAD
                     }
@@ -4190,7 +4183,7 @@
                 me.codeLists = [];
                 me.templateFrameWorkList = {};
                 me.modelForElement = {};
-                me.settingGithub();
+                // me.settingGithub();
                 me.callGenerate();
             },
             setCurrentCodeForAutoCodeGenerate(value){
@@ -4634,24 +4627,18 @@
             asyncHandleBars(){
 
                 let obj = {}
+                let me = this
                 return new Promise(async function (resolve, reject) {
-                    if(localStorage.getItem('gitAccessToken') || localStorage.getItem('gitToken')){
-                        var gitAccessToken = localStorage.getItem('gitAccessToken') ? localStorage.getItem('gitAccessToken') : localStorage.getItem('gitToken')
-                        var githubHeaders = {
-                            Authorization: 'token ' + gitAccessToken,
-                            Accept: 'application/vnd.github+json'
+                    let result = await me.gitAPI.getFile("topping-isVanillaK8s", "msa-ez", "for-model/kubernetes/docs/common/Pod.md")
+                    .then(function (obj) {
+                        resolve(obj.data)
+                    })
+                    .catch(e => {
+                        if(e.response.status === 401){
+                            me.alertReLogin()
                         }
-                        var result = await axios.get(`https://api.github.com/repos/msa-ez/topping-isVanillaK8s/contents/for-model/kubernetes/docs/common/Pod.md`, { headers: githubHeaders })
-                        .catch(function (error) {
-                            if(error.response.status === 401){
-                                me.alertReLogin()
-                            }
-                            alert(error)
-                        })
-                        obj['include'] = decodeURIComponent(escape(atob(result.data.content)));
-                        resolve(obj);
-                    }
-                    // let result = await axios.get("https://raw.githubusercontent.com/msa-ez/topping-isVanillaK8s/main/isVanillaK8s/for-model/kubernetes/docs/common/Pod.md")
+                        alert(e)                        
+                    })
                 })
             },
             async initHandleBars(handleBars){
@@ -5579,224 +5566,144 @@
             async gitTemplate(division, gitRepoUrl) {
                 var me = this
                 // division : Base, Template, Topping
-                try{
-
-                    if( me.templateFrameWorkList[gitRepoUrl] && Object.keys(me.templateFrameWorkList[gitRepoUrl]).length > 0 ){
-                        // console.log(`>>> Generate Code] DONE Template(${gitRepoUrl})`);
-                        // return;
-                    }
-
-                    if((localStorage.getItem("loginType") && localStorage.getItem("loginType") == "github") || me.gitAccessToken){
-                        // let first = false;
-                        let templateUrl = gitRepoUrl ? gitRepoUrl : me.basePlatform
-
-                        // if( !(me.templateFrameWorkList[templateUrl] && Object.keys(me.templateFrameWorkList[templateUrl]).length > 0) ){
-                            // first = true
-                            me.$manifestsPerTemplate[templateUrl] = [];
+                return new Promise(async function (resolve, reject) {
+                    try{
+                        // if( me.templateFrameWorkList[gitRepoUrl] && Object.keys(me.templateFrameWorkList[gitRepoUrl]).length > 0 ){
                         // }
-
-                        // if(first){
-                            let gitRepository = templateUrl.split('/')[templateUrl.split('/').length - 2].trim()
-                            let gitProject = templateUrl.split('/')[templateUrl.split('/').length - 1].trim()
-                            let commitRes = await axios.get(`https://api.github.com/repos/` + gitRepository + '/' + gitProject + `/commits`, { headers: me.githubHeaders })
-                            .catch(function (error) {
-                                if(error.response.status === 401){
+                        let templateUrl = gitRepoUrl ? gitRepoUrl : me.basePlatform
+                        me.$manifestsPerTemplate[templateUrl] = [];
+                        let org = templateUrl.split('/')[templateUrl.split('/').length - 2].trim()
+                        let repo = templateUrl.split('/')[templateUrl.split('/').length - 1].trim()
+                        
+                        // Template은 Main Branch에서 받아오도록 처리
+                        let commitRes = await me.gitAPI.getCommit(org, repo, "main")
+                        .then(async function (res) {
+                            // Commit List 받아오는 것.
+                            let tree = await me.gitAPI.getTree(org, repo, res)
+                            .then(async function (list) {
+                                console.log("try me.gitAPI.setGitList()")
+                                let gitList = await me.gitAPI.setGitList(list, repo, templateUrl)
+                                .then(function (resultLists) {
+                                    console.log(resultLists)
+                                    Object.assign(me.$manifestsPerBaseTemplate, resultLists.manifestsPerBaseTemplate)
+                                    me.$manifestsPerTemplate[templateUrl] = resultLists.manifestsPerTemplate[templateUrl]
+                                    me.templateFrameWorkList = resultLists.templateFrameWorkList
+                                    resolve()
+                                })
+                                .catch(e => {
+                                    console.log(e)
+                                })
+                            })
+                            .catch(e => {
+                                console.log(e)
+                                if(e.response.status === 401){
                                     me.alertReLogin()
                                 }
-                                alert(error)
+                                alert(e)
                             })
-                            if(commitRes){
-                                let res = await axios.get(`https://api.github.com/repos/` + gitRepository + '/' + gitProject + `/git/trees/` + commitRes.data[0].sha, { headers: me.githubHeaders })
-                                .catch(function (error) {
-                                    if(error.response.status === 401){
-                                        me.alertReLogin()
-                                    }
-                                    alert(error)
-                                })
-                                if(res){
-                                    await me.setGitList(res.data, gitRepository, templateUrl)
-                                }
+                        })
+                        .catch(error => {
+                            console.log(error)
+                            if(error.response.status === 401){
+                                me.alertReLogin()
                             }
-                        // }
+                            alert(error)              
+                        })
+                    } catch (e) {
+                        console.log(`Error] Load Git Template: ${e}`)
+                        if(e.response.data.message.includes("Bad credentials")){
+                            me.githubTokenError = true
+                            me.gitMenu = true
+                            reject()
+                            return false
+                        }
                     }
-                }catch (e) {
-                    console.log(`Error] Load Git Template: ${e}`)
-                    if(e.response.data.message.includes("Bad credentials")){
-                        me.githubTokenError = true
-                        me.gitMenu = true
-                        return false
-                    }
-                }
+                })
+
             },
-            async setGitList(element, repository, gitRepoUrl) {
-                var me = this
+            // async setGitList(element, repository, gitRepoUrl) {
+            //     var me = this
 
-                var isToppingSetting = false
-                if(element.url.includes("topping-")){
-                    isToppingSetting = true
-                }
+            //     var isToppingSetting = false
+            //     if(element.url.includes("topping-")){
+            //         isToppingSetting = true
+            //     }
 
-                var toppingName = ""
-                if(isToppingSetting){
-                    toppingName = repository
-                }
+            //     var toppingName = ""
+            //     if(isToppingSetting){
+            //         toppingName = repository
+            //     }
 
-                return new Promise(async (resolve, reject) => {
-                    let gitTemplateContents = {};
-                    let result = null;
-                    try{
-                        result = await axios.get(element.url + '?recursive=1', { headers: me.githubHeaders });
-                    }catch (e) {
-                        console.log(`Error] Set GitList: ${e}`)
-                        resolve();
-                    }
-
-                    if( result && result.data && result.data.tree.length > 0 ){
-                        let callCnt = 0;
-
-                        result.data.tree.forEach(async function (ele, idx) {
-                            if(isToppingSetting){
-                                try{
-                                    if (ele.type != 'tree') {
-                                        //var elePath = ele.path.replace(`${toppingName}/`, '')
-                                        var elePath = ele.path
-                                        me.$manifestsPerToppings[gitRepoUrl].push(elePath)
-
-                                        if(!me.gitToppingList[gitRepoUrl]){
-                                            me.gitToppingList[gitRepoUrl] = {}
-                                        }
-                                        if(!me.gitToppingList[gitRepoUrl][elePath]){
-                                            me.gitToppingList[gitRepoUrl][elePath] = {}
-                                        }
-                                        me.gitToppingList[gitRepoUrl][elePath].requestUrl = ele.url
-
-                                        var gitSha = await axios.get(ele.url, { headers: me.githubHeaders })
-                                        if(!gitTemplateContents[elePath]) gitTemplateContents[elePath] = null
-                                        gitTemplateContents[elePath] = Base64.decode(gitSha.data.content);
-                                    }
-                                }catch(e){
-                                    console.log(`Error] Set ToppingLists: ${e}`)
-                                }finally {
-                                    callCnt ++ ;
-                                    if(result.data.tree.length == callCnt) {
-                                        Object.keys(gitTemplateContents).forEach(function (fileName) {
-                                            if(!me.gitToppingList[gitRepoUrl][fileName]){
-                                                me.gitToppingList[gitRepoUrl][fileName] = {}
-                                            }
-                                            me.gitToppingList[gitRepoUrl][fileName].content = gitTemplateContents[fileName]
-                                        });
-                                        console.log(`>>> Generate Code] Topping(${gitRepoUrl}) DONE`)
-                                        resolve();
-                                    }
-
-                                    var gitSha = await axios.get(ele.url, { headers: me.githubHeaders });
-                                    if(!gitTemplateContents[ele.path]) gitTemplateContents[ele.path] = null
-                                    gitTemplateContents[ele.path] = Base64.decode(gitSha.data.content);
-                                    if(ele.path.includes("helper.js")){
-                                        me.loadHandleBarHelper(Base64.decode(gitSha.data.content));
-                                    }
-                                }
-                            }else{
-                                try{
-                                    if (ele.type != 'tree') {
-                                        if(gitRepoUrl){
-                                            me.$manifestsPerTemplate[gitRepoUrl].push('./' + ele.path)
-                                        }
-
-                                        if(!me.templateFrameWorkList[gitRepoUrl]){
-                                            me.templateFrameWorkList[gitRepoUrl] = {}
-                                        }
-                                        if(!me.templateFrameWorkList[gitRepoUrl][ele.path]){
-                                            me.templateFrameWorkList[gitRepoUrl][ele.path] = {}
-                                        }
-                                        me.templateFrameWorkList[gitRepoUrl][ele.path].requestUrl = ele.url
-
-                                        var gitSha = await axios.get(ele.url, { headers: me.githubHeaders });
-                                        if(!gitTemplateContents[ele.path]) gitTemplateContents[ele.path] = null
-                                        gitTemplateContents[ele.path] = Base64.decode(gitSha.data.content);
-                                    }
-                                } catch (e) {
-                                    console.log(`Error] Set GitLists: ${e}`)
-                                } finally {
-                                    callCnt ++;
-                                    if(result.data.tree.length == callCnt) {
-                                        me.$manifestsPerBaseTemplate[gitRepoUrl] = me.$manifestsPerTemplate[gitRepoUrl];
-                                        Object.keys(gitTemplateContents).forEach(function (fileName) {
-                                            if(!me.templateFrameWorkList[gitRepoUrl][fileName]){
-                                                me.templateFrameWorkList[gitRepoUrl][fileName] = {}
-                                            }
-                                            me.templateFrameWorkList[gitRepoUrl][fileName].content = gitTemplateContents[fileName]
-                                        });
-                                        console.log(`>>> Generate Code] Template(${gitRepoUrl}) DONE`);
-                                        resolve();
-                                    }
-                                }
-                            }
-                        });
-                    } else {
-                        resolve();
-                    }
-                });
-            },
+            //     // return을 두가지로 줘야함
+            //     // me.$manifest... => pathList 정의
+            //     // template Code List => { $path: $code}
+            //     return new Promise(async (resolve, reject) => {
+                    
+            //     });
+            // },
             async setToppingList(template) {
                 var me = this
-                
-                let fullUrl = null;
-                if(/^http[s]?\:\/\//i.test(template)){
-                    fullUrl = template;
-                } else {
-                    fullUrl = "https://github.com/msa-ez/topping-" + template;
-                }
-                let gitRepository = fullUrl.split('/')[fullUrl.split('/').length -2];
-                let gitProject = fullUrl.split('/')[fullUrl.split('/').length -1];
-                let toppingName = gitProject.replace('topping-','');
-
-
-                if( me.gitToppingList[fullUrl] && Object.keys(me.gitToppingList[fullUrl]).length > 0 ){
-                    return;
-                }
-
-                if((localStorage.getItem("loginType") && localStorage.getItem("loginType") == "github") || me.gitAccessToken){
-
-                    if( !(me.gitToppingList[fullUrl] && Object.keys(me.gitToppingList[fullUrl]).length > 0) ){
-                        me.$manifestsPerToppings[fullUrl] = [];
-
-                        let commitRes = null;
-                        let res = null;
-
-                        try{
-                            commitRes = await axios.get(`https://api.github.com/repos/` + gitRepository + '/' + gitProject + `/commits`, { headers: me.githubHeaders })
-                            .catch(function (error) {
-                                if(error.response.status === 401){
-                                    me.alertReLogin()
-                                }
-                                alert(error)
-                            })
-                            res = await axios.get(`https://api.github.com/repos/` + gitRepository + '/' + gitProject + `/git/trees/` + commitRes.data[0].sha, { headers: me.githubHeaders })
-                            .catch(function (error) {
-                                if(error.response.status === 401){
-                                    me.alertReLogin()
-                                }
-                                alert(error)
-                            })
-
-                            if(res && res.data){
-                                await me.setGitList(res.data, toppingName, fullUrl)
-                            }
-
-                        }catch (e) {
-                            console.log(`Error]  Commit Res : ${e}`)
-                        }finally {
-                            if(! (commitRes && res)){
-                                Promise.resolve();
-                            }
+                return new Promise(async function (resolve, reject) {
+                    try{
+                        // if( me.templateFrameWorkList[gitRepoUrl] && Object.keys(me.templateFrameWorkList[gitRepoUrl]).length > 0 ){
+                        // }
+                        let fullUrl = null;
+                        if(/^http[s]?\:\/\//i.test(template)){
+                            fullUrl = template;
+                        } else {
+                            fullUrl = await me.gitAPI.getToppingURL(template)
                         }
-                    }else{
-                        Promise.resolve();
+                        console.log(template, fullUrl)
+                        let org = fullUrl.split('/')[fullUrl.split('/').length -2];
+                        let repo = fullUrl.split('/')[fullUrl.split('/').length -1];
+                        let toppingName = repo.replace('topping-','');
+                        // Template은 Main Branch에서 받아오도록 처리
+                        if( me.gitToppingList[fullUrl] && Object.keys(me.gitToppingList[fullUrl]).length > 0 ){
+                            resolve();
+                        }
+                        // console.log(repo,)
+                        let commitRes = await me.gitAPI.getCommit(org, repo, "main")
+                        .then(async function (res) {
+                            // Commit List 받아오는 것.
+                            let tree = await me.gitAPI.getTree(org, repo, res)
+                            .then(async function (list) {
+                                console.log("try me.gitAPI.setGitList() - " + fullUrl)
+                                let gitList = await me.gitAPI.setGitList(list, toppingName, fullUrl)
+                                .then(function (resultLists) {
+                                    me.$manifestsPerToppings[fullUrl] = resultLists.manifestsPerToppings[fullUrl]
+                                    Object.assign(me.gitToppingList, resultLists.gitToppingList)
+                                    // me.gitToppingList = resultLists.gitToppingList
+                                    resolve()
+                                })
+                                .catch(e => {
+                                    console.log(e)
+                                })
+                            })
+                            .catch(e => {
+                                console.log(e)
+                                if(e.response.status === 401){
+                                    me.alertReLogin()
+                                }
+                                alert(e)
+                            })
+                        })
+                        .catch(error => {
+                            console.log(error)
+                            if(error.response.status === 401){
+                                me.alertReLogin()
+                            }
+                            alert(error)              
+                        })
+                    } catch (e) {
+                        console.log(`Error] Load Git Template: ${e}`)
+                        if(e.response.data.message.includes("Bad credentials")){
+                            me.githubTokenError = true
+                            me.gitMenu = true
+                            reject()
+                            return false
+                        }
                     }
-                } else {
-                    Promise.resolve();
-                }
+                })
             },
             changedTopping(topping) {
                 var me = this
@@ -5915,7 +5822,7 @@
                     var applyCodeStyle = options ? options.applyCodeStyle : true
                     // var lists = JSON.parse(JSON.stringify(me.filteredCodeLists))
                     var lists = me.filteredCodeLists
-
+                    // console.log(lists)
                     if(lists){
                         lists.forEach(codeObj => {
                             var currentFolder = treeLists; // start from top
@@ -6957,6 +6864,25 @@
                         me.openCode = newVal
                         if(me.openCode[0].children){
                             me.showGpt = true;
+                            me.openAiMessageList = []
+                            if(me.rootModelAndElementMap.modelForElements.BoundedContext.find(x => x.name == me.openCode[0].name)){
+                                if(me.openAiMessageList.length == 0){
+                                    let prompt
+                                    me.testFile = []
+                                    let collectedCodes = me.getSelectedFilesDeeply(me.openCode, {keyword: "si"})
+                                    
+                                    if(Array.isArray(collectedCodes) && collectedCodes.length > 0){
+                                        prompt = collectedCodes.join("\n\n");
+                                    }
+
+                                    me.openAiMessageList.push({
+                                        role: 'user',
+                                        content: 'Here is the code list: \n' + prompt
+                                    })
+                                }
+                                me.openGitActionDialog = true
+                                me.gitActionDialogRenderKey++;
+                            }
                         }else{
                             me.showGpt = false;
                         }
@@ -7246,12 +7172,16 @@
                     //////////////////////////////////////////////// TEMPLATE START ////////////////////////////////////////////////
                     // setting Template
                     if(basePlatforms == "Custom Template"){
-                        basePlatforms = "spring-boot"
+                        basePlatforms = "template-spring-boot"
                     }
                     // setting of Base Template
                     if((localStorage.getItem("loginType") && localStorage.getItem("loginType") == "github") || me.gitAccessToken){
+                        // 1. 여기 타는 template?
                         if(!basePlatforms.includes("http")){
-                            basePlatforms = "https://github.com/msa-ez/template-" + basePlatforms
+                            if(!basePlatforms.includes("template-"))
+                                basePlatforms = "template-" + basePlatforms
+                            basePlatforms = await me.gitAPI.getTemplateURL(basePlatforms)
+                            // basePlatforms = "https://github.com/msa-ez/" + basePlatforms
                         }
                         await me.gitTemplate('BASE', basePlatforms)
                     } else if((basePlatforms.includes("http") && !basePlatforms.includes("https://github.com/msa-ez/template-"))){
@@ -7274,9 +7204,12 @@
                             if(preferredPlatform == "Custom Template"){
                                 preferredPlatform = "spring-boot"
                             }
-                            if((localStorage.getItem("loginType") && localStorage.getItem("loginType") == "github") || me.gitAccessToken){
+                            if((localStorage.getItem("loginType") && localStorage.getItem("loginType") == "github") || me.gitAccessToken) {
                                 if(!preferredPlatform.includes("http")){
-                                    preferredPlatform = "https://github.com/msa-ez/template-" + preferredPlatform
+                                    if(!preferredPlatform.includes("template-"))
+                                        preferredPlatform = "template-" + preferredPlatform
+                                    preferredPlatform = await me.gitAPI.getTemplateURL(preferredPlatform)
+                                    // basePlatforms = "https://github.com/msa-ez/" + basePlatforms
                                 }
                                 await me.gitTemplate('TEMPLATE', preferredPlatform)
                             } else if((preferredPlatform.includes("http") && !preferredPlatform.includes("https://github.com/msa-ez/template-"))){
@@ -7488,12 +7421,13 @@
             },
             generateBaseTemplate(templateContext){
                 var me = this;
-                return new Promise(function (resolve, reject) {
+                return new Promise(async function (resolve, reject) {
                     try{
                         if( me.canvasName == 'event-storming-model-canvas' && templateContext.modelForElements.BoundedContext.length == 1){
                             resolve()
                             return;
                         }
+                        console.log("111111111")
                         var modelForElements = templateContext.modelForElements
                         var filteredProjectName = templateContext.filteredProjectName
                         var rootModel = templateContext.rootModel
@@ -7506,7 +7440,8 @@
                         if(me.reGenerateOnlyModifiedTemplate && me.editTemplateFrameWorkList && me.editTemplateFrameWorkList[basePlatform]){
                             manifestTemplate = Object.keys(me.editTemplateFrameWorkList[basePlatform])
                         } else {
-                            manifestTemplate = me.$manifestsPerBaseTemplate[basePlatform] ? me.$manifestsPerBaseTemplate[basePlatform] : (me.$manifestsPerBaseTemplate[basePlatform.replaceAll("https://github.com/msa-ez/template-", "")] ? me.$manifestsPerBaseTemplate[basePlatform.replaceAll("https://github.com/msa-ez/template-", "")]:[]);
+                            let getTemplateURL = await me.gitAPI.getTemplateURL(basePlatform)
+                            manifestTemplate = me.$manifestsPerBaseTemplate[basePlatform] ? me.$manifestsPerBaseTemplate[basePlatform] : (me.$manifestsPerBaseTemplate[getTemplateURL] ? me.$manifestsPerBaseTemplate[getTemplateURL]:[]);
                             manifestTemplate = JSON.parse(JSON.stringify(manifestTemplate))
                         }
                         var manifestTemplateLastIndex = manifestTemplate.length - 1
@@ -7519,7 +7454,7 @@
                             var xHttpSendCnt = -1
                             var xHttpDoneCnt = -1
 
-                            manifestTemplate.forEach(function (element, index) {
+                            manifestTemplate.forEach(async function (element, index) {
                                 element = element.replace('./', '')
 
                                 var processContext ={
@@ -7562,19 +7497,20 @@
                                     resolve()
                                 }
 
-                                if((localStorage.getItem("loginType") && localStorage.getItem("loginType") == "github") || me.gitAccessToken){
+                                if((localStorage.getItem("loginType") && localStorage.getItem("loginType") == "github") || me.gitAccessToken) {
                                     // var loadTemplate = localStorage.getItem(me.selectedBaseTemplate)
                                     // var loadTemplate = me.templateFrameWorkList[basePlatform]
+                                    
                                     var platformFullName = basePlatform
                                     if(!platformFullName.includes("http")){
-                                        platformFullName = "https://github.com/msa-ez/template-" + platformFullName
+                                        platformFullName = await me.gitAPI.getTemplateURL(basePlatform)
                                     }
                                     var loadTemplate = me.templateFrameWorkList[platformFullName];
                                     if( loadTemplate ){
                                         let content = null;
                                         if(loadTemplate[element] && loadTemplate[element].content){
-                                           content = loadTemplate[element].content;
-                                           content = JSON.parse(JSON.stringify(content));
+                                            content = loadTemplate[element].content;
+                                            content = JSON.parse(JSON.stringify(content));
                                         }
                                         if(content){
                                             me.onLoadTemplateContent(content, processContext)
@@ -7623,6 +7559,7 @@
                             resolve()
                             return;
                         }
+                        console.log("2222222222")
                         var modelForElements = templateContext.modelForElements
                         var preferredPlatforms = templateContext.preferredPlatforms
                         var basePlatform = templateContext.basePlatform
@@ -7637,7 +7574,7 @@
 
                             var template = JSON.parse(JSON.stringify(preferredPlatform));
                             if(template && !template.includes("http") && me.gitAccessToken){
-                                template = `https://github.com/msa-ez/template-${template}`
+                                template = await me.gitAPI.getTemplateURL(template)
                             }
 
 
@@ -7647,7 +7584,8 @@
                                 manifestTemplate = Object.keys(me.editTemplateFrameWorkList[template])
                             } else {
                                 // 아래 데이터는 npm 빌드때 파일시스템 tree 탐색을 통해 자동으로 생성하거나 일일이 작업해줘야 한다.
-                                manifestTemplate = me.$manifestsPerTemplate[template] ? me.$manifestsPerTemplate[template] : (me.$manifestsPerTemplate[template.replace("https://github.com/msa-ez/template-", "")] ? me.$manifestsPerTemplate[template.replace("https://github.com/msa-ez/template-", "")]:[]);
+                                let getTemplateURL = await me.gitAPI.getTemplateURL(basePlatform)
+                                manifestTemplate = me.$manifestsPerBaseTemplate[basePlatform] ? me.$manifestsPerBaseTemplate[basePlatform] : (me.$manifestsPerBaseTemplate[getTemplateURL] ? me.$manifestsPerBaseTemplate[getTemplateURL]:[]);
                                 manifestTemplate = JSON.parse(JSON.stringify(manifestTemplate))
                                 manifestTemplate =  manifestTemplate.filter(path => !path.includes('for-model/'))
 
@@ -7661,7 +7599,7 @@
                                 }
                             }else{
                                 // 템플릿별 파일목록들
-                                manifestTemplate.forEach(function (element, index) {
+                                manifestTemplate.forEach(async function (element, index) {
                                     element = element.replace('./', '')
 
                                     var processContext ={
@@ -7704,7 +7642,7 @@
                                         // var loadTemplate = localStorage.getItem(template)
                                         var platformFullName = template
                                         if(!platformFullName.includes("http")){
-                                            platformFullName = "https://github.com/msa-ez/template-" + platformFullName
+                                            platformFullName = await me.gitAPI.getTemplateURL(basePlatform)
                                         }
                                         var loadTemplate = me.templateFrameWorkList[platformFullName];
                                         if(loadTemplate){
@@ -7758,7 +7696,7 @@
                         //     resolve()
                         //     return;
                         // }
-
+                        console.log("3333333")
                         var modelForElements = templateContext.modelForElements
                         var toppingPlatforms = templateContext.toppingPlatforms
                         var basePlatform = templateContext.basePlatform
@@ -7772,10 +7710,11 @@
                         var xHttpDoneCnt = -1
 
                         if (toppingPlatforms && toppingPlatforms.length > 0) {
-                            toppingPlatforms.forEach(function (preferredPlatform, index) {
+                            toppingPlatforms.forEach(async function (preferredPlatform, index) {
                                 var template = JSON.parse(JSON.stringify(preferredPlatform));
                                 if(template && !template.includes("http")){
-                                    template = `https://github.com/msa-ez/topping-${template}`
+                                    let getTemplateURL = await me.gitAPI.getToppingURL(template)
+                                    template = getTemplateURL
                                 }
 
                                 var manifestTemplate
@@ -7794,7 +7733,7 @@
                                         resolve()
                                     }
                                 }else{
-                                    manifestTemplate.forEach(function (element, index) {
+                                    manifestTemplate.forEach(async function (element, index) {
                                         element = element.replace('./', '')
 
                                         var processContext ={
@@ -7837,7 +7776,7 @@
                                             // var loadTemplate = localStorage.getItem(template)
                                             var platformFullName = template
                                             if(!platformFullName.includes("http")){
-                                                platformFullName = "https://github.com/msa-ez/topping-" + platformFullName
+                                                platformFullName = await me.gitAPI.getToppingURL(template)
                                             }
                                             var loadTemplate = me.gitToppingList[platformFullName]
                                             if(loadTemplate){

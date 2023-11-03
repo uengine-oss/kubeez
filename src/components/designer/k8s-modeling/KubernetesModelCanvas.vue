@@ -1,78 +1,76 @@
 <template xmlns:v-on="http://www.w3.org/1999/xhtml">
-    <div class="page" :class="{ 'embedded' : embedded }">
+    <div class="canvas-panel" :class="{ 'embedded' : embedded }">
         <separate-panel-components
-                :min="mainSeparatePanel.min"
-                :max="mainSeparatePanel.max"
-                :triggerLength="5"
-                :paneLengthPercent.sync="mainSeparatePanel.current"
-                @close="closeSeparatePanel()"
-                :inBoundSeparatePanel="false"
+            :min="mainSeparatePanel.min"
+            :max="mainSeparatePanel.max"
+            :triggerLength="5"
+            :paneLengthPercent.sync="mainSeparatePanel.current"
+            @close="closeSeparatePanel()"
+            :inBoundSeparatePanel="false"
         >
             <template v-slot:one>
                 <div style="width: 100%; height: 100%;">
-                    <div class="canvas-panel">
-                        <v-layout right>
-                            <opengraph ref="opengraph" 
-                                    focus-canvas-on-select 
-                                    wheelScalable 
-                                    :labelEditable="true"
-                                    :dragPageMovable="dragPageMovable"
-                                    :enableContextmenu="false"
+                    <v-overlay v-if="showOverlay">
+                        <v-col align="center">
+                            <div>{{ showOverlay }}</div>
+                            <v-progress-circular indeterminate size="64">
+                                <v-btn text @click="closeOverlay()"></v-btn>
+                            </v-progress-circular>
+                        </v-col>
+                    </v-overlay>
+                    <v-layout right>
+
+                        <opengraph ref="opengraph"
+                                    :width=100000 :height=100000
+                                    :sliderLocationScale=sliderLocationScale
+                                    focus-canvas-on-select wheelScalable :labelEditable="true"
+                                    :dragPageMovable="dragPageMovable" :enableContextmenu="false"
+                                    :automaticGuidance="automaticGuidance"
                                     :enableRootContextmenu="false"
-                                    :enableHotkeyCtrlC="false"
-                                    :enableHotkeyCtrlV="false"
-                                    :enableHotkeyDelete="false"
-                                    :enableHotkeyCtrlZ="false"
-                                    :enableHotkeyCtrlD="false"
-                                    :enableHotkeyCtrlG="false"
-                                    :slider="true"
-                                    :movable="!readOnly"
-                                    :resizable="true"
+                                    :enableHotkeyCtrlC="false" :enableHotkeyCtrlV="false"
+                                    :enableHotkeyDelete="false" :enableHotkeyCtrlZ="false" :enableHotkeyCtrlD="false"
+                                    :enableHotkeyCtrlG="false" :slider="true"
+                                    :movable="!isReadOnlyModel"
+                                    :resizable="!isReadOnlyModel"
                                     :selectable="true"
-                                    :connectable="!readOnly"
+                                    :connectable="!isReadOnlyModel"
+                                    v-if="value"
                                     :autoSliderUpdate="true"
                                     :imageBase="imageBase"
-                                    v-if="value" 
-                                    v-on:canvasReady="bindEvents"
+                                    v-on:update:sliderLocationScale="sliderLocationScale = $event"
                                     v-on:connectShape="onConnectShape"
-                            >
-                                <!-- elements -->
-                                <div v-if="value.elements && typeof value.elements == 'object'">
-                                    <div v-for="elementId in Object.keys(value.elements)" :key="elementId">
-                                        <component
-                                                v-if="elementId && value.elements[elementId]"
-                                                :is="getComponentByClassName(value.elements[elementId]._type)"
-                                                :value.sync="value.elements[elementId]"
-                                                :ref="elementId"
-                                        ></component>
-                                    </div>
-                                </div>
+                                    v-on:canvasReady="bindEvents"
+                        >
 
-                                <!-- relations -->
-                                <div v-if="value.relations && typeof value.relations == 'object'">
-                                    <div v-for="relationId in Object.keys(value.relations)" :key="relationId">
-                                        <component
-                                                v-if="relationId && value.relations[relationId]"
-                                                :is="getComponentByClassName(value.relations[relationId]._type)"
-                                                :value.sync="value.relations[relationId]"
-                                                :ref="relationId"
-                                        ></component>
-                                    </div>
-                                </div>
-                            </opengraph>
+                            <!--엘리먼트-->
+                            <div v-if="getValue && getValue.elements &&  typeof getValue.elements == 'object'"
+                                v-for="elementId in Object.keys(getValue.elements)">
+                                <component
+                                        v-if="elementId && getValue.elements[elementId]"
+                                        :is="getComponentByClassName(getValue.elements[elementId]._type)"
+                                        :value.sync="getValue.elements[elementId]"
+                                        :ref="elementId"
+                                ></component>
+                            </div>
 
-                            <div>
-                                <v-row class="gs-modeling-undo-redo k8s-modeling-undo-redo">
+                            <div v-if="getValue && getValue.relations && typeof getValue.relations == 'object'"
+                                v-for="relationId in Object.keys(getValue.relations)">
+                                <component
+                                        v-if="relationId && getValue.relations[relationId]"
+                                        :is="getComponentByClassName(getValue.relations[relationId]._type)"
+                                        :value.sync="getValue.relations[relationId]"
+                                        :ref="relationId"
+                                ></component>
+                            </div>
+                        </opengraph>
+
+                        <v-layout v-if="!embedded">
+                            <v-flex>
+                                <v-row class="gs-modeling-undo-redo">
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
-                                            <v-btn class="gs-model-z-index-2 gs-undo-opacity-hover" 
-                                                    :disabled="checkUndo"
-                                                    text
-                                                    small
-                                                    right
-                                                    @click.native="undo()"
-                                                    v-on="on"
-                                            >
+                                            <v-btn class="gs-model-z-index-2 gs-undo-opacity-hover" :disabled="checkUndo" text small right @click.native="undo()"
+                                                v-on="on">
                                                 <v-icon medium>mdi-undo</v-icon>
                                             </v-btn>
                                         </template>
@@ -80,534 +78,639 @@
                                     </v-tooltip>
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on }">
-                                            <v-btn class="gs-model-z-index-2 gs-redo-opacity-hover" 
-                                                    :disabled="checkRedo"
-                                                    text
-                                                    small
-                                                    right
-                                                    @click.native="redo()"
-                                                    v-on="on"
-                                            >
+                                            <v-btn class="gs-model-z-index-2 gs-redo-opacity-hover" :disabled="checkRedo" text small right @click.native="redo()"
+                                                v-on="on">
                                                 <v-icon medium>mdi-redo</v-icon>
                                             </v-btn>
                                         </template>
                                         <span>Redo</span>
                                     </v-tooltip>
                                 </v-row>
-                            </div>
+                            </v-flex>
+                        </v-layout>
+                        
+                        <v-flex v-if="embedded" style="justify:end; align:start;">
+                            <v-row justify="end" align="start">
+                                <v-btn
+                                    style="position: absolute; top:26px; right: 60px;"
+                                    color="orange"
+                                    @click="openCommandViewer()"
+                                    v-on="on"
+                                    small
+                                    text
+                                >
+                                    <v-icon>mdi-code-greater-than</v-icon>
+                                    <div>KUBECTL</div>
+                                </v-btn>
+                            </v-row>
+                        </v-flex>
 
-                            <div v-if="embedded" style="justify:end; align:start;">
-                                <v-row justify="end" align="start">
-                                    <v-btn
-                                        style="position: absolute; top:26px; right: 60px;"
-                                        color="orange"
-                                        @click="openCommandViewer()"
-                                        v-on="on"
-                                        small
-                                        text
+                        <v-flex v-if="!embedded" style="min-width:100%;">
+                            <v-row justify="center" align="center" >
+                                <v-text-field class="k8s-is-mobile-project-name"
+                                        style="margin-right: 5px; margin-top: 40px; max-width: 140px; z-index: 1;"
+                                        label="Project Name"
+                                        v-model="projectName"
+                                        :disabled="readOnly"
+                                        dense
+                                ></v-text-field>
+                                <!-- 웹페이지 버튼들 -->
+                                <div class="gs-model-z-index-1 k8s-is-not-mobile">
+                                    <v-menu
+                                            offset-y
+                                            open-on-hover
+                                            left
+                                            v-if="!parents"
                                     >
-                                        <v-icon>mdi-code-greater-than</v-icon>
-                                        <div>KUBECTL</div>
-                                    </v-btn>
-                                </v-row>
-                            </div>
-
-                            <div v-if="!embedded" style="margin: 0 auto">
-                                <slot name="top">
-                                    <v-row>
-                                        <v-row class="gs-model-z-index-1 k8s-is-mobile-project-name"
-                                                style="margin: 5px 5px 0px 0px;
-                                                    height: 64px;
-                                                    max-width: 200px;
-                                                    background-color: transparent;"
-                                        >
-                                            <v-text-field class="k8s-modeling-project-name"
-                                                    label="Project Name"
-                                                    v-model="projectName"
-                                                    :disabled="readOnly"
-                                                    dense
-                                            ></v-text-field>
-                                        </v-row>
-
-                                        <!-- 웹페이지 버튼들 -->
-                                        <div class="gs-model-z-index-1 k8s-is-not-mobile"
-                                                style="margin: 40px 0px 0px 15px;"
-                                        >
-                                            <v-row justify="end"
-                                                    align="start"
-                                                    style="margin-right: 15px"
+                                        <template v-slot:activator="{ attrs, on }">
+                                            <v-btn text
+                                                    style="margin-right: 5px; margin-top: 15px;"
+                                                    color="primary"
+                                                    class="white--text k8s-hide-cluster-btn"
+                                                    v-bind="attrs"
+                                                    v-on="on"
                                             >
-                                                <v-menu 
-                                                        class="pa-2"
-                                                        offset-y
-                                                        open-on-hover
-                                                        left
-                                                >
-                                                    <template v-slot:activator="{ attrs, on }">
-                                                        <v-btn text
-                                                                style="margin-right: 5px; margin-top: 15px;"
-                                                                color="primary"
-                                                                class="white--text k8s-hide-cluster-btn"
-                                                                v-bind="attrs"
-                                                                v-on="on"
-                                                        >
-                                                            <div v-if="loadTerminal">
-                                                                <v-progress-circular
-                                                                        indeterminate
-                                                                        color="primary"
-                                                                ></v-progress-circular>
-                                                            </div>
-                                                            <v-icon>mdi-server-network</v-icon>
-                                                            <div class="k8s-hide-cluster" v-if="!loadTerminal">
-                                                                {{ clusterInfo.name ? clusterInfo.name : "Cluster" }}
-                                                            </div>
-                                                        </v-btn>
-                                                    </template>
-
-                                                    <v-list>
-                                                        <v-list-item v-for="(item, index) in clusterItems"
-                                                                    :key="index"
-                                                                    @click="functionCluster(item.title,index)"
-                                                        >
-                                                            <v-list-item-title>{{ item.title }}</v-list-item-title>
-                                                        </v-list-item>
-                                                    </v-list>
-                                                </v-menu>
-                                                
-                                                <v-menu offset-y
-                                                        open-on-hover
-                                                        left
-                                                >
-                                                    <template v-slot:activator="{ attrs, on }">
-                                                        <v-btn text
-                                                                style="margin-right: 5px; margin-top: 15px;"
-                                                                color="primary"
-                                                                class="white--text k8s-hide-reverse-btn"
-                                                                v-bind="attrs"
-                                                                v-on="on"
-                                                        >
-                                                            <v-icon>mdi-cached</v-icon>
-                                                            <div class="k8s-hide-reverse">Reverse</div>
-                                                        </v-btn>
-                                                    </template>
-                                                    <v-list>
-                                                        <v-list-item v-for="(item, index) in reverseItems"
-                                                                    :key="index"
-                                                                    @click="functionReverse(item.title,index)"
-                                                        >
-                                                            <v-list-item-title>{{ item.title }}</v-list-item-title>
-                                                        </v-list-item>
-                                                    </v-list>
-                                                </v-menu>
-
-                                                <v-menu offset-y
-                                                        open-on-hover
-                                                        left
-                                                >
-                                                    <template v-slot:activator="{ on }">
-                                                        <v-btn class="k8s-hide-gitops-btn"
-                                                                text
-                                                                style="margin-right: 5px;margin-top: 15px;"
-                                                                color="orange"
-                                                                dark
-                                                                @click="getArgoSetting"
-                                                                v-on="on"
-                                                        >
-                                                            <Icon class="gs-icon-style"
-                                                                    icon="icomoon-free:git"
-                                                                    style="margin-right: 2px; height: 22px; width: 22px"
-                                                            />
-                                                            <div class="k8s-hide-gitops">GITOPS</div>
-                                                        </v-btn>
-                                                    </template>
-                                                    <v-list>
-                                                        <v-list-item v-for="(item, index) in gitOpsItems"
-                                                                :key="index"
-                                                                @click="functionSelect(item.title)"
-                                                        >
-                                                            <v-list-item-title>{{ item.title }}</v-list-item-title>
-                                                            <v-icon v-if="item.check" 
-                                                                    color="green"
-                                                                    style="margin-left: 5px;"
-                                                            >
-                                                                mdi-check-decagram
-                                                            </v-icon>
-                                                        </v-list-item>
-                                                    </v-list>
-                                                </v-menu>
-
-                                                <v-menu offset-y
-                                                        open-on-hover
-                                                        left
-                                                >
-                                                    <template v-slot:activator="{ on }">
-                                                        <v-btn class="k8s-hide-save-btn"
-                                                                text
-                                                                style="margin-right: 5px; margin-top: 15px;"
-                                                                color="primary"
-                                                                dark
-                                                                @click="saveComposition('save')"
-                                                                v-on="on"
-                                                        >
-                                                            <v-icon>{{ icon.save }}</v-icon>
-                                                            <div class="k8s-hide-save">SAVE</div>
-                                                        </v-btn>
-                                                    </template>
-                                                    <v-list>
-                                                        <v-list-item v-for="(item, index) in saveItems"
-                                                                :key="index"
-                                                                @click="functionSelect(item.title,index)"
-                                                        >
-                                                            <v-list-item-title>{{ item.title }}</v-list-item-title>
-                                                        </v-list-item>
-                                                    </v-list>
-                                                </v-menu>
-                                                
-                                                <v-menu offset-y
-                                                        open-on-hover
-                                                        left
-                                                >
-                                                    <template v-slot:activator="{ on }">
-                                                        <v-btn class="k8s-hide-code-btn"
-                                                                text
-                                                                style="margin-right: 5px;margin-top: 15px;"
-                                                                color="orange" dark
-                                                                @click="openCodeViewer()"
-                                                                v-on="on"
-                                                        >
-                                                            <v-icon> {{ icon.code }}</v-icon>
-                                                            <div class="k8s-hide-code">CODE</div>
-                                                        </v-btn>
-                                                    </template>
-                                                    <v-list>
-                                                        <v-list-item v-for="(item, index) in codeItems"
-                                                                :key="index"
-                                                                @click="functionSelect(item.title)"
-                                                        >
-                                                            <v-list-item-title>{{ item.title }}</v-list-item-title>
-                                                        </v-list-item>
-                                                    </v-list>
-                                                </v-menu>
-                                            </v-row>
-                                        </div>
-                                        <!-- 웹페이지 버튼들 끝 -->
-                                    </v-row>
-                                </slot>
-
-                                <div class="k8s-is-mobile">
-                                    <v-speed-dial
-                                            v-model="fab"
-                                            style="position:fixed; bottom:50px; right:50px;"
-                                    >
-                                        <template v-slot:activator>
-                                            <v-btn v-model="fab"
-                                                    color="blue darken-2"
-                                                    dark
-                                                    fab
-                                                    small
-                                            >
-                                                <v-icon v-if="fab">
-                                                    mdi-playlist-remove
-                                                </v-icon>
-                                                <v-icon v-else>
-                                                    mdi-playlist-check
-                                                </v-icon>
+                                                <div v-if="loadTerminal">
+                                                    <v-progress-circular
+                                                            indeterminate
+                                                            color="primary"
+                                                    ></v-progress-circular>
+                                                </div>
+                                                <v-icon>mdi-server-network</v-icon>
+                                                <div class="k8s-hide-cluster" v-if="!loadTerminal">{{ clusterInfo.name ? clusterInfo.name : "Cluster" }}</div>
                                             </v-btn>
                                         </template>
-                                        <v-row class="k8s-mobile-action-btn">
-                                            <v-menu v-if="!parents"
-                                                    style="margin: 0px !important;"
-                                                    offset-y
-                                            >
-                                                <template v-slot:activator="{ attrs, on }">
-                                                    <v-btn small
-                                                            color="primary"
-                                                            class="white--text"
-                                                            v-bind="attrs"
-                                                            v-on="on"
-                                                            text
-                                                    >
-                                                        <div v-if="loadTerminal">
-                                                            <v-progress-circular
-                                                                    indeterminate
-                                                                    color="primary"
-                                                            ></v-progress-circular>
-                                                        </div>
-                                                        <v-icon>mdi-server-network</v-icon>
-                                                        <div v-if="!loadTerminal">
-                                                            {{ clusterInfo.name ? clusterInfo.name : "Cluster" }}
-                                                        </div>
-                                                    </v-btn>
-                                                </template>
 
-                                                <v-list>
-                                                    <v-list-item>
-                                                        <v-list-item-title @click="openTerminal">
-                                                            Terminal
-                                                        </v-list-item-title>
-                                                    </v-list-item>
-                                                    <v-list-item>
-                                                        <v-list-item-title @click="deployDialog=true">
-                                                            Sync
-                                                        </v-list-item-title>
-                                                    </v-list-item>
-                                                    <v-list-item>
-                                                        <v-list-item-title @click="clusterDialog=true">
-                                                            Cluster
-                                                        </v-list-item-title>
-                                                    </v-list-item>
-                                                </v-list>
-                                            </v-menu>
+                                        <v-list>
+                                            <v-list-item v-for="(item, index) in clusterItems"
+                                                        :key="index"
+                                                        @click="functionCluster(item.title,index)"
+                                            >
+                                                <v-list-item-title>{{ item.title }}</v-list-item-title>
+                                            </v-list-item>
+                                        </v-list>
+                                    </v-menu>
+                                    <!--                        <v-btn-->
+                                    <!--                                style="margin-right: 5px; margin-top: 15px;"-->
+                                    <!--                                color="cyan" dark-->
+                                    <!--                                @click="clusterDialog = true">-->
+                                    <!--                            <v-icon>settings</v-icon>-->
+                                    <!--                            {{ clusterInfo ? clusterInfo.name : '' }}-->
+                                    <!--                        </v-btn>-->
 
-                                            <v-menu v-if="!parents"
-                                                    style="margin: 0px !important;"
-                                                    open-on-hover offset-y
-                                            >
-                                                <template v-slot:activator="{ attrs, on }">
-                                                    <v-btn
-                                                            style="margin-right: 5px; margin-top: 15px;"
-                                                            color="primary"
-                                                            class="white--text"
-                                                            v-bind="attrs"
-                                                            v-on="on"
-                                                            small
-                                                            text
-                                                    >
-                                                        <v-icon>mdi-cached</v-icon>
-                                                        <div>Reverse</div>
-                                                    </v-btn>
-                                                </template>
-                                                <v-list>
-                                                    <v-list-item>
-                                                        <v-list-item-title @click="drawFromCluster()">
-                                                            From Cluster
-                                                        </v-list-item-title>
-                                                    </v-list-item>
-                                                    <v-list-item>
-                                                        <v-list-item-title @click="yamlModalShow()">
-                                                            From Local
-                                                        </v-list-item-title>
-                                                    </v-list-item>
-                                                </v-list>
-                                            </v-menu>
+                                    <!--<<<<<<< HEAD-->
+                                    <!--                    <v-btn-->
+                                    <!--                            style="margin-right: 5px; margin-top: 15px;"-->
+                                    <!--                            color="pink" dark-->
+                                    <!--                            @click="terminal()">-->
+                                    <!--                        <v-icon>{{ icon.shell }}</v-icon>-->
+                                    <!--                        TERMINAL-->
+                                    <!--                    </v-btn>-->
 
-                                            <v-menu style="margin: 0px !important;"
-                                                    open-on-hover offset-y
-                                            >
-                                                <template v-slot:activator="{ on }">
-                                                    <v-btn
-                                                            style="margin-right: 5px;margin-top: 15px;"
-                                                            color="orange"
-                                                            @click="openCodeViewer()"
-                                                            v-on="on"
-                                                            small
-                                                            text>
-                                                        <v-icon> {{ icon.code }}</v-icon>
-                                                        CODE
-                                                    </v-btn>
-                                                </template>
-                                                <v-list v-if="!parents">
-                                                    <v-list-item v-for="(item, index) in codeItems"
-                                                            :key="index"
-                                                            @click="functionSelect(item.title)"
-                                                    >
-                                                        <v-list-item-title>{{ item.title }}</v-list-item-title>
-                                                    </v-list-item>
-                                                </v-list>
-                                            </v-menu>
-                                            <v-menu v-if="!parents"
-                                                    style="margin: 0px !important;"
-                                                    open-on-hover offset-y
-                                            >
-                                                <template v-slot:activator="{ on }">
-                                                    <v-btn v-on="on"
-                                                            style="margin-right: 5px;margin-top: 15px;"
-                                                            color="orange"
-                                                            @click="openCodeViewer()"
-                                                            small
-                                                            text
-                                                    >
-                                                        <div v-if="gitOpsLoading">
-                                                            <v-progress-circular
-                                                                    indeterminate
-                                                                    color="primary"
-                                                            ></v-progress-circular>
-                                                        </div>
-                                                        <div v-else>
-                                                            <Icon class="gs-icon-style"
-                                                                    icon="icomoon-free:git"
-                                                                    style="height: 22px; width: 22px; vertical-align: middle;"
-                                                            />
-                                                            GITOPS
-                                                        </div>
-                                                    </v-btn>
-                                                </template>
-                                                <v-list>
-                                                    <v-list-item v-for="(item, index) in codeItems"
-                                                            :key="index"
-                                                            @click="functionSelect(item.title)"
-                                                    >
-                                                        <v-list-item-title>{{ item.title }}</v-list-item-title>
-                                                    </v-list-item>
-                                                </v-list>
-                                            </v-menu>
-                                            <v-menu v-if="!parents"
-                                                    style="margin: 0px !important;"
-                                                    open-on-hover offset-y
-                                            >
-                                                <template v-slot:activator="{ on }">
-                                                    <v-btn v-if="readOnly"
-                                                            style="margin-right: 5px; margin-top: 15px;"
-                                                            color="primary"
-                                                            @click="saveComposition('fork')"
-                                                            small
-                                                            text
-                                                    >
-                                                        <v-icon>{{ icon.fork }}</v-icon>
-                                                        FORK
-                                                    </v-btn>
-                                                    <v-btn v-else
-                                                            style="margin-right: 5px; margin-top: 15px;"
-                                                            color="primary"
-                                                            @click="saveComposition('save')"
-                                                            v-on="on"
-                                                            small
-                                                            text
-                                                    >
-                                                        <v-icon>{{ icon.save }}</v-icon>
-                                                        SAVE
-                                                    </v-btn>
-                                                </template>
-                                                <v-list>
-                                                    <v-list-item v-for="(item, index) in saveItems"
-                                                            :key="index"
-                                                            @click="functionSelect(item.title,index)"
-                                                    >
-                                                        <v-list-item-title>{{ item.title }}</v-list-item-title>
-                                                    </v-list-item>
-                                                </v-list>
-                                            </v-menu>
-                                            <v-menu v-if="isMineProject && isServerModeling && !readOnly "
-                                                    class="pa-2"
-                                                    offset-y
-                                                    open-on-hover
-                                                    left
-                                            >
-                                                <template v-slot:activator="{ on }">
-                                                    <v-btn
-                                                            text
-                                                            style="margin-right: 5px; margin-top: 15px;"
-                                                            color="primary"
-                                                            v-on="on"
-                                                            @click="openInviteUsers()"
-                                                    >
-                                                        <v-icon>{{ icon.share }}</v-icon>
-                                                        SHARE
-                                                    </v-btn>
-                                                </template>
-                                            </v-menu>
-                                        </v-row>
-                                    </v-speed-dial>
-                                </div>
-                            </div>
+                                    <!--                    <v-btn-->
+                                    <!--                            style="margin-right: 5px; margin-top: 15px;"-->
+                                    <!--                            color="primary" dark-->
+                                    <!--                            @click="deployDialog = true">-->
+                                    <!--                        <v-icon>{{ icon.version }}</v-icon>-->
+                                    <!--                        Deploy-->
+                                    <!--                    </v-btn>-->
+                                    <!--=======-->
+                                    <!--                    <v-btn-->
+                                    <!--                            style="margin-right: 5px; margin-top: 15px;"-->
+                                    <!--                            color="pink" dark-->
+                                    <!--                            @click="terminal()">-->
+                                    <!--                        <v-icon>{{ icon.shell }}</v-icon>-->
+                                    <!--                        TERMINAL-->
+                                    <!--                    </v-btn>-->
 
-                            <v-card class="tools" style="top:100px; text-align: center;">
-                                <v-tooltip v-for="(category, categoryIndex) in elementTypes"
-                                        :key="categoryIndex"
-                                        right 
-                                >
-                                    <template v-slot:activator="{ on }">
-                                        <span @mouseover="changeCategory(categoryIndex)"
-                                                :_component="category[0].component"
-                                                :_width="category[0].width"
-                                                :_height="category[0].height"
-                                                :_description="category[0].description"
-                                                :_label="category[0].label"
-                                        >
-                                            <img height="30px" width="30px" :src="category[0].src" v-on="on">
-                                        </span>
-                                    </template>
-                                    <span>{{ category[0].component }}</span>
-                                </v-tooltip>
-                            </v-card>
+                                    <!--                    <v-btn-->
+                                    <!--                            style="margin-right: 5px; margin-top: 15px;"-->
+                                    <!--                            color="primary" dark-->
+                                    <!--                            @click="deployDialog = true">-->
+                                    <!--                        <v-icon>{{ icon.version }}</v-icon>-->
+                                    <!--                        Deploy-->
+                                    <!--                    </v-btn>-->
+                                    <!--                    <v-btn-->
+                                    <!--                            style="margin-right: 5px; margin-top: 15px;"-->
+                                    <!--                            color="pink" dark-->
+                                    <!--                            @click="terminal()">-->
+                                    <!--                        <v-icon>{{ icon.shell }}</v-icon>-->
+                                    <!--                        TERMINAL-->
+                                    <!--                    </v-btn>-->
 
-                            <div v-for="(category, categoryIndex) in elementTypes" :key="categoryIndex">
-                                <div v-if="selectedCategoryIndex == categoryIndex">
-                                    <v-tooltip right v-for="(item, key) in category" :key="key">
-                                        <template v-slot:activator="{ on }" v-if="key>0">
-                                            <span class="draggable"
-                                                    :_component="item.component"
-                                                    :_width="item.width"
-                                                    :_height="item.height"
-                                                    :_description="item.description"
-                                                    :_label="item.label"
-                                                    :style="toolStyle(key, categoryIndex, category.length)"
-                                                    @click="item.x = 500 + Math.random()*200; item.y=280 + Math.random()*150; addElement(item)"
+                                    <!--                    <v-btn-->
+                                    <!--                            style="margin-right: 5px; margin-top: 15px;"-->
+                                    <!--                            color="primary" dark-->
+                                    <!--                            @click="deployDialog = true">-->
+                                    <!--                        <v-icon>{{ icon.version }}</v-icon>-->
+                                    <!--                        Deploy-->
+                                    <!--                    </v-btn>-->
+
+                                    <v-menu
+                                            offset-y
+                                            open-on-hover
+                                            left
+                                            v-if="!parents"
+                                    >
+                                        <template v-slot:activator="{ attrs, on }">
+                                            <v-btn text
+                                                    style="margin-right: 5px; margin-top: 15px;"
+                                                    color="primary"
+                                                    class="white--text k8s-hide-reverse-btn"
+                                                    v-bind="attrs"
+                                                    v-on="on"
                                             >
-                                                <img valign="middle" style="vertical-align:middle; border: 2 solid grey; -webkit-box-shadow: 5px 5px 20px 0px rgba(0,0,0,0.75); -moz-box-shadow: 5px 5px 20px 0px rgba(0,0,0,0.40); box-shadow: 5px 5px 20px 0px rgba(0,0,0,0.40);" onmouseover="this.height=this.height*1.5;this.width=this.width*1.5;this.left=this.left-this.width*0.5;this.right=this.right-this.width*0.5;" onmouseout="this.height=this.height/1.5;this.width=this.width/1.5;this.left=this.left+this.width*0.5;this.right=this.right+this.width*0.5;" height="40px" width="40px" :src="item.src" v-on="on" border=2>
-                                                <v-chip v-on="on">{{item.label}}</v-chip>
-                                            </span>
+                                                <v-icon>mdi-cached</v-icon>
+                                                <div class="k8s-hide-reverse">Reverse</div>
+                                            </v-btn>
                                         </template>
 
-                                        <v-card class="mx-auto"
-                                                max-width="400"
-                                                max-height="400"
-                                                outlined
-                                        >
-                                            <v-list-item three-line>
-                                                <v-list-item-content>
-                                                    <div class="overline mb-4">
-                                                        {{category[0].label}}
-                                                    </div>
-
-                                                    <v-list-item-title class="headline mb-1">
-                                                        {{item.label}}
-                                                    </v-list-item-title>
-                                                    
-                                                    <v-list-item-subtitle>
-                                                        {{item.description}}
-                                                    </v-list-item-subtitle>
-                                                </v-list-item-content>
-
-                                                <v-list-item-avatar tile
-                                                        size="80"
-                                                        color="white"
-                                                >
-                                                    <v-img :src="item.src"></v-img>
-                                                </v-list-item-avatar>
+                                        <v-list>
+                                            <v-list-item v-for="(item, index) in reverseItems"
+                                                        :key="index"
+                                                        @click="functionReverse(item.title,index)"
+                                            >
+                                                <v-list-item-title>{{ item.title }}</v-list-item-title>
                                             </v-list-item>
-                                        </v-card>
-                                    </v-tooltip>
+                                        </v-list>
+                                    </v-menu>
+
+                                    <!--                    <v-btn-->
+                                    <!--                            style="margin-right: 5px; margin-top: 15px;"-->
+                                    <!--                            color="primary" dark-->
+                                    <!--                            @click="apiCallTest()">-->
+                                    <!--                        <v-icon>{{ icon.version }}</v-icon>-->
+                                    <!--                        Test-->
+                                    <!--                    </v-btn>-->
+                                    <!--                    <v-btn-->
+                                    <!--                            style="margin-right: 5px; margin-top: 15px;"-->
+                                    <!--                            color="primary" dark-->
+                                    <!--                            @click="clear()">-->
+                                    <!--                        <v-icon>{{ icon.version }}</v-icon>-->
+                                    <!--                        clear-->
+                                    <!--                    </v-btn>-->
+
+                                    <v-menu
+                                            offset-y
+                                            open-on-hover
+                                            left
+                                            v-if="!parents"
+                                    >
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn class="k8s-hide-gitops-btn"
+                                                    text
+                                                    style="margin-right: 5px;margin-top: 15px;"
+                                                    color="orange" dark
+                                                    @click="codeModalShow()"
+                                                    v-on="on">
+                                                <Icon class="gs-icon-style" icon="icomoon-free:git"
+                                                    style="margin-right: 2px; height: 22px; width: 22px"/>
+                                                <div class="k8s-hide-gitops">GITOPS</div>
+                                            </v-btn>
+                                        </template>
+                                        <v-list>
+                                            <v-list-item
+                                                    v-for="(item, index) in gitOpsItems" :key="index"
+                                                    @click="functionSelect(item.title)">
+                                                <v-list-item-title>{{ item.title }}</v-list-item-title>
+                                                <v-icon style="margin-left: 5px;" v-if="item.check" color="green">
+                                                    mdi-check-decagram
+                                                </v-icon>
+                                            </v-list-item>
+                                        </v-list>
+                                    </v-menu>
+
+                                    <v-menu
+                                            offset-y
+                                            open-on-hover
+                                            left
+                                    >
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn class="k8s-hide-fork-btn"
+                                                    text
+                                                    v-if="readOnly"
+                                                    style="margin-right: 5px; margin-top: 15px;"
+                                                    color="primary"
+                                                    dark
+                                                    @click="saveComposition('fork')"
+                                            >
+                                                <v-icon>{{icon.fork}}</v-icon>
+                                                <div class="k8s-hide-fork">FORK</div>
+                                            </v-btn>
+                                            <v-btn class="k8s-hide-save-btn"
+                                                    text
+                                                    v-else
+                                                    style="margin-right: 5px; margin-top: 15px;"
+                                                    color="primary"
+                                                    dark
+                                                    @click="saveComposition('save')"
+                                                    v-on="on"
+                                            >
+                                                <v-icon>{{icon.save}}</v-icon>
+                                                <div class="k8s-hide-save">SAVE</div>
+                                            </v-btn>
+                                        </template>
+                                        <v-list v-if="!parents">
+                                            <v-list-item
+                                                    v-if="!isClazzModeling"
+                                                    v-for="(item, index) in saveItems"
+                                                    :key="index"
+                                                    @click="functionSelect(item.title,index)"
+                                            >
+                                                <v-list-item-title>{{ item.title }}</v-list-item-title>
+                                            </v-list-item>
+                                        </v-list>
+                                    </v-menu>
+
+                                    <v-menu
+                                            v-if="isOwnModel && isServerModel && !isReadOnlyModel && !parents"
+                                            offset-y
+                                            open-on-hover
+                                            left
+                                    >
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn class="k8s-hide-share-btn"
+                                                    text
+                                                    style="margin-right: 5px; margin-top: 15px;"
+                                                    color="primary"
+                                                    dark
+                                                    v-on="on"
+                                                    @click="openInviteUsers()"
+                                            >
+                                                <v-icon>{{icon.share}}</v-icon>
+                                                <div class="k8s-hide-share">SHARE</div>
+                                            </v-btn>
+                                        </template>
+                                    </v-menu>
+                                    <v-menu
+                                            offset-y
+                                            open-on-hover
+                                            left
+                                    >
+                                        <template v-slot:activator="{ on }">
+                                            <v-btn class="k8s-hide-code-btn"
+                                                    text
+                                                    style="margin-right: 5px;margin-top: 15px;"
+                                                    color="orange" dark
+                                                    @click="codeModalShow()"
+                                                    v-on="on">
+                                                <v-icon> {{ icon.code }}</v-icon>
+                                                <div class="k8s-hide-code">CODE</div>
+                                            </v-btn>
+                                        </template>
+                                        <v-list v-if="!parents">
+                                            <v-list-item
+                                                    v-for="(item, index) in codeItems" :key="index"
+                                                    @click="functionSelect(item.title)">
+                                                <v-list-item-title>{{ item.title }}</v-list-item-title>
+                                            </v-list-item>
+                                        </v-list>
+                                    </v-menu>
                                 </div>
+                                <!-- 웹페이지 버튼들 끝 -->
+                            </v-row>
+                            <div class="k8s-is-mobile">
+                                <v-speed-dial
+                                    v-model="fab"
+                                    style="position:fixed; bottom:50px; right:50px;"
+                                >
+                                    <template v-slot:activator>
+                                        <v-btn
+                                                v-model="fab"
+                                                color="blue darken-2"
+                                                dark
+                                                fab
+                                                small
+                                        >
+                                            <v-icon v-if="fab">
+                                                mdi-playlist-remove
+                                            </v-icon>
+                                            <v-icon v-else>
+                                                mdi-playlist-check
+                                            </v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <v-row class="k8s-mobile-action-btn">
+                                        <v-menu
+                                                style="margin: 0px !important;"
+                                                offset-y
+                                                v-if="!parents"
+                                        >
+                                            <template v-slot:activator="{ attrs, on }">
+                                                <v-btn small
+                                                        color="primary"
+                                                        class="white--text"
+                                                        v-bind="attrs"
+                                                        v-on="on"
+                                                        text
+                                                >
+                                                    <div v-if="loadTerminal">
+                                                        <v-progress-circular
+                                                                indeterminate
+                                                                color="primary"
+                                                        ></v-progress-circular>
+                                                    </div>
+                                                    <v-icon>mdi-server-network</v-icon>
+                                                    <div v-if="!loadTerminal">{{ clusterInfo.name ? clusterInfo.name : "Cluster" }}</div>
+                                                </v-btn>
+                                            </template>
+
+                                            <v-list>
+                                                <v-list-item>
+                                                    <v-list-item-title v-text="'Terminal'"
+                                                                        @click="terminal()"></v-list-item-title>
+                                                </v-list-item>
+                                                <v-list-item>
+                                                    <v-list-item-title v-text="'Sync'" @click="deployDialog = true">
+                                                    </v-list-item-title>
+                                                </v-list-item>
+                                                <v-list-item>
+                                                    <v-list-item-title v-text="'Cluster'" @click="clusterDialog = true">
+                                                    </v-list-item-title>
+                                                </v-list-item>
+                                            </v-list>
+                                        </v-menu>
+                                        <!--                                    <v-btn-->
+                                        <!--                                            style="margin-right: 5px; margin-top: 15px;"-->
+                                        <!--                                            color="cyan" dark-->
+                                        <!--                                            @click="clusterDialog = true">-->
+                                        <!--                                        <v-icon>settings</v-icon>-->
+                                        <!--                                        {{ clusterInfo ? clusterInfo.name : '' }}-->
+                                        <!--                                    </v-btn>-->
+                                        <v-menu
+                                                style="margin: 0px !important;"
+                                                open-on-hover offset-y
+                                                v-if="!parents"
+                                        >
+                                            <template v-slot:activator="{ attrs, on }">
+                                                <v-btn
+                                                        style="margin-right: 5px; margin-top: 15px;"
+                                                        color="primary"
+                                                        class="white--text"
+                                                        v-bind="attrs"
+                                                        v-on="on"
+                                                        small
+                                                        text
+                                                >
+                                                    <v-icon>mdi-cached</v-icon>
+                                                    <div>Reverse</div>
+                                                </v-btn>
+                                            </template>
+
+                                            <v-list>
+                                                <v-list-item>
+                                                    <v-list-item-title v-text="'From Cluster'"
+                                                                        @click="drawFromCluster()"></v-list-item-title>
+                                                </v-list-item>
+                                                <v-list-item>
+                                                    <v-list-item-title v-text="'From Local'" @click="yamlModalShow()">
+                                                    </v-list-item-title>
+                                                </v-list-item>
+                                            </v-list>
+                                        </v-menu>
+
+                                        <v-menu style="margin: 0px !important;"
+                                                open-on-hover offset-y>
+                                            <template v-slot:activator="{ on }">
+                                                <v-btn
+                                                        style="margin-right: 5px;margin-top: 15px;"
+                                                        color="orange"
+                                                        @click="codeModalShow()"
+                                                        v-on="on"
+                                                        small
+                                                        text>
+                                                    <v-icon> {{ icon.code }}</v-icon>
+                                                    CODE
+                                                </v-btn>
+                                            </template>
+                                            <v-list v-if="!parents">
+                                                <v-list-item
+                                                        v-for="(item, index) in codeItems" :key="index"
+                                                        @click="functionSelect(item.title)">
+                                                    <v-list-item-title>{{ item.title }}</v-list-item-title>
+                                                </v-list-item>
+                                            </v-list>
+                                        </v-menu>
+                                        <v-menu style="margin: 0px !important;"
+                                                v-if="!parents"
+                                                open-on-hover offset-y>
+                                            <template v-slot:activator="{ on }">
+                                                <v-btn
+                                                        style="margin-right: 5px;margin-top: 15px;"
+                                                        color="orange"
+                                                        @click="codeModalShow()"
+                                                        v-on="on"
+                                                        small
+                                                        text>
+                                                    <div v-if="gitOpsLoading">
+                                                        <v-progress-circular
+                                                                indeterminate
+                                                                color="primary"
+                                                        ></v-progress-circular>
+                                                    </div>
+                                                    <div v-else>
+                                                        <v-icon> {{ icon.code }}</v-icon>
+                                                        GITOPS
+                                                    </div>
+                                                </v-btn>
+                                            </template>
+                                            <v-list>
+                                                <v-list-item
+                                                        v-for="(item, index) in codeItems" :key="index"
+                                                        @click="functionSelect(item.title)">
+                                                    <v-list-item-title>{{ item.title }}</v-list-item-title>
+                                                </v-list-item>
+                                            </v-list>
+                                        </v-menu>
+                                        <v-menu v-if="!parents"
+                                                style="margin: 0px !important;"
+                                                open-on-hover offset-y>
+                                            <template v-slot:activator="{ on }">
+                                                <v-btn
+                                                        v-if="readOnly"
+                                                        style="margin-right: 5px; margin-top: 15px;"
+                                                        color="primary"
+                                                        @click="saveComposition('fork')"
+                                                        small
+                                                        text
+                                                >
+                                                    <v-icon>{{icon.fork}}</v-icon>
+                                                    FORK
+                                                </v-btn>
+                                                <v-btn
+                                                        v-else
+                                                        style="margin-right: 5px; margin-top: 15px;"
+                                                        color="primary"
+                                                        @click="saveComposition('save')"
+                                                        v-on="on"
+                                                        small
+                                                        text
+                                                >
+                                                    <v-icon>{{icon.save}}</v-icon>
+                                                    SAVE
+                                                </v-btn>
+                                            </template>
+                                            <v-list>
+                                                <v-list-item
+                                                        v-if="!isClazzModeling"
+                                                        v-for="(item, index) in saveItems"
+                                                        :key="index"
+                                                        @click="functionSelect(item.title,index)"
+                                                >
+                                                    <v-list-item-title>{{ item.title }}</v-list-item-title>
+                                                </v-list-item>
+                                            </v-list>
+                                        </v-menu>
+
+
+                                        <v-menu
+                                                v-if="isOwnModel && isServerModel && !isReadOnlyModel "
+                                                class="pa-2"
+                                                offset-y
+                                                open-on-hover
+                                                left
+                                        >
+                                            <template v-slot:activator="{ on }">
+                                                <v-btn
+                                                        text
+                                                        style="margin-right: 5px; margin-top: 15px;"
+                                                        color="primary"
+                                                        v-on="on"
+                                                        @click="openInviteUsers()"
+                                                >
+                                                    <v-icon>{{icon.share}}</v-icon>
+                                                    SHARE
+                                                </v-btn>
+                                            </template>
+                                        </v-menu>
+                                    </v-row>
+                                </v-speed-dial>
                             </div>
-                        </v-layout>
-                    </div>
+                        </v-flex>
+
+                        <!-- 모바일 다이얼 버튼 -->
+                        
+                        <!-- 모바일 다이얼 버튼 끝 -->
+
+                        <v-card
+                                v-if="!isReadOnlyModel"
+                                class="tools"
+                                style="top:100px; text-align: center;"
+                        >
+                            <v-tooltip right v-for="(category, categoryIndex) in elementTypes" :key="categoryIndex">
+
+                                <template v-slot:activator="{ on }">
+                                    <span
+                                            @mouseover="changeCategory(categoryIndex)"
+                                            align="center"
+                                            :_component="category[0].component"
+                                            :_width="category[0].width"
+                                            :_height="category[0].height"
+                                            :_description="category[0].description"
+                                            :_label="category[0].label"
+                                    >
+                                        <img height="30px" width="30px" :src="category[0].src" v-on="on">
+                                    </span>
+                                </template>
+
+                                <span>{{ category[0].component }}</span>
+
+                            </v-tooltip>
+
+
+                        </v-card>
+
+                        <div
+                                v-for="(category, categoryIndex) in elementTypes" :key="categoryIndex">
+
+                            <div v-if="selectedCategoryIndex == categoryIndex">
+
+                                <v-tooltip right v-for="(item, key) in category" :key="key">
+
+                                    <template v-slot:activator="{ on }" v-if="key>0">
+                                        <span
+                                                class="draggable"
+                                                align="center"
+                                                :_component="item.component"
+                                                :_width="item.width"
+                                                :_height="item.height"
+                                                :_description="item.description"
+                                                :_label="item.label"
+
+                                                @click="item.x = 500 + Math.floor(Math.random()*200); item.y=280 + Math.floor(Math.random()*150); addElement(item)"
+                                                :style="toolStyle(key, categoryIndex, category.length)"
+                                        >
+                                            <img valign="middle"
+                                                style="vertical-align:middle; border: 2 solid grey; -webkit-box-shadow: 5px 5px 20px 0px rgba(0,0,0,0.75); -moz-box-shadow: 5px 5px 20px 0px rgba(0,0,0,0.40); box-shadow: 5px 5px 20px 0px rgba(0,0,0,0.40);"
+                                                onmouseover="this.height=this.height*1.5;this.width=this.width*1.5;this.left=this.left-this.width*0.5;this.right=this.right-this.width*0.5;"
+                                                onmouseout="this.height=this.height/1.5;this.width=this.width/1.5;this.left=this.left+this.width*0.5;this.right=this.right+this.width*0.5;"
+                                                height="40px" width="40px" :src="item.src" v-on="on" border=2>
+                                            <v-chip v-on="on">{{item.label}}</v-chip>
+
+                                        </span>
+                                    </template>
+
+                                    <v-card
+                                            class="mx-auto"
+                                            max-width="400"
+                                            max-height="400"
+                                            outlined
+                                    >
+                                        <v-list-item three-line>
+                                            <v-list-item-content>
+                                                <div class="overline mb-4">{{category[0].label}}</div>
+                                                <v-list-item-title class="headline mb-1">{{item.label}}</v-list-item-title>
+                                                <v-list-item-subtitle>{{item.description}}</v-list-item-subtitle>
+                                            </v-list-item-content>
+
+                                            <v-list-item-avatar
+                                                    tile
+                                                    size="80"
+                                                    color="white"
+                                            >
+                                                <v-img :src="item.src"></v-img>
+                                            </v-list-item-avatar>
+                                        </v-list-item>
+
+                                    </v-card>
+                                </v-tooltip>
+
+                            </div>
+                        </div>
+                    </v-layout>
 
                     <modal name="codeModal" :height='"auto"' :width="'80%'" scrollable>
                         <v-card flat>
-                            <v-card-title class="d-flex">
-                                <span class="headline">Code Preview</span>
-                                <v-btn x-small
-                                        icon
-                                        @click="codePreviewLeftReSize()"
-                                        class="code-preview-left-re-size-btn ml-2"
-                                >
-                                    <v-icon>mdi-menu</v-icon>
-                                </v-btn>
-                                <v-select
-                                        v-model="template"
-                                        :items="templateTypes"
-                                        label="Select Template"
-                                        hide-details
-                                        class="ml-auto"
-                                        style="max-width: 300px;"
-                                ></v-select>
+                            <v-card-title style="height:90px;">
+                                <v-col :col="8">
+                                    <span class="headline">Code Preview</span>
+                                    <v-btn class="code-preview-left-re-size-btn"
+                                        fab x-small icon @click="codePreviewLeftReSize()"
+                                    >≡
+                                    </v-btn>
+                                </v-col>
+                                <v-col style="margin-top:-10px;">
+                                    <v-select
+                                            :items="templateTypes"
+                                            v-model="template"
+                                            label="Select Template"
+                                            hide-details
+                                            class="pa-0"
+                                            style="display:contents;
+                                            width: 150px;
+                                            position: absolute;
+                                            display: block;
+                                            right: 25px;
+                                            top: 20px;"
+                                    ></v-select>
+                                </v-col>
                             </v-card-title>
                             <v-divider></v-divider>
                             <v-card-text style="width: auto; height: auto; margin-bottom:-40px;">
                                 <v-row class="mb-6" no-gutters>
-                                    <v-col id="scroll-target"
+                                    <v-col
                                             style="border-right: 1px solid black; max-height: 550px; display: flex !important;"
+                                            id="scroll-target"
                                             class="overflow-auto code-preview-left-re-size"
                                     >
                                         <v-treeview
@@ -619,6 +722,7 @@
                                                 open-all
                                                 :transition="treeOpen"
                                                 open-on-click
+                                                transition
                                                 dense
                                                 style="text-overflow: clip !important; width:600px;"
                                         >
@@ -633,7 +737,7 @@
                                         </v-treeview>
                                     </v-col>
                                     <v-col>
-                                        <kubernetes-code-viewer
+                                        <code-viewer
                                                 v-if="diffCheck"
                                                 :diff-value="existYaml"
                                                 v-model="openCode"
@@ -641,43 +745,34 @@
                                                 :create-value="existYaml"
                                                 @update="updatePathTmp"
                                                 style="padding: 0 !important;"
-                                        ></kubernetes-code-viewer>
-                                        <kubernetes-code-viewer
+                                        ></code-viewer>
+                                        <!--                                                        <code-viewer-->
+                                        <!--                                                                v-model="openCode"-->
+                                        <!--                                                        ></code-viewer>-->
+                                        <code-viewer
                                                 v-else-if="codeView"
                                                 v-model="openCode"
                                                 style="padding: 0 !important;"
-                                        ></kubernetes-code-viewer>
+                                        ></code-viewer>
                                     </v-col>
                                 </v-row>
                             </v-card-text>
-                            <v-card-actions>
+                            <v-card-action>
                                 <v-spacer></v-spacer>
-                                <v-btn text
-                                        color="primary" 
-                                        @click="endDiffCheck()"
-                                >
-                                    확인
-                                </v-btn>
-                            </v-card-actions>
+                                <v-btn text @click="endDiffCheck()">확인</v-btn>
+                            </v-card-action>
                         </v-card>
                     </modal>
 
-                    <v-snackbar v-model="snackbar.show"
-                            :color="snackbar.color" 
-                            :multi-line="snackbar.mode === 'multi-line'"
-                            :timeout="snackbar.timeout"
-                            :vertical="snackbar.mode === 'vertical'"
-                    >
-                        <template v-slot:action="{ attrs }">
-                            <div>{{ snackbar.text }}</div>
-                            <v-btn dark
-                                    v-bind="attrs"
-                                    class="mx-2"
-                                    @click="snackbar.show = false"
-                            >
+                    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :multi-line="snackbar.mode === 'multi-line'"
+                                :timeout="snackbar.timeout"
+                                :vertical="snackbar.mode === 'vertical'">
+                        <div v-html="snackbar.text"></div>
+                        <v-row justify="end" style="margin: auto;">
+                            <v-btn dark @click="snackbar.show = false">
                                 Close
                             </v-btn>
-                        </template>
+                        </v-row>
                     </v-snackbar>
 
                     <v-dialog v-model="generateZipDialog" max-width="290">
@@ -734,12 +829,7 @@
                         </v-card>
                     </v-dialog>
 
-                    <v-dialog v-model="clusterDialog"
-                            persistent
-                            fullscreen
-                            hide-overlay 
-                            transition="dialog-bottom-transition"
-                    >
+                    <v-dialog v-model="clusterDialog" persistent fullscreen hide-overlay transition="dialog-bottom-transition">
                         <v-card>
                             <v-toolbar dark color="primary">
                                 <v-toolbar-title>Manage Clusters</v-toolbar-title>
@@ -780,25 +870,14 @@
                                             style="max-height: 65px;"
                                     ></v-text-field>
                                     <div v-if="commandTabs[commandTab].includes(obj.label)"
-                                            style="margin-bottom: 10px; padding-left: 490px;"
-                                    >
-                                        <v-btn @click="runCommand(obj.command)"
-                                                color="primary"
-                                                text
-                                        >
-                                            Run in terminal
-                                        </v-btn>
+                                        style="margin-bottom: 10px; padding-left: 490px;">
+                                        <v-btn color="primary" text @click="runCommand(obj.command)">Run in terminal</v-btn>
                                     </div>
                                 </div>
                             </v-card-text>
                             <v-card-actions>
                                 <v-spacer></v-spacer>
-                                <v-btn @click="commandDialog = false"
-                                        color="primary"
-                                        text
-                                >
-                                    Close
-                                </v-btn>
+                                <v-btn color="primary" @click="commandDialog = false">Close</v-btn>
                             </v-card-actions>
                         </v-card>
                     </v-dialog>
@@ -813,20 +892,20 @@
                             <v-divider></v-divider>
                             <v-card-text style="width: auto; height: auto;">
                                 <local-yaml-editor
-                                        v-model="localYamlText"
                                         style="width: 100%; height: 100%"
+                                        v-model="localYamlText"
                                 ></local-yaml-editor>
                             </v-card-text>
                             <v-card-actions>
                                 <v-spacer></v-spacer>
-                                <!-- <text-reader :label="'Upload File'"
+                                <text-reader :label="'Upload File'"
                                             :fileName.sync="fileName"
                                             :plainText.sync="localYamlText"
                                             :importType="'yaml'"
                                             @load="loadYaml($event)"
                                             class="v-btn v-btn--contained v-size--default"
                                             style="color:#1976d2; background:none; border-radius:none;"
-                                ></text-reader> -->
+                                ></text-reader>
                                 <v-btn text color="primary" @click.prevent="drawFromYaml">
                                     <div v-if="reverseYaml">
                                         <v-progress-circular
@@ -839,8 +918,7 @@
                             </v-card-actions>
                         </v-card>
                     </modal>
-
-                    <!-- search (cmd+p) -->
+                    <!-- search (cmd +p) -->
                     <v-dialog
                             class="v-dialog v-dialog--active"
                             v-model="isSearch"
@@ -868,9 +946,7 @@
                                         <img :src="data.item.src">
                                     </v-list-item-avatar>
                                     <v-list-item-content>
-                                        <v-list-item-title>
-                                            {{ data.item.label }}
-                                        </v-list-item-title>
+                                        <v-list-item-title v-html="data.item.label"></v-list-item-title>
                                     </v-list-item-content>
                                 </template>
                             </template>
@@ -915,16 +991,15 @@
                             </v-card-actions>
                         </v-card>
                     </v-dialog>
-
-                    <!-- GitOps dialog -->
                     <v-dialog v-model="settingGitInfoDialog">
                         <v-card>
                             <v-card-title>GitOps Configure</v-card-title>
                             <v-card-text>
                                 <v-stepper v-model="step">
                                     <v-stepper-header v-if="checkGitLogin">
-                                        <div v-for="(n,idx) in gitSteps" :key="`${idx}-step`">
+                                        <template v-for="(n,idx) in gitSteps">
                                             <v-stepper-step
+                                                    :key="`${idx}-step`"
                                                     :complete="step > idx"
                                                     :step="idx + 1"
                                             >
@@ -935,12 +1010,13 @@
                                                     v-if="idx !== step"
                                                     :key="n"
                                             ></v-divider>
-                                        </div>
+                                        </template>
                                     </v-stepper-header>
                                     <!-- Google -->
                                     <v-stepper-header v-else>
-                                        <div v-for="(n, idx) in googleSteps" :key="`${idx}-step`">
+                                        <template v-for="(n,idx) in googleSteps">
                                             <v-stepper-step
+                                                    :key="`${idx}-step`"
                                                     :complete="step > idx"
                                                     :step="idx + 1"
                                             >
@@ -950,7 +1026,7 @@
                                                     v-if="idx < googleSteps.length-1"
                                                     :key="idx"
                                             ></v-divider>
-                                        </div>
+                                        </template>
                                     </v-stepper-header>
                                     <!-- GitHub Login -->
                                     <v-stepper-items v-if="checkGitLogin">
@@ -1013,7 +1089,8 @@
                                                     label="Repository URL"
                                             ></v-text-field>
                                             <v-spacer></v-spacer>
-                                            <v-btn color="primary"
+                                            <v-btn
+                                                    color="primary"
                                                     @click="step = step + 1"
                                             >
                                                 Continue
@@ -1039,14 +1116,11 @@
                                                     label="Select Repository"
                                             ></v-select>
                                             <v-spacer></v-spacer>
-                                            <v-btn color="green darken-1" 
-                                                    text 
-                                                    @click="setGitRepository()"
-                                            >
-                                                Save
-                                            </v-btn>
+                                            <v-spacer></v-spacer>
+                                            <v-btn color="green darken-1" text @click="setGitRepository()">Save</v-btn>
                                         </v-stepper-content>
                                     </v-stepper-items>
+
                                     <!-- Google Login -->
                                     <v-stepper-items v-else>
                                         <v-stepper-content step="1">
@@ -1167,20 +1241,60 @@
                                                     label="Select Repository"
                                             ></v-select>
                                             <v-spacer></v-spacer>
-                                            <v-btn color="green darken-1"
-                                                    text 
-                                                    @click="setGitRepository()"
-                                            >
-                                                Save
-                                            </v-btn>
+                                            <v-spacer></v-spacer>
+                                            <v-btn color="green darken-1" text @click="setGitRepository()">Save</v-btn>
                                         </v-stepper-content>
                                     </v-stepper-items>
                                 </v-stepper>
+                                <!--                    <v-radio-group-->
+                                <!--                            v-model="gitInfo.type"-->
+                                <!--                            row-->
+                                <!--                    >-->
+                                <!--                        <v-radio-->
+                                <!--                                label="Github"-->
+                                <!--                                value="github"-->
+                                <!--                        ></v-radio>-->
+                                <!--                        <v-radio-->
+                                <!--                                disabled-->
+                                <!--                                label="Gitlab"-->
+                                <!--                                value="gitlab"-->
+                                <!--                        ></v-radio>-->
+                                <!--                    </v-radio-group>-->
+                                <!--                    <v-text-field-->
+                                <!--                            v-if="!checkGitLogin"-->
+                                <!--                            v-model="gitInfo.url"-->
+                                <!--                            label="Repository URL"-->
+                                <!--                    ></v-text-field>-->
+                                <!--                    <v-select-->
+                                <!--                            :items="repositoryList"-->
+                                <!--                            label="Select Repository"-->
+                                <!--                    ></v-select>-->
+
+                                <!--                    <v-text-field-->
+                                <!--                            v-model="gitInfo.token"-->
+                                <!--                            label="Git AccessToken"-->
+                                <!--                    ></v-text-field>-->
                             </v-card-text>
+                            <!--                <v-card-actions>-->
+                            <!--                    <v-spacer></v-spacer>-->
+                            <!--                    <v-btn color="green darken-1" text @click="setGitRepository()">Save-->
+                            <!--                </v-card-actions>-->
                         </v-card>
                     </v-dialog>
+                    <!--  dialog  -->
+                    <model-canvas-share-dialog
+                            v-model="inviteLists"
+                            :showDialog="inviteDialog"
+                            :checkPublic="showPublicModel"
+                            :canvas="canvas"
+                            canvasComponentName="kubernetes-model-canvas"
+                            @all="invitePublic"
+                            @apply="applyInviteUsers"
+                            @close="closeInviteUsers"
+                            @add="addInviteUser"
+                            @remove="removeInviteUser"
+                    ></model-canvas-share-dialog>
 
-                    <!-- save dialog -->
                     <model-storage-dialog
                             :condition="storageCondition"
                             :showDialog="showStorageDialog"
@@ -1188,80 +1302,115 @@
                             @fork="forkModel"
                             @backup="backupModel"
                             @close="storageDialogCancel"
-                    ></model-storage-dialog>
+                    >
+                    </model-storage-dialog>
+                    <v-dialog width="400px" style="width: 400px !important" v-model="argoDialog" hide-overlay>
+                        <v-card>
+                            <v-card-title>
+                                Managed Argo-server
+                            </v-card-title>
+                            <v-card-text>
 
-                    <!-- modeler image generateor -->
+                            </v-card-text>
+                            <v-card-actions>
+                                <v-spacer></v-spacer>
+                                <v-btn color="primary" @click="argoDialog = false">ok</v-btn>
+                            </v-card-actions>
+                        </v-card>
+                    </v-dialog>
                     <modeler-image-generator ref="modeler-image-generator"></modeler-image-generator>
                 </div>
             </template>
-
             <template v-slot:two>
-                <kube-code-generator
+                <CodeGenerator
+                        v-if="embedded"
                         v-model="value"
-                        :isMineProject="isMineProject"
-                        :isServerModeling="isServerModeling"
+                        :isOwnModel="isOwnModel"
+                        :isServerModel="isServerModel"
                         :projectInformation="information"
                         :projectName="projectName"
                         :modelInitLoad="initLoad"
-                        :modelingProjectId="modelingProjectId"
+                        :modelingProjectId="projectId"
                         :asyncCodeForValue="false"
                         :callCodeForValue="changedTemplateCode"
                         :oldTreeHashLists.sync="oldTreeHashLists"
                         :newTreeHashLists.sync="newTreeHashLists"
-                        :isVersionMode="isVersionMode"
+                        :projectVersion="projectVersion"
+                        :embeddedK8s="embedded"
+                        @changedByMe="settingChangedByMe"
                         canvas-name="kubernetes-model-canvas"
-                        :defaultTemplate="template"
-                ></kube-code-generator>
+                ></CodeGenerator>
             </template>
         </separate-panel-components>
+
     </div>
+
 </template>
 
 <script>
-    import { Octokit } from "@octokit/rest";
+    // import CodeViewer from "./KubernetesCodeViewer";
+    import KubeModeling from "./index";
+    import CodeViewer from "../CodeViewer";
+    import ModelCanvas from "../modeling/ModelCanvas";
+    import json2yaml from 'json2yaml'
+    import TextReader from "../../TextReader";
     import jsyaml from "js-yaml";
-    import json2yaml from 'json2yaml';
+    import LocalYamlEditor from "./LocalYamlEditor";
+    import Clusters from "./Clusters";
     import MonacoEditor from 'vue-monaco';
+    import {Octokit} from "@octokit/rest";
+    import {Icon} from '@iconify/vue2';
+    import ModelStorageDialog from "../modeling/ModelStorageDialog";
+    import ModelCanvasShareDialog from "../modeling/ModelCanvasShareDialog";
+    import SeparatePanelComponents from "../../SeparatePanelComponents";
+    import CodeGenerator from "../modeling/CodeGenerator";
+
 
     var _ = require('lodash');
-    var YAML = require('yamljs');
-    var JSZip = require('jszip');
-    var pluralize = require('pluralize');
-    var changeCase = require('change-case');
 
-    import KubeModeling from "./index";
-    import ModelCanvas from "../modeling/ModelCanvas";
-    import ModelStorageDialog from "../modeling/ModelStorageDialog";
-    import SeparatePanelComponents from "../../SeparatePanelComponents";
+    var YAML = require('yamljs');
+    var JSZip = require('jszip')
+
+    var changeCase = require('change-case');
+    var pluralize = require('pluralize');
+    var jsondiffpatch = require('jsondiffpatch').create({
+        objectHash: function (obj, index) {
+            return '$$index:' + index;
+        },
+    });
 
     export default {
-        mixins: [ModelCanvas],
         name: 'kubernetes-model-canvas',
         components: {
+            CodeGenerator,
+            Clusters,
+            saveAs,
+            LocalYamlEditor,
+            CodeViewer,
             MonacoEditor,
-            ModelStorageDialog,
-            SeparatePanelComponents,
+            Icon,
+            'model-canvas-share-dialog': ModelCanvasShareDialog,
+            'text-reader': TextReader,
+            'model-storage-dialog': ModelStorageDialog,
+            SeparatePanelComponents
+        },
+        mixins: [ModelCanvas],
+        props: {
+            boundedContextList: Array,
+            getReadOnly: Boolean,
+            isReadOnlyModel: Boolean,
+            specVersion: String
         },
         data() {
             return {
                 codePreviewLeftReSizeNumber: null,
                 gitOpsLoading: false,
                 namespaceList: [],
-
                 // command
                 commandDialog: false,
                 commandList: [],
                 commandTab: 0,
-                commandTabs: [
-                    "Create/Apply",
-                    "Get",
-                    "Delete",
-                    "Describe",
-                    "Port-forward",
-                    "Logs"
-                ],
-
-                tempValue: [],
+                commandTabs: ['Create/Apply', 'Get', 'Delete', 'Describe', 'Port-forward', 'Logs'],
                 selectedElements: [],
                 tmpTreeList: [],
                 diffCheck: false,
@@ -1277,24 +1426,62 @@
                 },
                 step: 1,
                 repositoryType: "url",
-                gitSteps: [
-                    "Select Repo", 
-                    "YAML Folder Path", 
-                    "Select Namespace"
-                ],
-                googleSteps: [
-                    "Setting Github Personal Token",
-                    "Input GitRepo URL",
-                    "YAML Folder Path",
-                    "Select Namespace"
-                ],
+                gitSteps: ["Select Repo", "YAML Folder Path", "Select Namespace"],
+                googleSteps: ["Setting Github Personal Token", "Input GitRepo URL", "YAML Folder Path", "Select Namespace"],
                 fab: false,
                 fileName: '',
                 importFile: false,
                 localYamlText: "",
                 yamlPanel: false,
                 reverseYaml: false,
-                
+                // clusters
+
+                clusterDialog: false,
+                isUpperSearch: true,
+                // search object
+                isSearch: false,
+                searchKeyword: '',
+                saveItems: [
+                    {title: 'Save to Server'},
+                    {title: 'Download model File'},
+                    {title: 'Duplicate'},
+                ],
+
+                reverseItems: [
+                    {title: 'From Cluster'},
+                    {title: 'From Local'},
+                ],
+                // code view
+                codeView: false,
+                codeItems: [
+                    {title: 'Code Preview'},
+                    {title: 'Download Archive'},
+                ],
+                gitOpsItems: [
+                    // {title: 'Argo', check: false},
+                    {title: "Git Configure", check: false},
+                    {title: "Sync"},
+                    {title: "Argo DashBoard"}
+                ],
+                generateZipDialog: false,
+                isDownloading: false,
+                imageBase: 'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/symbol/',
+                //스낵바 옵션
+                snackbar: {
+                    show: false,
+                    color: 'error',
+                    mode: 'multi-line',
+                    timeout: 6000,
+                    text: '',
+                },
+                loadTerminal: false,
+                // data structure
+                treeList: [],
+                openCode: [],
+                template: '',
+                templateTypes: ['Separate File', 'Single File', 'Separate File per kind', 'Helm'],
+                treeOpen: true,
+
                 // user defined crd
                 userDefinedCRD: [],
                 definedDialog: false,
@@ -1305,79 +1492,10 @@
                     yaml: ""
                 },
 
-                // clusters
-                clusterInfo: {},
-                clusterDialog: false,
-                clusterItems: [
-                    {title: 'Terminal'},
-                    {title: 'Sync'},
-                    {title: 'Cluster'}
-                ],
-
-                // search
-                isSearch: false,
-                searchKeyword: '',
-                
-                // save
-                saveItems: [
-                    {title: 'Save to Server'},
-                    {title: 'Download model File'},
-                    {title: 'Duplicate'},
-                ],
-                generateZipDialog: false,
-                isDownloading: false,
-
-                // reverse
-                reverseItems: [
-                    {title: 'From Cluster'},
-                    {title: 'From Local'},
-                ],
-
-                // code view
-                codeView: false,
-                codeItems: [
-                    {title: 'Code Preview'},
-                    {title: 'Download Archive'},
-                ],
-
-                // gitOps
-                gitOpsItems: [
-                    {title: "Git Configure", check: false},
-                    {title: "Sync"},
-                    {title: "Argo DashBoard"}
-                ],
-
-                imageBase: 'https://raw.githubusercontent.com/kimsanghoon1/k8s-UI/master/public/static/image/symbol/',
-
-                // snackbar options
-                snackbar: {
-                    show: false,
-                    color: 'error',
-                    mode: 'multi-line',
-                    timeout: 6000,
-                    text: '',
-                },
-
-                // terminal
-                loadTerminal: false,
-                
-                // data structure
-                treeList: [],
-                openCode: [],
-                template: 'Separate File',
-                templateTypes: [ 'Separate File', 'Single File', 'Separate File per kind', 'Helm' ],
-                treeOpen: true,
-                
-                // deploy
+                //deploy
                 deployDialog: false,
-                deployRes: '',
-                
-                // param
-                params: null,
-                parmType: '',
-                parmProjectId: '',
-                parmUid: '',
-                
+                repositoryList: [],
+                // getStatus: null,
                 // argo
                 argoServerInfo: undefined,
                 argoCdInfo: undefined,
@@ -1386,19 +1504,14 @@
                 argoCdLists: [],
                 argoUrl: undefined,
                 argoCdUrl: undefined,
-                
                 //helm chart
                 chartJson: {},
                 valuesYaml: '',
-                
                 selectedCategoryIndex: null,
 
-                // command
-                commandDialog: false,
-                commandList: [],
-                commandTab: 0,
-                commandTabs: ['Create/Apply', 'Get', 'Delete', 'Describe', 'Port-forward', 'Logs'],
-                
+                //임시저장 copyValue
+                newCopyValue: null,
+                oldCopyValue: null,
 
                 elementTypes: [
                     [
@@ -1610,6 +1723,11 @@
                             'label': 'Istio',
                             'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-gateway.svg`
                         },
+                        // {
+                        //     'component': 'istio-canary-frame',
+                        //     'label': 'Istio Canary',
+                        //     'src': `${window.location.protocol + "//" + window.location.host}/static/image/symbol/kubernetes/istio/istio-vsvc.svg`
+                        // },
                         {
                             'component': 'gateway',
                             'label': 'Gateway',
@@ -1779,76 +1897,100 @@
                         },
                     ],
                 ],
+
+                validationCodeLists: {
+                    0: {
+                        'level': 'warning',
+                        'msg': 'Please input your ProjectName(English Only)'
+                    },
+                },
+                validationLevelIcon: {
+                    'error': {icon: 'mdi-close-circle-outline', color: '#E53935'},
+                    'warning': {icon: 'mdi-alert-outline', color: '#FFA726'},
+                    'info': {icon: 'mdi-information-outline', color: '#29B6F6'},
+                },
             }
+        },
+        beforeDestroy: function () {
+            var me = this
+            me.$EventBus.$emit('terminalOff')
         },
         computed: {
+            getValue(){
+              var me = this
+              if(me.embedded){
+                  return me.value.k8sValue
+              }
+              return me.value
+            },
             parents() {
                 if(window.opener) {
-                    return true;
+                    return true
                 } else {
-                    return false;
+                    return false
                 }
+              // retur
             },
             checkGitLogin() {
+                console.log("git check?")
+                console.log(localStorage.getItem('gitAccessToken'))
                 if (localStorage.getItem('gitAccessToken')) {
-                    return true;
+                    console.log("true")
+                    return true
                 }
-                return false;
+                console.log("false")
+                return false
             },
             mergeElementTypes() {
-                var me = this;
-                var copyElementTypes = JSON.parse(JSON.stringify(me.elementTypes));
-                var filter;
-                copyElementTypes.forEach((elementType) => {
+                var me = this
+                var copyElementTypes = JSON.parse(JSON.stringify(me.elementTypes))
+                var filter
+                copyElementTypes.forEach(function (elementType) {
                     if (filter) {
-                        filter = [...filter, ...elementType];
+                        filter = [...filter, ...elementType]
                     } else {
-                        filter = [...elementType];
+                        filter = [...elementType]
                     }
-                });
+                })
 
                 filter = _.filter(filter, function (item) {
-                    return item.width;
-                });
+                    return item.width
+                })
 
-                return filter;
+                return filter
+
             },
         },
-        created() {
-            var me = this;
-
-            if (localStorage.getItem("gitAccessToken")) {
-                me.gitAccessToken = localStorage.getItem("gitAccessToken");
-                me.githubHeaders = {
-                    Authorization: "token " + me.gitAccessToken,
-                    Accept: "application/vnd.github+json",
-                };
-            }
-
+        created: function () {
+            var me = this
             try {
                 Vue.use(KubeModeling);
-
-                if (!me.embedded) {
+                if(!me.embedded) {
                     me.canvasType = 'k8s';
                     me.isQueueModel = true;
-
-                    if (!me.readOnly) {
-                        me.isSearch = true;
-                    }
+                    me.clusterItems = [
+                        {title: 'Terminal'},
+                        {title: 'Sync'},
+                        {title: 'Cluster'}
+                    ]
+                    if (!me.readOnly)
+                        me.isSearch = true
                     me.track();
                 }
             } catch (e) {
-                alert('Error: KubeModelCanvas Created().', e);
+                console.log(e)
+                alert('Error: KubeModelCanvas Created().', e)
             }
         },
-        mounted() {
-            var me = this;
+        mounted: async function () {
+            var me = this 
 
-            if (me.embedded) {
-                if (me.localYamlText != "") {
+            if(me.embedded) {
+                me.setEventStormingYaml();
+                if(me.localYamlText != "") {
                     me.drawFromYaml();
                 } else {
-                    me.addRelations();
+                    me.addRelations()
                 }
                 me.$emit('input', me.value);
             }
@@ -1857,8 +1999,8 @@
                 me.gitInfo.token = localStorage.getItem("gitAccessToken");
             }
             if (localStorage.getItem('userDefinedCRD')) {
-                me.userDefinedCRD = JSON.parse(localStorage.getItem('userDefinedCRD'));
-                me.userDefinedCRD.forEach((crd) => {
+                me.userDefinedCRD = JSON.parse(localStorage.getItem('userDefinedCRD'))
+                me.userDefinedCRD.forEach(function (crd) {
                     me.elementTypes[10].push({
                         'component': 'crdTemplate',
                         'label': crd._type,
@@ -1867,8 +2009,8 @@
                         'src': crd.imgSrc,
                         'color': crd.color,
                         'object': crd.object
-                    });
-                });
+                    })
+                })
             }
 
             if (localStorage.getItem('kuberToken')) {
@@ -1877,62 +2019,182 @@
                     'clusterAddress': localStorage.getItem('clusterAddress'),
                     'token': localStorage.getItem('kuberToken'),
                     'namespace': localStorage.getItem('namespace')
-                };
+                }
             }
 
+            var apiServer = null;
+            if (this.$route.params.labId) {
+                if (me.$parent.classInfo.serverUrl) {
+                    apiServer = me.$parent.classInfo.serverUrl;
+                } else {
+                    apiServer = "https://218.236.22.12:6443"
+                }
+                if (apiServer) {
+                    try {
+                        var lab = this.$route.params.labId;
+                        if (me.$parent.labInfo.independent) {
+                            var hashPath = me.getClassPath('labs/' + lab + '/' + me.$route.params.userId);
+                        } else {
+                            var hashPath = me.getClassPath(me.$route.params.userId);
+                        }
+                        var hashName = "labs-" + me.hashCode(hashPath);
+
+                        var serviceAccount = await me.existServiceAccountCheck(hashName);
+
+                        function sleep(ms) {
+                            return new Promise(resolve => setTimeout(resolve, ms))
+                        }
+
+                        while (!serviceAccount) {
+                            serviceAccount = await me.existServiceAccountCheck(hashName);
+                            await sleep(3000)
+                        }
+
+                        var secretName = serviceAccount.data.secrets[0].name
+                        var secret = await me.getSecret(hashName, secretName);
+
+                        while (!secret) {
+                            secret = await me.getSecret(hashName, secretName)
+                            await sleep(3000)
+                        }
+                        var decodedToken = atob(secret);
+                        var clusterInfo = {
+                            'name': hashName,
+                            'apiServer': apiServer,
+                            'token': decodedToken,
+                            "connection": true,
+                        }
+                        if (!localStorage['clustersList'] || localStorage['clustersList'] == "[]")
+                            localStorage['clustersList'] = JSON.parse(localStorage['clustersList']).push(clusterInfo)
+                    } catch (e) {
+                        console.log(e)
+                    }
+                }
+            }
             $(document).keydown((evt) => {
+                // if (evt.metaKey && evt.shiftKey && evt.keyCode == 80) {
                 if ((evt.metaKey || evt.ctrlKey) && evt.keyCode == 80) {
                     evt.preventDefault();
-
+                    console.log('cmd + P ')
                     if (me.isSearch) {
-                        me.isSearch = false;
+                        me.isSearch = false
                     } else {
                         me.searchKeyword = ''
-                        me.isSearch = true;
+                        me.isSearch = true
+                        // me.$refs.searchKeyword.autofocus =true
                     }
                 } else if (evt.keyCode == 13) {
-                    me.searchKeyDown(evt);
-                }
-
-                if (evt.keyCode == 90 && (evt.metaKey || evt.ctrlKey)) {
-                    if (evt.shiftKey) {
-                        me.redo();
-                    } else {
-                        me.undo();
-                    }
+                    me.searchKeyDown(evt)
                 }
             });
-        },
-        async beforeDestroy() {
-            var me = this;
 
-            clearInterval(me.connetServer);
-
-            var lists = localStorage.getItem('localLists');
-            if (lists) {
-                lists = JSON.parse(lists);
-                var index = lists.findIndex(list => list.projectId == me.params.projectId);
-                if (localStorage.getItem(me.params.projectId)) {
-                    lists[index].img = resolve;
-                    lists[index].projectName = me.projectName;
+            var yamlUrl;
+            if (me.$route.query.yaml) {
+                var splitDomain = me.$route.query.yaml.split("/");
+                if (splitDomain[splitDomain.length - 1].includes(".yaml")) {
+                    if (me.$route.query.yaml.includes("https://github.com")) {
+                        yamlUrl = me.$route.query.yaml.replace("https://github.com", "https://raw.githubusercontent.com").replace("/blob", "")
+                    } else {
+                        yamlUrl = me.$route.query.yaml
+                    }
+                    me.$http.get(yamlUrl).then(function (result) {
+                        me.localYamlText = result.data
+                        me.drawFromYaml()
+                    })
                 } else {
-                    lists.splice(index, 1);
-                }
+                    var url = new URL(me.$route.query.yaml);
+                    var path = url.pathname;
+                    var splitPath = path.split("/")
+                    var user = splitPath[1];
+                    var repo = splitPath[2];
+                    var branch = splitPath[4] ? splitPath[4] : "master";
+                    me.$http.defaults.headers.common["Authorization"] = `bearer ${localStorage.getItem("gitAccessToken")}`
+                    var resultYaml = [];
+                    console.log(user, repo, branch)
+                    var recursiveTree = function (url, splitPath) {
+                        return new Promise(function (resolve, reject) {
+                            me.$http.get(url).then(function (result) {
+                                result.data.tree.forEach(async function (item, idx) {
+                                    if (item.type == 'tree') {
+                                        await recursiveTree(item.url, splitPath)
+                                    } else {
+                                        if (item.type != "tree" && item.path.includes(".yaml")) {
+                                            console.log(item)
+                                            me.$http.get(`${item.url}`).then(function (pathResult) {
+                                                console.log(atob(pathResult.data.content))
+                                                // var tmpUrl = pathResult.data.html_url.replace("https://github.com", "https://raw.githubusercontent.com").replace("/blob", "")
+                                                // me.$http.get(tmpUrl).then(function (yamlResult) {
+                                                //     console.log(tmpUrl)
+                                                //     // resultYaml.push(resultYaml + "\n---\n" + yamlResult.data)
+                                                //     // me.localYamlText = resultYaml
+                                                //     // me.drawFromYaml()
+                                                // })
+                                            })
+                                        }
+                                    }
+                                })
+                            })
+                        })
+                    };
 
-                await me.putObject(`localstorage://localLists`, lists);
+                    var promise = function () {
+                        return new Promise(function (resolve, reject) {
+                            me.$http.get(`https://api.github.com/repos/${user}/${repo}/git/trees/${branch}`).then(function (result) {
+                                result.data.tree.forEach(async function (item, idx) {
+                                    if (item.type == 'tree')
+                                        await recursiveTree(item.url, splitPath)
+                                    else if (item.name.includes("yaml")) {
+                                        var tmpUrl = item.data.html_url.replace("https://github.com", "https://raw.githubusercontent.com").replace("/blob", "")
+                                        me.$http.get(tmpUrl).then(function (yamlResult) {
+                                            console.log(tmpUrl)
+                                            // resultYaml.push(resultYaml + "\n---\n" + yamlResult.data)
+                                            // me.localYamlText = resultYaml
+                                            // me.drawFromYaml()
+                                        })
+                                    }
+
+                                    if (result.data.tree.length - 1 == idx) {
+                                        resolve()
+                                    }
+                                })
+
+                            });
+                        })
+                    }
+
+                    var promiseAsync = promise()
+
+                    Promise.all([promiseAsync]).then(function () {
+                        console.log(resultYaml)
+                    })
+                }
+            } else if (window.opener) {
+                window.addEventListener("message", me.messageProcessing);
+                window.opener.postMessage({message: "kubernetesYaml"}, "*");
             }
 
-            localStorage.removeItem('projectId');
-            localStorage.removeItem('sharedMultiTimeStamp');
+
+            // window.addEventListener("beforeunload", (event) => {
+            //     var delta = jsondiffpatch.diff(me.oldCopyValue, me.newCopyValue);
+            
+            //     if (me.initLoad && delta && !me.embedded) {
+            //         me.modifiedElement(delta)
+            //     } else if(delta && me.embedded) {
+            //         me.$emit('input', me.newCopyValue);
+            //     }
+
+            //     me.changedByMe = true
+            // });
+
         },
         watch: {
             argoServerInfo: {
                 handler(newVal) {
-                    var me = this;
+                    var me = this
                     if (newVal.name && newVal.namespace) {
-                        me.clusterItems.forEach((item, idx) => {
+                        me.clusterItems.forEach(function (item, idx) {
                             if (item.title == 'Argo') {
-                                me.clusterItems[idx].check = true;
+                                me.clusterItems[idx].check = true
                             }
                         })
                         me.getArgoServerUrl();
@@ -1941,142 +2203,165 @@
             },
             argoCdInfo: {
                 handler(newVal) {
-                    var me = this;
+                    var me = this
                     if (newVal.name && newVal.namespace) {
-                        me.clusterItems.forEach((item, idx) => {
+                        me.clusterItems.forEach(function (item, idx) {
                             if (item.title == 'Argo') {
-                                me.clusterItems[idx].check = true;
+                                me.clusterItems[idx].check = true
                             }
-                        });
+                        })
                         me.getArgoCdUrl();
                     }
                 }
             },
+            // "copyValue": {
+            //     deep: true,
+            //     handler: function (newVal, oldVal) {
+            //         var me = this
+            //
+            //         // // me.newCopyValue = newVal;
+            //         // // me.oldCopyValue = oldVal;
+            //         var delta = jsondiffpatch.diff(oldVal, newVal);
+            //         //
+            //         // me.changedByMe = true;
+            //         // me.modifiedElement(delta)
+            //         if (me.initLoad && delta) {
+            //             me.modifiedElement(delta)
+            //         }
+            //     }
+            // },
             "value.elements": {
                 deep: true,
-                handler: _.debounce(function(newVal) {
+                handler: _.debounce(function (newVal) {
                     var me = this;
                     var reqUrl = "";
                     if (newVal && !me.embedded) {
-                        Object.keys(newVal).forEach(async function(key) {
-                            var item = newVal[key];
+                        Object.keys(newVal).forEach(async function (key) {
+                            var item = newVal[key]
                             if (item) {
-                                if (item._type == "Pod" || item._type == "Deployment" ||
-                                        item._type == "ReplicaSet" || item._type == "StatefulSet" ||
-                                        item._type == "DaemonSet"
-                                ) {
-                                    var reqObj = await me.getReqUrl(item);
+                                if (item._type == "Pod" || item._type == "Deployment" || item._type == "ReplicaSet" || item._type == "StatefulSet" || item._type == "DaemonSet") {
+                                    var reqObj = await me.getReqUrl(item)
                                     reqUrl = reqObj.reqUrl + item.object.metadata.name;
-
                                     if (item.object.metadata.name && item.status) {
                                         me.getStatusData(reqUrl, item);
                                     }
                                 }
                             }
-                        });
+                        })
                     }
                 }, 4000)
             },
             async template() {
-                var me = this;
-                me.$nextTick(() => {
-                    me.treeOpen = true;
-                });
+                var me = this
+                await me.callGenerateCode();
+
+                me.$nextTick(function () {
+                    me.treeOpen = true
+                })
+            },
+            selectedElements() {
+                var me = this
+
+                if(me.selectedElements.length == 0){
+                    me.commandTabs = ['Create/Apply']
+                }
+
             },
         },
         methods: {
+            moveModelUrl(modelId){
+                this.$router.push({path: `/kubernetes/${modelId}`});
+            },
             async postParentWindow() {
                 var me = this;
                 me.template = "Single File";
-                var code = me.treeList[0].code;
+                var source = await me.callGenerateCode();
+                var code = me.treeList[0].code
                 var message = {
                     "message": "updateYaml",
                     "content": code
                 };
-                window.opener.postMessage(message, "*");
+                window.opener.postMessage(message, "*")
             },
             messageProcessing(e) {
-                var me = this;
+                var me = this
                 if (e.data.message === "syncYaml") {
                     me.localYamlText = e.data.resource;
                     me.drawFromYaml();
                 }
             },
             codePreviewLeftReSize() {
-                this.codePreviewLeftReSizeNumber++;
+                this.codePreviewLeftReSizeNumber++
 
                 if (this.codePreviewLeftReSizeNumber == 1) {
                     $(".code-preview-left-re-size").css("display", "none");
                 } else if (this.codePreviewLeftReSizeNumber == 2) {
                     $(".code-preview-left-re-size").css("display", "block");
-                    this.codePreviewLeftReSizeNumber = 0;
+                    this.codePreviewLeftReSizeNumber = 0
                 }
             },
             async getNamespaceList() {
                 var me = this;
                 var namespaceList = await me.getNamespace();
                 me.namespaceList = namespaceList;
-                me.step++;
+                me.step++
             },
             checkName(item) {
-                return item.namespace + "/" + item.name;
+                return item.namespace + "/" + item.name
             },
             endDiffCheck() {
                 this.codeModalhide();
-                this.diffCheck = false;
+                this.diffCheck = false
             },
+            // async validateStep() {
+            //
+            // },
             async getGitRepoList() {
                 try {
-                    var me = this;
-
-                    if (me.gitInfo.token || me.gitInfo.username) {
+                    var me = this
+                    if (me.gitInfo.token || me.gitInfo.username)
                         var octokit = new Octokit({
                             auth: me.gitInfo.token,
                         });
-                    }
-                    
                     var username = me.gitInfo.username;
                     var repoList = await octokit.repos.listForUser({username});
-
+                    console.log(repoList)
+                    me.repositoryList = []
                     var toArray = Object.entries(repoList.data);
-                    me.repositoryList = [];
-                    toArray.forEach(data => {
-                        me.repositoryList.push({
-                            name: data[1].name,
-                            url: data[1].html_url
-                        });
-                    });
+                    toArray.forEach(data => me.repositoryList.push({name: data[1].name, url: data[1].html_url}));
 
-                    me.step++;
-
+                    me.step++
                 } catch (e) {
                     if (e.code == 401) {
-                        alert("AccessToken을 확인하여 주세요");
+                        alert("AccessToken을 확인하여 주세요")
                     }
+                    // alert(e)
                 }
+
             },
             async setGitRepository() {
                 try {
-                    var me = this;
+                    var me = this
                     var url = new URL(me.gitInfo.url);
                     var path = url.pathname;
                     var splitPath = path.split("/");
                     var yamlExistCheck = false;
                     me.settingGitInfoDialog = false;
                     me.step = 1;
-                    me.gitOpsLoading = true;
+                    me.gitOpsLoading = true
                     var user = splitPath[1];
                     var repo = splitPath[2];
-                    this.gitInfo.name = repo;
+                    this.gitInfo.name = repo
                     var branch = splitPath[4] ? splitPath[4] : "master";
                     me.template = 'Separate File per kind';
-                    yamlExistCheck = await me.getKubeez(user, repo, branch);
+                    yamlExistCheck = await me.getKubeez(user, repo, branch)
+                    var source = await me.callGenerateCode();
                     var octokit = new Octokit({
                         auth: me.gitInfo.token,
                     });
 
                     function sleep(ms) {
-                        return new Promise(resolve => setTimeout(resolve, ms));
+                        return new Promise(resolve => setTimeout(resolve, ms))
                     }
 
                     if (yamlExistCheck) {
@@ -2087,7 +2372,7 @@
                         me.diffCheck = true;
 
                         while (me.diffCheck) {
-                            await sleep(3000);
+                            await sleep(3000)
                         }
                         const sha = await me.getSHA(octokit, user, repo);
                         const status = await me.commitArticle(octokit, user, repo, sha);
@@ -2102,18 +2387,19 @@
                         me.addArgoApplication();
                     }
                 } catch (e) {
-                    console.log(e);
                     me.gitOpsLoading = false;
+                    console.log(e)
                     if (e.code == 401) {
-                        alert("입력된 정보를 확인해주세요.");
+                        alert("입력된 정보를 확인해주세요.")
                     }
+                    // alert(e);
                 }
 
             },
             async commitArticle(octokit, user, repo, sha) {
-                var me = this;
+                var me = this
                 const path = `kubeez/kubeez.yaml`;
-                var result;
+                var result
                 if (sha)
                     result = await octokit.repos.createOrUpdateFileContents({
                         owner: user,
@@ -2132,14 +2418,15 @@
                         content: Base64.encode(me.treeList[0].code),
                     });
 
-                return result ? result.status : 500;
+                return result ? result.status : 500
             },
             updatePathTmp(update) {
-                var me = this;
+                var me = this
                 me.tmpTreeList[0].code = update.code;
             },
             async getSHA(octokit, user, repo) {
-                var path = 'kubeez/kubeez.yaml';
+                var me = this
+                var path = 'kubeez/kubeez.yaml'
                 const result = await octokit.repos.getContent({
                     owner: user,
                     repo: repo,
@@ -2151,57 +2438,49 @@
                 return sha;
             },
             async getArgoServerUrl() {
-                var service = await this.getKubeApi('services', 
-                    this.argoServerInfo.namespace,
-                    this.argoServerInfo.name
-                );
-                var result = 'https://' + service.data.status.loadBalancer.ingress[0].ip + 
-                    ':' + service.data.spec.ports[0].port;
-                var checkClusterItems = false;
-                this.clusterItems.forEach((item) => {
+                var service = await this.getKubeApi('services', this.argoServerInfo.namespace, this.argoServerInfo.name)
+                var result = 'https://' + service.data.status.loadBalancer.ingress[0].ip + ':' + service.data.spec.ports[0].port
+                var checkClusterItems = false
+                this.clusterItems.forEach(function (item) {
                     if (item.title == 'Workflow Dashboard') {
-                        checkClusterItems = true;
+                        checkClusterItems = true
                     }
-                });
-
-                if (!checkClusterItems) {
-                    this.clusterItems.push({ title: 'Workflow Dashboard' });
-                }
-                this.argoUrl = result;
+                })
+                if (!checkClusterItems)
+                    this.clusterItems.push({title: 'Workflow Dashboard'})
+                this.argoUrl = result
             },
             async getArgoCdUrl() {
-                var service = await this.getKubeApi('services', this.argoCdInfo.namespace, this.argoCdInfo.name);
-                var result = 'https://' + service.data.status.loadBalancer.ingress[0].ip + ':' + service.data.spec.ports[0].port;
-                var checkClusterItems = false;
+                var service = await this.getKubeApi('services', this.argoCdInfo.namespace, this.argoCdInfo.name)
+                var result = 'https://' + service.data.status.loadBalancer.ingress[0].ip + ':' + service.data.spec.ports[0].port
+                var checkClusterItems = false
                 this.clusterItems.forEach(function (item) {
                     if (item.title == 'ArgoCD Dashboard') {
                         checkClusterItems = true
                     }
                 })
-                if (!checkClusterItems) {
-                    this.clusterItems.push({title: 'ArgoCD Dashboard'});
-                }
-                this.argoCdUrl = result;
+                if (!checkClusterItems)
+                    this.clusterItems.push({title: 'ArgoCD Dashboard'})
+                this.argoCdUrl = result
             },
             async getYaml(url) {
                 var me = this;
                 return new Promise(function (resolve, reject) {
-                    me.$http.get(url)
-                    .then((result) => {
-                        resolve(result.data);
-                    }).catch(e => reject(e));
-                });
+                    me.$http.get(url).then(function (result) {
+                        resolve(result.data)
+                    }).catch(e => reject(e))
+                })
             },
             getKubeez(user, repo, branch) {
-                var me = this;
-                var exist = false;
-                me.existYaml = [];
+                var me = this
+                var exist = false
+                me.existYaml = []
                 return new Promise(function (resolve, reject) {
                     me.$http.defaults.headers.common["Authorization"] = `bearer ${me.gitInfo.token}`
-                    me.$http.get(`https://api.github.com/repos/${user}/${repo}/git/trees/${branch}`).then((result) => {
-                        result.data.tree.forEach(item => {
+                    me.$http.get(`https://api.github.com/repos/${user}/${repo}/git/trees/${branch}`).then(function (result) {
+                        result.data.tree.forEach(function (item) {
                             if (item.path == 'kubeez') {
-                                me.$http.get(item.url).then(kubeezPath => {
+                                me.$http.get(item.url).then(function (kubeezPath) {
                                     kubeezPath.data.tree.forEach(async function (yaml) {
                                         var yaml = await me.getYaml(yaml.url);
                                         var codeValue = {
@@ -2210,30 +2489,33 @@
                                             'code': atob(yaml.content),
                                             'file': me.fileType('.yaml')
                                         }
-                                        me.existYaml.push(codeValue);
+                                        me.existYaml.push(codeValue)
                                     })
-                                });
+                                })
+
                                 exist = true;
                             }
-                        });
-                        resolve(exist);
-                    }).catch(error => reject(error));
-                });
+                        })
+                        resolve(exist)
+                    }).catch(error => reject(error))
+                })
+
             },
             getArgoApplication() {
-                var me = this;
+                var me = this
+                var serverToken;
                 var serverUrl = localStorage.getItem('clusterAddress');
                 return new Promise(function (resolve) {
-                    me.$http.get(`${me.getProtocol()}//api.${me.getTenantId()}/apis/argoproj.io/v1alpha1/namespaces/${me.argoCdInfo.namespace}/applications/${me.gitInfo.name}/status?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`
-                    ).then((result) => {
-                        resolve(true);
-                    }).catch((e) => {
-                        resolve(false);
+                    me.$http.get(`${me.getProtocol()}//api.${me.getTenantId()}/apis/argoproj.io/v1alpha1/namespaces/${me.argoCdInfo.namespace}/applications/${me.gitInfo.name}/status?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then(function (result) {
+                        resolve(true)
+                    }).catch(function (e) {
+                        resolve(false)
                     })
-                });
+                })
+
             },
             addArgoApplication() {
-                var me = this;
+                var me = this
                 var spec = {
                     "apiVersion": "argoproj.io/v1alpha1",
                     "kind": "Application",
@@ -2259,170 +2541,174 @@
                             }
                         }
                     }
-                };
+                }
                 var serverUrl = localStorage.getItem('clusterAddress');
-                me.$http.post(`${me.getProtocol()}//api.${me.getTenantId()}/apis/argoproj.io/v1alpha1/namespaces/${me.argoCdInfo.namespace}/applications?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`, spec
-                ).then((result) => {
-                }).catch(e => {
-                    console.log(e);
-                });
+                me.$http.post(`${me.getProtocol()}//api.${me.getTenantId()}/apis/argoproj.io/v1alpha1/namespaces/${me.argoCdInfo.namespace}/applications?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`, spec).then(function (result) {
+                }).catch(function (e) {
+                    console.log(e)
+                })
             },
             getClassPath(path) {
                 if (this.classId) {
-                    var classId = this.classId.replace('@', '/');
+                    var classId = this.classId.replace('@', '/')
                 } else {
-                    if (this.$route.params.classId) {
-                        var classId = this.$route.params.classId.replace('@', '/');
-                    }
+                    if (this.$route.params.classId)
+                        var classId = this.$route.params.classId.replace('@', '/')
                 }
 
                 if (this.courseId) {
-                    var courseId = this.courseId;
+                    var courseId = this.courseId
                 } else {
-                    var courseId = this.$route.params.courseId;
+                    var courseId = this.$route.params.courseId
                 }
                 return `${courseId}/classes/${classId}/${path}`;
             },
             existServiceAccountCheck(hashName) {
-                var me = this;
+                var me = this
                 var serverToken;
-                var serverUrl;
+                var serverUrl
                 if (this.$route.params.courseId) {
                     serverToken = me.$parent.classInfo.token;
                     serverUrl = me.$parent.classInfo.serverUrl;
                 }
-                return new Promise((resolve) => {
-                    me.$http.get(`${me.getProtocol()}//api.${me.getTenantId()}/api/v1/namespaces/${hashName}/serviceaccounts/${hashName}?serverUrl=${serverUrl}&token=${serverToken}`
-                    ).then((result) => {
-                        resolve(result);
-                    }).catch((e) => {
-                        resolve(false);
-                    });
-                });
+                return new Promise(function (resolve) {
+                    me.$http.get(`${me.getProtocol()}//api.${me.getTenantId()}/api/v1/namespaces/${hashName}/serviceaccounts/${hashName}?serverUrl=${serverUrl}&token=${serverToken}`).then(function (result) {
+                        resolve(result)
+                    }).catch(function (e) {
+                        resolve(false)
+                    })
+                })
             },
             hashCode(s) {
-                return s.split("").reduce((a, b) => {
+                return s.split("").reduce(function (a, b) {
                     a = ((a << 5) - a) + b.charCodeAt(0);
-                    return a & a;
+                    return a & a
                 }, 0);
             },
             loadYaml(yaml) {
                 var yamlList = yaml.split("---");
                 var result = "";
-                var me = this;
-                yamlList.forEach((item) => {
+                var me = this
+                yamlList.forEach(function (item) {
                     if (item.length > 1) {
-                        var temp = YAML.parse(item);
-                        result += '--- \n' + me.yamlFilter(json2yaml.stringify(temp));
+                        var temp = YAML.parse(item)
+                        result += '--- \n' + me.yamlFilter(json2yaml.stringify(temp))
                     }
-                });
-                this.localYamlText = result;
+                })
+                this.localYamlText = result
                 this.yamlPanel = true;
             },
             customFilter(item, queryText, itemText) {
-                var lowItemText = itemText.toLowerCase();
-                var lowQueryText = queryText.toLowerCase();
-                return lowItemText.startsWith(lowQueryText);
+                var lowItemText = itemText.toLowerCase()
+                var lowQueryText = queryText.toLowerCase()
+                return lowItemText.startsWith(lowQueryText)
             },
             searchKeyDown(event) {
-                var me = this;
+                var me = this
                 if (!me.readOnly) {
                     if (event.keyCode == 13 && me.searchKeyword) {
                         me.searchKeyword.x = 500 + Math.random() * 200;
                         me.searchKeyword.y = 280 + Math.random() * 150;
-                        me.addElement(me.searchKeyword, null, true);
-                        me.searchKeyword = '';
-                        me.isSearch = false;
+                        me.addElement(me.searchKeyword, null, true)
+                        me.searchKeyword = ''
+                        me.isSearch = false
                     }
                 }
+
             },
             onLoad() {
+                console.log('iframe loaded');
                 this.iframeLoading = false;
             },
             changeCategory(key) {
-                var me = this;
-                if (me.selectedCategoryIndex == key) {
+                // console.log(key)
+                var me = this
+                if (me.selectedCategoryIndex == key)
                     me.selectedCategoryIndex = null;
-                } else {
-                    me.selectedCategoryIndex = key;
-                }
+                else
+                    me.selectedCategoryIndex = key
             },
+
             toolStyle(cardIndex, categoryIndex, cardLength) {
                 var me = this
-                var angle =  (cardIndex - categoryIndex/10) * 40 / (cardLength +1) - 10;
+                var angle = (cardIndex - categoryIndex / 10) * 40 / (cardLength + 1) - 10;
                 var angle2 = cardIndex * 10 / cardLength - 3;
-                var radians = (Math.PI/ 180) * angle;
+                var radians = (Math.PI / 180) * angle;
 
                 var curvedX = Math.cos(radians) * 500 - 500;
                 var curvedY = Math.sin(radians) * 700 + categoryIndex * 10 + 50;
-                
+
                 return `left: ${100 + curvedX}px; top: ${104 + curvedY}px; text-align: center; position: absolute; transform: rotate(${angle2}deg);`;
+            },
+            clear() {
+                var pi = localStorage.getItem('projectId')
+                localStorage.removeItem(pi);
             },
             functionSelect(title) {
                 var me = this
                 if (title == 'Code Preview') {
-                    me.openCodeViewer();
+                    me.codeModalShow();
                 } else if (title == 'Download Archive') {
-                    me.generateZipDialog = true;
+                    me.generateZipDialog = true
                 } else if (title == 'Git Configure') {
                     me.getArgoSetting();
+                    me.settingGitInfoDialog = true
                 } else if (title == 'Sync') {
-                    me.setGitRepository();
+                    me.setGitRepository()
                 } else if (title == 'Deploy to Server') {
-                    me.deployDialog = true;
+                    me.deployDialog = true
                 } else if (title == 'Duplicate') {
-                    me.saveComposition('duplicate');
+                    me.saveComposition('duplicate')
                 } else if (title == 'Download model File') {
-                    me.downloadModelToJson();
+                    me.downloadModelToJson()
                 } else if (title == 'Save to Server') {
-                    me.saveComposition('save');
+                    me.saveComposition('save')
                 }
             },
             functionReverse(title) {
-                var me = this;
+                var me = this
                 if (title == 'From Cluster') {
-                    me.drawFromCluster();
+                    me.drawFromCluster()
                 } else if (title == 'From Local') {
-                    me.yamlModalShow();
+                    me.yamlModalShow()
                 }
             },
             async getArgoSetting() {
-                var me = this;
-                me.settingGitInfoDialog = true;
+                var me = this
                 if (localStorage.getItem('clusterAddress') && localStorage.getItem('kuberToken')) {
                     me.argoServerLists = [];
                     me.argoCdLists = [];
                     var namespace = await me.getNamespace();
-                    namespace.forEach((name) => {
+                    namespace.forEach(function (name) {
                         me.findArgo(name);
                     });
                 } else {
                     me.argoDialog = false;
                     me.snackbar.show = true;
                     me.snackbar.color = 'error';
-                    me.snackbar.text = 'To use Shell Terminal, A Cluster must be selected using Cluster Managing Menu.';
+                    me.snackbar.text = 'To use Shell Terminal, A Cluster must be selected using Cluster Managing Menu.'
                 }
             },
             openArgoDashboard() {
-                window.open(this.argoUrl, '_blank');
+                window.open(this.argoUrl, '_blank')
             },
             openArgoCdDashboard() {
-                window.open(this.argoCdUrl, '_blank');
+                window.open(this.argoCdUrl, '_blank')
             },
             async findArgo(namespace) {
-                var me = this;
-                var tmp = await me.getKubeApis("deployments", namespace);
-                tmp.forEach((result) => {
+                var me = this
+                var tmp = await me.getKubeApis("deployments", namespace)
+                tmp.forEach(function (result) {
                     if (result.metadata.name == 'argo-server') {
-                        me.argoServerLists.push({name: result.metadata.name, namespace: namespace});
+                        me.argoServerLists.push({name: result.metadata.name, namespace: namespace})
                     }
                     if (result.metadata.name == 'argocd-server') {
-                        me.argoCdLists.push({name: result.metadata.name, namespace: namespace});
+                        me.argoCdLists.push({name: result.metadata.name, namespace: namespace})
                     }
-                });
+                })
             },
             getApiList() {
-                var me = this;
+                var me = this
 
                 return new Promise(async function (resolve, reject) {
                     var serverUrl = localStorage.getItem('clusterAddress');
@@ -2431,29 +2717,29 @@
                     var user
                     var currentContext = config.data["current-context"];
                     var token;
-                    config.data.contexts.forEach((context) => {
+                    config.data.contexts.forEach(function (context) {
                         if (context.context.cluster == currentContext) {
                             namespace = context.context.namespace;
-                            user = context.context.user;
+                            user = context.context.user
                         }
-                    });
-                    config.data.users.forEach((userTmp) => {
+                    })
+                    config.data.users.forEach(function (userTmp) {
                         if (userTmp.name == user) {
-                            token = userTmp.user.token;
-                            me.clusterInfo.token = token;
+                            token = userTmp.user.token
+                            me.clusterInfo.token = token
                         }
-                    });
-                    let apiServer=localStorage.getItem("apiServer");
-                    me.$http.get(`${me.getProtocol()}//${apiServer}/api/v1?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then((result) => {
-                        var getList = [];
-                        result.data.resources.forEach((resource) => {
+                    })
+                    let apiServer=localStorage.getItem("apiServer")
+                    me.$http.get(`${me.getProtocol()}//${apiServer}/api/v1?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then(function (result) {
+                        var getList = []
+                        result.data.resources.forEach(function (resource) {
                             if (resource.verbs.includes("get") && !resource.name.includes("/")) {
-                                getList.push(resource.name);
+                                getList.push(resource.name)
                             }
-                        });
-                        resolve(getList);
-                    }).catch(e => console.log(e));
-                });
+                        })
+                        resolve(getList)
+                    }).catch(e => console.log(e))
+                })
             },
             async getApisList() {
                 var me = this
@@ -2477,7 +2763,7 @@
                             me.clusterInfo.token = token
                         }
                     })
-                    me.$http.get(`${me.getProtocol()}//api.msaez.io/apis/apps/v1?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then((result) => {
+                    me.$http.get(`${me.getProtocol()}//api.msaez.io/apis/apps/v1?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then(function (result) {
                         var getList = []
                         result.data.resources.forEach(function (resource) {
                             if (resource.verbs.includes("get") && !resource.name.includes("/")) {
@@ -2493,7 +2779,7 @@
                 var serverUrl = localStorage.getItem('clusterAddress');
                 // var serverToken = localStorage.getItem('kuberToken');
                 return new Promise(function (resolve, reject) {
-                    me.$http.get(`${me.getProtocol()}//api.msaez.io/api/v1/namespaces?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then((result) => {
+                    me.$http.get(`${me.getProtocol()}//api.msaez.io/api/v1/namespaces?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then(function (result) {
                         var getList = []
                         result.data.items.forEach(function (namespace) {
                             getList.push(namespace.metadata.name)
@@ -2502,11 +2788,11 @@
                     }).catch(e => console.log(e))
                 })
             },
-            getIngersses(namespace) {
+            getIngresses(namespace) {
                 var me = this
                 var serverUrl = localStorage.getItem('clusterAddress');
                 return new Promise(function (resolve, reject) {
-                    me.$http.get(`${me.getProtocol()}//api.msaez.io/apis/extensions/v1beta1/namespaces/${namespace}/ingresses?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then((result) => {
+                    me.$http.get(`${me.getProtocol()}//api.msaez.io/apis/extensions/v1beta1/namespaces/${namespace}/ingresses?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then(function (result) {
                         result.data.items.forEach(function (item, idx) {
                             var tmp = {
                                 "kind": result.data.kind.includes('List') ? result.data.kind.replace('List', '') : result.data.kind,
@@ -2519,18 +2805,28 @@
                     }).catch(e => console.log(e))
                 })
             },
+            // getStatefulSets(namespace) {
+            //     var me = this
+            //     var serverUrl = localStorage.getItem('clusterAddress');
+            //     var serverToken = localStorage.getItem('kuberToken');
+            //     return new Promise(function (resolve, reject) {
+            //         me.$http.get(`${me.getProtocol()}//api.msaez.io/apis/apps/v1/namespaces/${namespace}/statefulsets?serverUrl=${serverUrl}&token=${serverToken}`).then(function (result) {
+            //             resolve(result.data.items)
+            //         }).catch(e => console.log(e))
+            //     })
+            // },
             getKubeApi(resource, namespace, name) {
                 var me = this
                 var serverUrl = localStorage.getItem('clusterAddress');
                 if (name)
                     return new Promise(function (resolve, reject) {
-                        me.$http.get(`${me.getProtocol()}//api.msaez.io/api/v1/namespaces/${namespace}/${resource}/${name}?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then((result) => {
+                        me.$http.get(`${me.getProtocol()}//api.msaez.io/api/v1/namespaces/${namespace}/${resource}/${name}?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then(function (result) {
                             resolve(result)
                         }).catch(e => console.log(e))
                     })
                 else if (namespace)
                     return new Promise(function (resolve, reject) {
-                        me.$http.get(`${me.getProtocol()}//api.msaez.io/api/v1/namespaces/${namespace}/${resource}?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then((result) => {
+                        me.$http.get(`${me.getProtocol()}//api.msaez.io/api/v1/namespaces/${namespace}/${resource}?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then(function (result) {
                             result.data.items.forEach(function (item, idx) {
                                 var tmp = {
                                     "kind": result.data.kind.includes('List') ? result.data.kind.replace('List', '') : result.data.kind,
@@ -2544,7 +2840,7 @@
                     })
                 else
                     return new Promise(function (resolve, reject) {
-                        me.$http.get(`${me.getProtocol()}//api.msaez.io/api/v1/${resource}?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then((result) => {
+                        me.$http.get(`${me.getProtocol()}//api.msaez.io/api/v1/${resource}?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then(function (result) {
                             result.data.items.forEach(function (item, idx) {
                                 var tmp = {
                                     "kind": result.data.kind.includes('List') ? result.data.kind.replace('List', '') : result.data.kind,
@@ -2567,9 +2863,9 @@
                     serverUrl = me.$parent.classInfo.serverUrl;
                 }
                 return new Promise(function (resolve) {
-                    me.$http.get(`${me.getProtocol()}//api.${me.getTenantId()}/api/v1/namespaces/${hashName}/secrets/${secretName}?serverUrl=${serverUrl}&token=${serverToken}`).then((result) => {
+                    me.$http.get(`${me.getProtocol()}//api.${me.getTenantId()}/api/v1/namespaces/${hashName}/secrets/${secretName}?serverUrl=${serverUrl}&token=${serverToken}`).then(function (result) {
                         resolve(result.data.data.token)
-                    }).catch((e) => {
+                    }).catch(function (e) {
                         resolve(false)
                     })
                 })
@@ -2580,7 +2876,7 @@
                 var serverToken = localStorage.getItem('kuberToken');
                 if (namespace)
                     return new Promise(function (resolve, reject) {
-                        me.$http.get(`${me.getProtocol()}//api.msaez.io/apis/apps/v1/namespaces/${namespace}/${resource}?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then((result) => {
+                        me.$http.get(`${me.getProtocol()}//api.msaez.io/apis/apps/v1/namespaces/${namespace}/${resource}?serverUrl=${serverUrl}&token=${me.clusterInfo.token}`).then(function (result) {
                             result.data.items.forEach(function (item, idx) {
                                 var tmp = {
                                     "kind": result.data.kind.includes('List') ? result.data.kind.replace('List', '') : result.data.kind,
@@ -2594,7 +2890,7 @@
                     })
                 else
                     return new Promise(function (resolve, reject) {
-                        me.$http.get(`${me.getProtocol()}//api.msaez.io/apis/apps/v1/${resource}?serverUrl=${serverUrl}&token=${serverToken}`).then((result) => {
+                        me.$http.get(`${me.getProtocol()}//api.msaez.io/apis/apps/v1/${resource}?serverUrl=${serverUrl}&token=${serverToken}`).then(function (result) {
                             result.data.items.forEach(function (item, idx) {
                                 var tmp = {
                                     "kind": result.data.kind.includes('List') ? result.data.kind.replace('List', '') : result.data.kind,
@@ -2607,6 +2903,7 @@
                         }).catch(e => console.log(e))
                     })
             },
+
             async drawFromCluster() {
                 var me = this
                 me.value = {'elements': {}, 'relations': {}};
@@ -2684,7 +2981,7 @@
 
                 var getIngressList = new Promise((resolve, reject) => {
                     namespaceList.forEach(async function (namespace, index) {
-                        var tmp = await me.getIngersses(namespace)
+                        var tmp = await me.getIngresses(namespace)
                         ingressList.set(namespace, tmp)
                         if (index === namespaceList.length - 1) resolve();
                     })
@@ -4133,16 +4430,18 @@
                 })
             },
             moveToNamespace() {
-                var me = this;
-                var value =  me.embedded ? me.value.k8sValue : me.value;
-                Object.keys(value.elements).forEach((key) => {
+                var me = this
+                var value =  me.embedded ? me.value.k8sValue : me.value
+                Object.keys(value.elements).forEach(function (key) {
                     if(value.elements[key]) {
-                        me.$set(value.elements[key].elementView, 'x', value.elements[key].elementView.x + 1);
+                        me.$set(value.elements[key].elementView, 'x', value.elements[key].elementView.x + 1)
                     }
-                });
+                    // me.value.elements[item].elementView.x = me.value.elements[item].elementView.x + 1
+                })
             },
             yamlModalShow() {
-                var me = this;
+                var me = this
+
                 me.$modal.show('yamlModal');
                 me.codeView = true;
             },
@@ -4150,48 +4449,21 @@
                 this.codeView = false;
                 this.$modal.hide('yamlModal');
             },
-            async openCodeViewer() {
-                var me = this;
+            async codeModalShow() {
+                var me = this
 
-                try {
-                    me.gitAccessToken = localStorage.getItem("gitAccessToken");
-                    // me.model = []
+                await me.callGenerateCode()
 
-                    var filtered = me.filteredProjectName(me.projectName);
-                    if (filtered.replace(/\s/gi, "") == "") {
-                        // validationResults
-                        var validationResultIndex =
-                            me.canvasValidationResults.findIndex(
-                                (x) => x.code == me.ESC_NOT_PJ_NAME
-                            );
-                        var isExistValidationResult =
-                            validationResultIndex == -1 ? false : true;
-                        if (!isExistValidationResult) {
-                            me.canvasValidationResults.push(
-                                me.validationFromCode(me.ESC_NOT_PJ_NAME)
-                            );
-                        }
-                        me.projectName = window.prompt(
-                            "Please input your Project Name(Alphabet Only)"
-                        );
-                        return false;
-                    } else {
-                        me.checkName = true;
-                        me.openSeparatePanel();
-                        return true;
-                    }
-                } catch (e) {
-                    console.error(e);
-                    alert("openCodeViewer:: ", e);
-                    return false;
-                }
+                me.$modal.show('codeModal');
+                me.codeView = true;
             },
             codeModalhide() {
                 this.$modal.hide('codeModal');
                 this.codeView = false;
             },
-            toggleGrip() {
+            toggleGrip: function () {
                 this.dragPageMovable = !this.dragPageMovable;
+
                 if (this.dragPageMovable) {
                     this.cursorStyle = 'cursor: url("/static/image/symbol/hands.png"), auto;';
                     this.handsStyle = ' color: #ffc124;';
@@ -4202,20 +4474,27 @@
             },
             onConnectShape: function (edge, from, to) {
                 var me = this;
-                var edgeElement;
+                //존재하는 릴레이션인 경우 (뷰 컴포넌트), 데이터 매핑에 의해 자동으로 from, to 가 변경되어있기 때문에 따로 로직은 필요없음.
+                //=> 바뀌어야 함.
+                //신규 릴레이션인 경우에는 릴레이션 생성
+                var edgeElement, originalData;
+                var isComponent = false;
                 if (edge.shape) {
                     edgeElement = edge;
                 } else {
+                    isComponent = true;
                     edgeElement = edge.element;
                 }
+                // console.log(from, to)
 
                 if (edgeElement && from && to) {
                     var vertices = '[' + edgeElement.shape.geom.vertices.toString() + ']';
-                    var sourceComponent = from.$parent ? from.$parent : from;
-                    var targetComponent = to.$parent ? to.$parent : to;
-                    var sourceValue = sourceComponent.value ? sourceComponent.value : sourceComponent;
-                    var targetValue = targetComponent.value ? targetComponent.value : targetComponent;
-                    var customRelation = sourceValue.relationComponent ? sourceValue.relationComponent : 'kube-relation';
+
+                    var sourceComponent = from.$parent ? from.$parent : from
+                    var targetComponent = to.$parent ? to.$parent : to
+                    var sourceValue = sourceComponent.value ? sourceComponent.value : sourceComponent
+                    var targetValue = targetComponent.value ? targetComponent.value : targetComponent
+                    var customRelation = sourceValue.relationComponent ? sourceValue.relationComponent : 'kube-relation'
 
                     var componentInfo = {
                         component: customRelation,
@@ -4228,12 +4507,19 @@
                             style: JSON.stringify({}),
                             value: vertices,
                         }
-                    };
+                    }
 
                     sourceValue.elementView.id = from.id;
                     targetValue.elementView.id = to.id;
 
-                    me.canvas.removeShape(edgeElement, true);
+                    if (isComponent) {
+                        me.canvas.removeShape(edgeElement, true);
+                        //this.removeComponentByOpenGraphComponentId(edgeElement.id);
+                        //기존 컴포넌트가 있는 경우 originalData 와 함께 생성
+                    } else {
+                        me.canvas.removeShape(edgeElement, true);
+                        //기존 컴포넌트가 없는 경우 신규 생성
+                    }
 
                     if (me.validateRelation(from.id, to.id)) {
                         me.addElement(componentInfo);
@@ -4241,30 +4527,34 @@
                 }
             },
             modifyRelation(element) {
+
                 if (element.sourceElement.connectableType) {
                     if (element.sourceElement.connectableType.includes(element.targetElement._type)) {
-                        return false;
+                        return false
                     } else {
-                        return element;
+                        return element
                     }
                 } else {
-                    return false;
+                    return false
                 }
             },
-            addElement: function (componentInfo, object) {
+            addElement: function (componentInfo, object, isOpened) {
+                this.enableHistoryAdd = true;
                 var me = this;
+                var additionalData = {};
                 var vueComponent = me.getComponentByName(componentInfo.component);
                 var element;
 
                 if (componentInfo.component == "newCrd") {
-                    me.definedCrdDialog();
-                    return;
+                    me.definedCrdDialog()
+                    return
                 }
 
                 if (componentInfo.isRelation) {
                     var sourceValue = componentInfo.sourceElement.value ? componentInfo.sourceElement.value : componentInfo.sourceElement
                     var targetValue = componentInfo.targetElement.value ? componentInfo.targetElement.value : componentInfo.targetElement
 
+                    //relation info setting before makexxxx
                     element = vueComponent.computed.createNew(
                         this.uuid(),
                         sourceValue,
@@ -4317,54 +4607,69 @@
                             );
                         }
                     }
+
                 }
 
-                if(me.embedded) {
+
+
+                // var location = element.elementView ? me.value.elements : me.value.relations
+                // var eleId = element.elementView ? element.elementView.id : element.relationView.id
+                // if (componentInfo.component == "namespace") {
+                //     // location.unshift()
+                // }
+                // me.$set(location, eleId, element)
+
+                if(me.embedded){
                     if (!me.value.k8sValue) {
-                        me.value.k8sValue = {'elements': {}, 'relations': {}};
+                        me.value.k8sValue = {'elements': {}, 'relations': {}}
                     }
-                    me.addElementPush(me.value.k8sValue, element);
-                } else {
-                    me.addElementPush(me.value, element);
+                    me.addElementPush(me.value.k8sValue, element)
+                }else{
+                    me.addElementPush(me.value, element)
                 }
 
-                return element;
+                //auto openPanel
+                // me.autoOpenPanel = isOpened
+
+                //추천 element 리턴
+                return element
+
             },
             definedCrdDialog() {
-                var me = this;
-                me.definedDialog = true;
+                var me = this
+                me.definedDialog = true
             },
             addDefinedCrd(crdObj) {
                 var me = this
                 if (crdObj.kind == '' || crdObj.icon == '' || crdObj.color == '' || crdObj.yaml == '') {
-                    return;
+                    return
                 }
                 me.userDefinedCRD.push({
                     "_type": crdObj.kind,
                     "imgSrc": crdObj.icon,
                     "color": crdObj.color,
                     "object": jsyaml.load(crdObj.yaml)
-                });
-                localStorage['userDefinedCRD'] = JSON.stringify(me.userDefinedCRD);
+                })
+                localStorage['userDefinedCRD'] = JSON.stringify(me.userDefinedCRD)
                 crdObj = {
                     kind: '',
                     icon: '',
                     color: '',
                     yaml: ''
-                };
-                me.definedCrd = crdObj;
-                me.definedDialog = false;
+                }
+                me.definedCrd = crdObj
+                me.definedDialog = false
 
-                me.$nextTick(() => {
-                    window.location.reload();
-                });
+                me.$nextTick(function () {
+                    window.location.reload()
+                })
             },
             includeElement(obj) {
                 var me = this;
                 var include = false;
                 var elements = me.elementTypes.flat();
-                include = elements.some((el) => {
-                    var type = el.component.toLowerCase();
+                include = elements.some(function (el) {
+                    var type = el.component.toLowerCase()
                     if (type == obj || type.includes(obj) || obj.includes(type)) {
                         return true;
                     } else if (obj.includes('relation')) {
@@ -4373,36 +4678,16 @@
                 });
                 return include;
             },
-            filteredProjectName(projectName) {
-                var me = this;
-
-                var getProjectName = projectName ? projectName : me.projectName;
-                var filteredName = JSON.parse(JSON.stringify(getProjectName));
-                var pattern1 = /[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/gi; //특수문자 제거
-                var pattern2 = /[0-9ㄱ-ㅎ|ㅏ-ㅣ|가-힣~!@#$%^&*()_+|-|<>?:{}]/gi; // 한글 제거
-
-                if (filteredName) {
-                    if (pattern1.test(filteredName)) {
-                        filteredName = filteredName.replace(pattern1, "");
-                    }
-                    if (pattern2.test(filteredName)) {
-                        filteredName = filteredName.replace(pattern2, "");
-                    }
-                    filteredName = filteredName.toLowerCase();
-                } else {
-                    return "untitled";
-                }
-                return filteredName == "" ? "untitled" : filteredName;
-            },
-            getComponentByClassName(className) {
+            getComponentByClassName: function (className) {
                 var componentByClassName;
 
-                $.each(window.Vue.KubeModelingComponents, (i, component) => {
-                    if (component.default.computed && 
-                            component.default.computed.className && 
-                            component.default.computed.className() == className
-                    ) {
-                        componentByClassName = component.default;
+                var res = this.includeElement(className.toLowerCase())
+                $.each(window.Vue.KubeModelingComponents, function (i, component) {
+                    if (component.default.computed && component.default.computed.className && component.default.computed.className() == className) {
+                        componentByClassName = component.default
+                    } else if (component.default.computed && !res) {
+                        console.log(className)
+                        componentByClassName = component.default
                     }
                 });
                 return componentByClassName;
@@ -4411,87 +4696,221 @@
                 var type;
 
                 if (file.includes('.java')) {
-                    type = 'java';
+                    type = 'java'
                 } else if (file.includes('Dockerfile')) {
-                    type = 'docker';
+                    type = 'docker'
                 } else if (file.includes('.xml')) {
-                    type = 'xml';
+                    type = 'xml'
                 } else if (file.includes('.yaml') || file.includes('.yml') || file.includes('.properties') || file.includes('mvnw') || file.includes('.groovy')) {
-                    type = 'txt';
+                    type = 'txt'
                 } else if (file.includes('md')) {
-                    type = 'md';
+                    type = 'md'
                 } else if (file.includes('.jpg') || file.includes('.png') || file.includes('.jpeg')) {
-                    type = 'png';
+                    type = 'png'
                 } else if (file.includes('.json')) {
-                    type = 'json';
+                    type = 'json'
                 } else if (file.includes('.py')) {
-                    type = 'python';
+                    type = 'python'
                 }
 
-                return type;
+                return type
             },
-            yamlFilter(yamlText) {
-                let lines = yamlText.split('\n');
-                lines.splice(0, 1);
+            callGenerateCode() {
+                var me = this
+
+                return new Promise(function (resolve, reject) {
+                    me.treeList = []
+                    me.openCode = []
+                    var value = me.embedded ? me.value.k8sValue : me.value
+                    var copyValue = JSON.parse(JSON.stringify(value))
+
+                    if (me.template.length > 0) {
+                        var template = me.template;
+                    } else {
+                        var template = 'Separate File per kind';
+                    }
+
+                    if (template == 'Separate File') {
+                        var codeValue = {}
+
+                        Object.keys(copyValue.elements).forEach(function (key) {
+                            var item = copyValue.elements[key]
+                            if (item && item._type != "DestinationRuleSubset" && item._type != "WorkflowDag" && item._type != "WorkflowStep") {
+                                codeValue = {
+                                    'key': item.elementView.id,
+                                    'name': item.object.metadata.name + '.yaml',
+                                    'code': me.yamlFilter(json2yaml.stringify(item.object)),
+                                    'file': me.fileType('.yaml')
+                                }
+                                me.treeList.push(codeValue)
+                                resolve()
+                            }
+                        })
+                    } else if (template == 'Single File') {
+                        var yaml = ''
+
+                        Object.keys(copyValue.elements).forEach(function (key) {
+                            var item = copyValue.elements[key]
+                            if (item && item._type != "DestinationRuleSubset" && item._type != "WorkflowDag" && item._type != "WorkflowStep")
+                                yaml += '--- \n' + me.yamlFilter(json2yaml.stringify(item.object))
+                        })
+
+                        var codeValue = {
+                            'key': 'local',
+                            'name': 'local.yaml',
+                            'code': yaml,
+                            'file': me.fileType('.yaml')
+                        }
+
+                        me.treeList.push(codeValue)
+                        resolve()
+                    } else if (template == 'Separate File per kind') {
+                        me.setYamlPerKind(me.treeList)
+                        resolve()
+                    } else if (template == 'Helm') {
+                        me.setHelmChart()
+                        resolve()
+                    }
+                })
+            },
+            yamlFilter(yaml_text) {
+                let lines = yaml_text.split('\n')
+                lines.splice(0, 1)
                 for (let i in lines) {
-                    lines[i] = lines[i].substring(2, lines[i].length);
+                    lines[i] = lines[i].substring(2, lines[i].length)
                 }
-                yamlText = lines.join('\n');
-                yamlText = yamlText.replace(/ null/g, ' ');
-                return yamlText;
+                yaml_text = lines.join('\n')
+                yaml_text = yaml_text.replace(/ null/g, ' ')
+                // yaml_text = yaml_text.replace(/\"/g, '')
+                return yaml_text
             },
             async generateZip() {
-                var me = this;
-
+                var me = this
                 if (me.treeList.length > 0) {
-                    me.isDownloading = true;
+                    me.isDownloading = true
                     var zip = new JSZip();
 
                     if (!me.projectName) {
-                        var name = 'local';
+                        var name = 'local'
                     } else {
-                        var name = me.projectName;
+                        var name = me.projectName
                     }
 
                     if (me.template == 'Single File') {
-                        var filename = name + '.yaml';
-                        var code = me.treeList[0].code;
-                        var file = new File([code], filename, {type: "text/yaml;charset=utf-8"});
+                        var filename = name + '.yaml'
+                        var code = me.treeList[0].code
+                        var file = new File([code], filename, {type: "text/yaml;charset=utf-8"})
+
                         saveAs(file);
                     } else if (me.template == 'Helm') {
-                        var name = me.treeList[0].name;
-                        var templates = [];
+                        var name = me.treeList[0].name
+                        var templates = []
 
-                        me.treeList[0].children.forEach((item) => {
+                        me.treeList[0].children.forEach(function (item) {
                             if (item.name == 'templates') {
-                                templates = item;
+                                templates = item
                             } else {
-                                zip.folder(name).file(item.name, item.code);
+                                zip.folder(name).file(item.name, item.code)
                             }
-                        });
+                        })
 
-                        templates.children.forEach((item) => {
-                            zip.folder(name).folder('templates').file(item.name, item.code);
-                        });
+                        templates.children.forEach(function (item) {
+                            zip.folder(name).folder('templates').file(item.name, item.code)
+                        })
 
                         zip.generateAsync({type: "blob"})
-                            .then((content) => {
+                            .then(function (content) {
                                 saveAs(content, `${name}.zip`);
                             });
 
                     } else {
-                        me.treeList.forEach((item) => {
-                            zip.folder(name).file(item.name, item.code);
-                        });
+                        me.treeList.forEach(function (item) {
+                            zip.folder(name).file(item.name, item.code)
+                        })
 
                         zip.generateAsync({type: "blob"})
-                            .then((content) => {
+                            .then(function (content) {
                                 saveAs(content, `${name}.zip`);
                             });
                     }
-                    me.generateZipDialog = false;
-                    me.isDownloading = false;
+                    me.generateZipDialog = false
+                    me.isDownloading = false
                 }
+
+            },
+            setYamlPerKind(treeList) {
+                var me = this
+                var value = me.embedded ? me.value.k8sValue : me.value
+                var copyValue = JSON.parse(JSON.stringify(value))
+
+                Object.keys(copyValue.elements).forEach(function (key) {
+                    var item = copyValue.elements[key]
+                    if (item && item._type != "DestinationRuleSubset" && item._type != "WorkflowDag" && item._type != "WorkflowStep") {
+                        var name = (item._type).toLowerCase()
+
+                        var codeValue = {
+                            'key': item.elementView.id,
+                            'name': name + '.yaml',
+                            'code': '--- \n' + me.yamlFilter(json2yaml.stringify(item.object)),
+                            'file': me.fileType('.yaml')
+                        }
+
+                        var index = treeList.findIndex(function (val) {
+                            if (val.name == codeValue.name) {
+                                val.code += codeValue.code
+                            }
+                            return val.name == codeValue.name
+                        })
+
+                        if (index == -1) {
+                            treeList.push(codeValue)
+                        }
+                    }
+                })
+
+
+            },
+            setHelmChart() {
+                var me = this
+                var templates = []
+                var notes = {
+                    'key': 'notes',
+                    'name': 'NOTES.txt',
+                    'code': '',
+                    'file': 'txt'
+                }
+                templates.push(notes)
+                me.setYamlPerKind(templates)
+
+                me.chartJson = {
+                    "apiVersion": "v1",
+                    "name": me.projectName,
+                    "version": "0.1.0",
+                    "description": "A Helm chart for Kubernetes"
+                }
+
+                var folder = {
+                    'name': me.projectName,
+                    'children': [
+                        {
+                            'key': 'chart',
+                            'name': 'Chart.yaml',
+                            'code': me.yamlFilter(json2yaml.stringify(me.chartJson)),
+                            'file': me.fileType('.yaml')
+                        },
+                        {
+                            'name': 'templates',
+                            'children': templates
+                        },
+                        {
+                            'key': 'values',
+                            'name': 'values.yaml',
+                            'code': me.valuesYaml,
+                            'file': me.fileType('.yaml')
+                        }
+                    ]
+                }
+                me.treeList.push(folder)
             },
             async startIDE() {
                 var me = this
@@ -4590,7 +5009,7 @@
 
                 return hashName;
             },
-            async openTerminal() {
+            async terminal() {
                 try {
                     var me = this;
                     me.$EventBus.$emit('terminalFrameOn')
@@ -4696,7 +5115,7 @@
                         "course": me.$route.params.labId ? course : `${userGroup}`,
                         "clazz": me.$route.params.labId ? clazzName : `users`,
                         "userId": userId,
-                    }).then((result) => {
+                    }).then(function (result) {
                         resolve(result)
                     }).catch(error => alert(error))
                 })
@@ -4819,38 +5238,39 @@
                     console.log(err)
                 })
             },
+
             async getReqUrl(item) {
                 var me = this;
                 var reqUrl = '';
                 var type = pluralize(changeCase.camelCase(item._type));
 
                 if (item.object && item.object.apiVersion == 'v1') {
-                    var apiVersion = 'api/' + item.object.apiVersion;
+                    var apiVersion = 'api/' + item.object.apiVersion
                 } else if (item.object && item.object.apiVersion != 'v1') {
-                    var apiVersion = 'apis/' + item.object.apiVersion;
+                    var apiVersion = 'apis/' + item.object.apiVersion
                 }
                 var token;
                 if (item.object.metadata.namespace) {
-                    var namespace = item.object.metadata.namespace;
+                    var namespace = item.object.metadata.namespace
                 } else if (me.$parent.classInfo) {
                     var config = await me.getConfigFile();
                     var namespace;
-                    var user;
+                    var user
                     var currentContext = config.data["current-context"];
                     config.data.contexts.forEach(function (context) {
                         if (context.context.cluster == currentContext) {
                             namespace = context.context.namespace;
-                            user = context.context.user;
+                            user = context.context.user
                         }
                     })
                     config.data.users.forEach(function (userTmp) {
                         if (userTmp.name == user) {
-                            token = userTmp.user.token;
-                            me.clusterInfo.token = token;
+                            token = userTmp.user.token
+                            me.clusterInfo.token = token
                         }
                     })
                 } else {
-                    var namespace = 'default';
+                    var namespace = 'default'
                 }
 
                 reqUrl = `${me.getProtocol()}//api.${me.getTenantId()}` + '/' + apiVersion + '/namespaces/' + namespace + '/' + type + '/'
@@ -4860,7 +5280,7 @@
                     reqUrl = `${me.getProtocol()}//api.${me.getTenantId()}` + '/' + apiVersion + '/' + type + '/'
                 }
 
-                return { reqUrl: reqUrl, token: token };
+                return {reqUrl: reqUrl, token: token}
             },
             getStatusData(reqUrl, element) {
                 var me = this;
@@ -4879,7 +5299,7 @@
                         action: "delStatus",
                     }
                     me.$EventBus.$emit(`${element.elementView.id}`, obj)
-                }).finally((e) => {
+                }).finally(function (e) {
                     console.log(e)
                 })
             },
@@ -4887,21 +5307,24 @@
             async openCommandDialog(value) {
                 var me = this;
 
-                if(value._type.includes('model.Relation') || 
-                        value._type.includes('IngressToService')
-                ){
-                    return false;
+                if(value._type.includes('model.Relation') || value._type.includes('IngressToService')){
+                    return false
                 }
 
+                var arr = JSON.parse(localStorage.getItem('selectedElements'))
                 var yaml = '';
-                var arr = JSON.parse(localStorage.getItem('selectedElements'));
-                arr.forEach(el => {
-                    yaml += '--- \n' + me.yamlFilter(json2yaml.stringify(el));
-                });
+                if(arr){
+                    arr.forEach(el => {
+                        if(value.object.kind == el.object.kind && value.object.metadata.name == el.object.metadata.name){
+                            yaml += '--- \n' + me.yamlFilter(json2yaml.stringify(el))
+                        }
+                    })
+                }
                 
                 var projectId = me.$route.params.projectId;
-                var userEmail = localStorage.getItem("email");
+                var userEmail = localStorage.getItem("email")
 
+                var code = '';
                 var eleName = value.object ? value.object.metadata.name : value.name;
                 var yamlName = eleName + ".yaml"
                 try {
@@ -4909,25 +5332,296 @@
                         return;
                     }
 
-                    var put = await me.putString(`storage://yamlStorage/${projectId}/${userEmail}/${value.object.kind}/${yamlName}`, yaml);
-                    var presignedUrl = await me.getURL(`storage://yamlStorage/${projectId}/${userEmail}/${value.object.kind}/${yamlName}`);
-
+                    var put = await me.putString(`storage://yamlStorage/${projectId}/${userEmail}/${value.object.kind}/${yamlName}`, yaml)
+                    var presignedUrl = await me.getURL(`storage://yamlStorage/${projectId}/${userEmail}/${value.object.kind}/${yamlName}`)
                     code += ' "' + presignedUrl + "\"";
-
                 } catch (error) {
                     code += '- <<EOF \n' + yaml + 'EOF';
                 }
+
+                // me.commandTab = 0;
+                // me.commandTabs = [ 'Create/Apply', 'Get', 'Describe', 'Port-forward', 'Logs', 'Delete' ];
+                // me.commandList = [];
+
+                // // Select된 element마다 trouble shooting Tab 분류
+                // var eleType = ''
+                // if(me.selectedElements.length==1){
+                //     eleType = me.selectedElements[0].kind
+                // }else if(me.selectedElements.length==0){
+                //     me.commandTabs = [ 'Create/Apply' ];
+                // }
+
+                // if(eleType == "PersistentVolumeClaim" || eleType == "StorageClass" || eleType == "PersistentVolume"){
+                //     me.commandTabs = [ 'Create/Apply', 'Get', 'Describe', 'Delete' ];
+                // }else if(eleType == "Deployment" || eleType == "Pod"){
+                //     me.commandTabs = [ 'Create/Apply', 'Get', 'Describe', 'Port-forward', 'Logs', 'Exec', 'Delete' ];
+                // }else if(eleType == "ReplicaSet"){
+                //     me.commandTabs = [ 'Create/Apply', 'Get', 'Describe', 'Delete' ];
+                // }else if(eleType == "HorizontalPodAutoscaler"){
+                //     me.commandTabs = [ 'Create/Apply', 'Get', 'Describe', 'Delete' ];
+                // }
+                //////
+
+                // cmdList.forEach(function (cmd) {
+                //     var arr = cmd.name.split(' ');
+                //     var command = '';
+                //     var comment = '';
+
+                //     if(cmd.text){
+                //         comment = cmd.text;
+                //     }
+                    
+                //     if (!cmd.name.includes('create') && !cmd.name.includes('apply') && !cmd.name.includes('get') && !cmd.name.includes('exec')
+                //         && !cmd.name.includes('delete') && !cmd.name.includes('describe') && !cmd.name.includes('Terminal') && !cmd.name.includes('port-forward') && !cmd.name.includes('logs')) {
+                //         me.commandTabs.push(arr[1].charAt(0).toUpperCase() + arr[1].slice(1));
+                //     }
+
+                //     if (cmd.name.includes('create')) {
+                //         command = 'kubectl create -f' + code;
+                //     } else if (cmd.name.includes('apply')) {
+                //         command = 'kubectl apply -f' + code;
+                //     } else if (cmd.name.includes('Terminal')) {
+                //         return;
+                //     } else {
+                //         command = cmd.name;
+                //     }
+                //     command += '\n';
+
+                //     me.commandList.push({
+                //         'label': arr[1].charAt(0).toUpperCase() + arr[1].slice(1),
+                //         'command': command,
+                //         'text' : comment
+                //     });
+                // })
+
             },
             commandCopy(cmd, idx) {
-                var id = 'copyCommand' + idx;
+                var id = 'copyCommand' + idx
                 let input = document.getElementById(id);
                 input.select();
                 document.execCommand("copy");
+                console.log(cmd)
             },
             runCommand(cmd) {
                 var me = this;
                 me.$EventBus.$emit('sendCode', cmd);
             },
+            setSelected(value) {
+                var me = this;
+                var res = false;
+                me.selectedElements.push(value)
+                localStorage.setItem('selectedElements', JSON.stringify(me.selectedElements))
+                // localStorage['selectedElements'] = JSON.stringify(me.selectedElements)
+            },
+            deSelected(value) {
+                var me = this
+                me.selectedElements.splice(me.selectedElements.indexOf(value), 1)
+            },
+
+            /**
+             * EventStorming Canvas
+             */
+            setEventStormingYaml(values) {
+                var me = this;
+                var yamlText = "";
+                var rootValue = values ? values : me.value
+                var value = rootValue.k8sValue;
+                var delList = [];
+                let bcList =  Object.values(rootValue.elements).filter(x => x && x._type.endsWith("BoundedContext"));
+                let bcNameList = bcList.map(function(item) {
+                    return item = item.name.replace(" ", "-").toLowerCase()
+                });
+
+                bcList.forEach(function(item){
+                    if( me.value.scm
+                        && me.value.scm.org
+                        && me.value.scm.repo
+                        && me.value.scm.tag
+                    ){
+                        item.image = `${me.value.scm.org}/${me.value.scm.repo}/${item.name.toLowerCase()}:${me.value.scm.tag}`
+                    }
+                });
+
+                if (Object.keys(value.elements).length > 0) {
+                    Object.keys(value.elements).forEach(function(key) {
+                        if(value.elements[key]) {
+                            if(value.elements[key]._type != "DestinationRuleSubset"
+                                && value.elements[key]._type != "WorkflowDag"
+                                && value.elements[key]._type != "WorkflowStep"
+                            ) {
+                                if(
+                                    (value.elements[key]._type == "Deployment" || value.elements[key]._type == "Service")
+                                    && !bcNameList.includes(value.elements[key].object.metadata.name)
+                                ) {
+                                    value.elements[key] = null;
+                                    delList.push(key);
+                                } else {
+                                    if( value.elements[key]._type == "Deployment"){
+                                        let bcName = value.elements[key].object.metadata.name
+                                        let bc = bcList.find(x=>x.name.toLowerCase() == bcName.toLowerCase());
+
+                                        value.elements[key].object.spec.template.spec.containers.forEach(function(container){
+                                            container.image = `ghcr.io/${bc.image}`
+                                        })
+                                    }
+
+                                    yamlText += json2yaml.stringify(value.elements[key].object);
+                                }
+                            }
+                        }
+                    })
+                }
+
+                var relationList = []
+                if(Object.keys(value.relations).length > 0) {
+                    Object.keys(value.relations).forEach(function(key) {
+                        if(value.relations[key]) {
+                            if(delList.includes(value.relations[key].from) || delList.includes(value.relations[key].to)) {
+                                value.relations[key] = null;
+                            } else {
+                                relationList.push(value.relations[key]) 
+                            }
+                        }
+                    })
+                }
+
+                if(bcList.length > 0) {
+                    me.localYamlText = "";
+                    var deployArr = [];
+                    var svcArr = [];
+
+                    bcList.forEach(function(item) {
+                        var name = item.name.replace(" ", "-").toLowerCase();
+
+                        if(yamlText.includes('name: "' + name + '"') && relationList.length > 0) {
+                            return;
+                        }
+
+                        var deploySpec = {
+                            "apiVersion": "apps/v1",
+                            "kind": "Deployment",
+                            "metadata": {
+                                "name": name,
+                                "labels": {
+                                    "app": name
+                                }
+                            },
+                            "spec": {
+                                "selector": {
+                                    "matchLabels": {
+                                        "app": name
+                                    }
+                                },
+                                "replicas": 1,
+                                "template": {
+                                    "metadata": {
+                                        "labels": {
+                                            "app": name
+                                        }
+                                    },
+                                    "spec": {
+                                        "containers": [
+                                            {
+                                                "name": name,
+                                                "image": `ghcr.io/${item.image}`,
+                                                "ports": [
+                                                    {
+                                                        "containerPort": 8080
+                                                    }
+                                                ],
+                                                "readinessProbe": {
+                                                    "httpGet": {
+                                                        "path": "/actuator/health",
+                                                        "port": 8080
+                                                    },
+                                                    "initialDelaySeconds": 10,
+                                                    "timeoutSeconds": 2,
+                                                    "periodSeconds": 5,
+                                                    "failureThreshold": 10
+                                                },
+                                                "livenessProbe": {
+                                                    "httpGet": {
+                                                        "path": "/actuator/health",
+                                                        "port": 8080
+                                                    },
+                                                    "initialDelaySeconds": 120,
+                                                    "timeoutSeconds": 2,
+                                                    "periodSeconds": 5,
+                                                    "failureThreshold": 5
+                                                }
+                                            }
+                                        ],
+                                    }
+                                }
+                            }
+                        }
+                        deployArr.push(deploySpec);
+
+                        var svcSpec = {
+                            "apiVersion": "v1",
+                            "kind": "Service",
+                            "metadata": {
+                                "name": name,
+                                "labels": {
+                                    "app": name
+                                }
+                            },
+                            "spec": {
+                                "ports": [
+                                    {
+                                        "port": 8080,
+                                        "targetPort": 8080
+                                    }
+                                ],
+                                "selector": {
+                                    "app": name
+                                }
+                            }
+                        }
+                        svcArr.push(svcSpec);
+                    })
+
+                    deployArr.forEach(function(item) {
+                        me.localYamlText += json2yaml.stringify(item);
+                    });
+                    svcArr.forEach(function(item) {
+                        me.localYamlText += json2yaml.stringify(item);
+                    });
+                }
+            },
+            closeSeparate() {
+                this.closeCommandViewer();
+            },
+            closeCommandViewer() {
+                var me = this
+                // this.$modal.hide('code-modal')
+                var openCodePath = me.openCode[0].fullPath ? me.openCode[0].fullPath : me.openCode[0].path
+                localStorage.setItem('openCodePath', openCodePath)
+                // this.openCode = []
+                me.paneLengthPercent = 100
+            },
+            openCommandViewer() {
+                var me = this
+                me.openSeparatePanel()
+            },
+            validationFromCode(code) {
+                if (code == null) {
+                    return null
+                }
+
+                if (code == undefined) {
+                    return null
+                }
+
+                var validationCode = this.validationCodeLists[code]
+                if (validationCode) {
+                    validationCode.code = code
+                    return validationCode
+                }
+
+                return null
+            },
+
         }
     }
 </script>
@@ -5187,40 +5881,11 @@
     .editor {
         height: 250px;
     }
-
-    .page {
-        height: 100%;
-        /*padding: 10px;*/
-        background: #000;
-    }
-    .k8s-modeling-undo-redo {
-        position: absolute;
-        top: 5px;
-        left: 100px;
-        min-width: 170px !important;
-        max-width: 170px !important;
-    }
-
-    .k8s-modeling-project-name {
-        margin: 50px 0px 0px 5px !important;
-        max-width: 150px !important;
-    }
-
-    .k8s-hide-cluster,
-    .k8s-hide-reverse,
-    .k8s-hide-gitops,
-    .k8s-hide-save,
-    .k8s-hide-code,
-    .k8s-hide-fork,
-    .k8s-hide-share {
-        display: block;
-    }
-
     .k8s-is-mobile {
         display: none;
     }
 
-    @media only screen and (max-width: 1430px) {
+    @media only screen and (max-width:1330px){
         .k8s-hide-cluster,
         .k8s-hide-reverse,
         .k8s-hide-gitops,
@@ -5228,7 +5893,7 @@
         .k8s-hide-code,
         .k8s-hide-fork,
         .k8s-hide-share {
-            display: none;
+            display:none;
         }
         .k8s-hide-cluster-btn,
         .k8s-hide-reverse-btn,
@@ -5242,23 +5907,7 @@
         }
     }
 
-    @media only screen and (max-width: 1020px) {
-        .k8s-is-mobile {
-            display: block !important;
-            margin-top: 100px;
-            min-width: 100%;
-            margin-left: 10%;
-        }
-        .k8s-is-not-mobile {
-            display: none !important;
-        }
-        .k8s-is-mobile-project-name {
-            position: absolute !important;
-            right: 120px !important;
-        }
-    }
-
-    @media only screen and (max-width: 930px) {
+    @media only screen and (max-width:930px){
         .k8s-is-not-mobile {
             display: none !important;
         }
@@ -5271,16 +5920,4 @@
             top:-15px
         }
     }
-
-    @media only screen and (max-width: 600px) {
-        .k8s-modeling-project-name {
-            margin: 50px -60px 0px 5px !important;
-            max-width: 110px !important;
-        }
-
-        .k8s-is-mobile-project-name {
-            position: absolute !important;
-            left: 10px !important;
-        }
-    }    
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div :style="isSIgpt ? 'display: none;':'' ">
         <v-snackbar class="snackbar-style"
             v-model="gitSnackBar.show"
             auto-height 
@@ -537,7 +537,7 @@
 
 <script>
     // import SIGenerator from './modeling/generators/SIGenerator'
-    // import labBase from "../labs/LabStorageBase"
+    import labBase from "../labs/LabStorageBase"
     import Login from "../oauth/Login";
     import LoginByGitlab from "../oauth/LoginByGitlab";
     const axios = require('axios');
@@ -549,12 +549,13 @@
 
     export default {
         name: 'gitAPIMenu',
-        // mixins: [labBase],
+        mixins: [labBase],
         components: {
             LoginByGitlab,
             Login,
         },
         props: {
+            isSIgpt: Boolean,
             onlyOneBcId: String,
             isOneBCModel: Boolean,
             githubTokenError: Boolean,
@@ -673,20 +674,12 @@
             },
             IdeType(){
                 // 해당 부분은 수정 안함. (Gitpod)
-                if(this.isOnPrem){
-                    return "Theia"
-                } else {
-                    return "Gitpod"
-                }
+                return "Gitpod"
             },
             gitpodUrlOrigin(){
                 // 해당 부분은 수정 안함. (Gitpod)
                 if(this.value.org && this.value.repo){
-                    if(this.isOnPrem){
-                        return `https://gitlab.${this.gitlabDomain}/${this.value.org}/${this.value.repo}`
-                    } else {
-                        return `https://gitpod.io/#https://github.com/${this.value.org}/${this.value.repo}${this.releaseTagPath}`
-                    }
+                    return this.git.getGitpodUrl(this.value.org, this.value.repo, this.releaseTagPath)
                 } else {
                     return `The original repository does not exist.`
                 }
@@ -696,35 +689,18 @@
                 if(this.isFirstCommit){
                     if(this.value){
                         if((this.value.forkedOrg  && this.value.forkedRepo) && !this.editTemplateMode){
-                            if(this.isOnPrem){
-                                return `https://gitlab.${this.gitlabDomain}/${this.value.forkedOrg}/${this.value.forkedRepo}`
-                            } else {
-                                return `https://gitpod.io/#https://github.com/${this.value.forkedOrg}/${this.value.forkedRepo}${this.releaseTagPath}`
-                            }
+                            return this.git.getGitpodUrl(this.value.forkedOrg, this.value.forkedRepo, this.releaseTagPath)
                         } else {
-                            if(this.isOnPrem){
-                                return `https://gitlab.${this.gitlabDomain}/${this.gitOrgName}/${this.gitRepoName}`
-                            } else {
-                                return `https://gitpod.io/#https://github.com/${this.gitOrgName}/${this.gitRepoName}${this.releaseTagPath}`
-                            }
+                            return this.git.getGitpodUrl(this.gitOrgName, this.gitRepoName, this.releaseTagPath)
                         }
                     }
                 } else {
-                    if(this.isOnPrem){
-                        return `https://gitlab.${this.gitlabDomain}/${this.gitOrgName}/${this.gitRepoName}`
-                    } else {
-                        return `https://gitpod.io/#https://github.com/${this.gitOrgName}/${this.gitRepoName}${this.releaseTagPath}`
-                    }
+                    return this.git.getGitpodUrl(this.gitOrgName, this.gitRepoName, this.releaseTagPath)
                 }
             },
             gitCloneCommandOrigin(){
                 if(this.value.org && this.value.repo){
-                    if(this.isOnPrem){
-                        return `git clone https://gitlab.${this.gitlabDomain}/${this.value.org}/${this.value.repo}.git`
-                    } else {
-                        
-                    }
-                    return this.git.getCloneCommand(me.value.org, me.value.repo)
+                    return this.git.getCloneCommand(this.value.org, this.value.repo, "")
                 } else {
                     return `The original repository does not exist.`
                 }
@@ -733,27 +709,15 @@
                 if(this.isFirstCommit){
                     if(this.value){
                         if(!this.value.forkedOrg || !this.value.forkedRepo){
-                            if(this.isOnPrem){
-                                return `git clone https://gitlab.${this.gitlabDomain}/${this.gitOrgName}/${this.gitRepoName}.git`
-                            } else {
-                                return `git clone https://github.com/${this.gitOrgName}/${this.gitRepoName}.git${this.cloneTagPath}`
-                            }
+                            return this.git.getCloneCommand(this.gitOrgName, this.gitRepoName, this.cloneTagPath)
                         } else {
                             if(!this.editTemplateMode){
-                                if(this.isOnPrem){
-                                    return `git clone https://gitlab.${this.gitlabDomain}/${this.value.forkedOrg}/${this.value.forkedRepo}.git`
-                                } else {
-                                    return `git clone https://github.com/${this.value.forkedOrg}/${this.value.forkedRepo}.git${this.cloneTagPath}`
-                                }
+                                return this.git.getCloneCommand(this.value.forkedOrg, this.value.forkedRepo, this.cloneTagPath)
                             }
                         }
                     }
                 } else {
-                    if(this.isOnPrem){
-                        return `git clone https://gitlab.${this.gitlabDomain}/${this.gitOrgName}/${this.gitRepoName}.git`
-                    } else {
-                        return `git clone https://github.com/${this.gitOrgName}/${this.gitRepoName}.git${this.cloneTagPath}`
-                    }
+                    return this.git.getCloneCommand(this.gitOrgName, this.gitRepoName, this.cloneTagPath)
                 }
             },
             gitMergeCommand(){
@@ -876,6 +840,9 @@
             window.addEventListener("message", me.messageProcessing);
             me.setGitInfo()
             me.checkRepoExist()
+            if(me.isSIgpt){
+                me.startCommitWithGit()
+            }
         },
         beforeDestroy() {
             var me = this 
@@ -1023,11 +990,7 @@
                 var me = this
                 await me.git.getActionLogs(me.value.org, me.value.repo)
                 .then((result) => {
-                    console.log(result)
-                    // me.$emit("getActionLogs", result)
-                    // me.prompt = result
-                    // me.generator = new SIGenerator(this);
-                    // me.generator.generate();
+                    me.$EventBus.$emit('getActionLogs', result)
                 })
                 .catch((e) => {
                     if(e.response.status === 401){
@@ -2018,18 +1981,11 @@
                     if(type == 'gitpod'){
                         if(me.showOriginMode){
                             targetUrl = me.isVersionBranch ? (me.releaseTagPath == '' ? `${me.gitpodUrlOrigin}/tree/branch-${me.value.forkedTag}` : `${me.gitpodUrlOrigin.replace(me.releaseTagPath, "")}/tree/branch-${me.value.forkedTag}`) : me.gitpodUrlOrigin
-    
-                            if(this.isOnPrem)
-                                this.$emit("openIDE", targetUrl);
-                            else 
-                                window.open(targetUrl, '_blank');
+                            window.open(targetUrl, '_blank');
                         } else {
                             targetUrl = me.isVersionBranch ? (me.releaseTagPath == '' ? `${me.gitpodUrl}/tree/branch-${me.value.forkedTag}` : `${me.gitpodUrl.replace(me.releaseTagPath, "")}/tree/branch-${me.value.forkedTag}`) : me.gitpodUrl 
-    
-                            if(this.isOnPrem)
-                                this.$emit("openIDE", targetUrl);
-                            else
-                                window.open(targetUrl, '_blank');
+
+                            window.open(targetUrl, '_blank');
                         }
                     } else {
                         if(this.isFirstCommit && this.value){

@@ -26,7 +26,6 @@
         var shape = new OG.shape.GroupShape();
         shape.label = me.label;
         shape.SHAPE_ID = me.shapdId;
-
         if (!$.isEmptyObject(me.geometrys)) {
           let keys = Object.keys(me.geometrys);
 

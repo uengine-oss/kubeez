@@ -12,13 +12,13 @@
             <v-list class="pt-0" dense flat>
                 <v-layout v-if="value.sourceElement._type == 'VirtualService'">
                     <v-card-text>
-                        <v-radio-group v-model="value.sourceElement.routeType" row  :disabled="isReadOnlyModeling">
+                        <v-radio-group v-model="value.sourceElement.routeType" row  :disabled="canvas.isReadOnlyModel">
                             <v-radio label="weight" value="weight"></v-radio>
                             <v-radio label="mirror" value="mirror"></v-radio>
                         </v-radio-group>
                         <v-text-field
                             v-if="value.sourceElement.routeType == 'weight'"
-                            :disabled="isReadOnlyModeling"
+                            :disabled="canvas.isReadOnlyModel"
                             label="weight" type="number"
                         ></v-text-field>
                     </v-card-text>

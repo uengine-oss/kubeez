@@ -7,7 +7,7 @@ class Git {
     getType() {
         throw new Error('getType() must be implement')
     }
-    getCloneCommand(org, repo) {
+    getCloneCommand(org, repo, tag) {
         throw new Error('getCloneCommand() must be implement')
     }
     getHeader() {
@@ -93,6 +93,9 @@ class Git {
     }
     patch(org, repo, branch, options) {
         throw new Error('path() must be implement')
+    }
+    getGitpodUrl(org, repo, releaseTagPath) {
+        throw new Error('getGitpodUrl() must be implement')
     }
 }
 

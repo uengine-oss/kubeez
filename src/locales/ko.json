@@ -1,5 +1,14 @@
 {
   "message": "ko",
+  "company": {
+    "name": "주식회사 유엔진솔루션즈",
+    "address": "서울특별시 서초구 신반포로45길 18 502호(잠원동, 주일빌딩)",
+    "number": "02-567-8301",
+    "ceo": "장진영",
+    "registrationNumber": "2118795355",
+    "refundNumber": "02-567-8301",
+    "refundUser": "이수헌"
+  },
   "word": {
     "address": "주소",
     "number": "전화번호",

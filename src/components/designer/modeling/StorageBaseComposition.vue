@@ -1,10 +1,15 @@
 <template></template>
 
 <script>
+    var Minio = require('minio');
     import StorageBaseAbstract from "./StorageBaseAbstract";
+    import StorageBaseFireBase from "./StorageBaseFireBase";
     import StorageBaseAceBase from "./StorageBaseAceBase";
     import StorageBaseLocalStorage from "./StorageBaseLocalStorage";
+    import StorageBaseMinio from "./StorageBaseMinio";
+    import StorageBaseCloudStorage from "./StorageBaseCloudStorage";
 
+    // 2
     export default {
         name: "storage-base-composition",
         mixins: [StorageBaseAbstract],
@@ -13,24 +18,81 @@
                 localstorage: null,
                 db: null,
                 standalone: null,
+                minio: null,
+                clusterminio: null,
                 storage: null
             }
         },
         created() {
-            var me = this;
+            var me = this
 
             var StorageBaseLocalClass = Vue.extend(StorageBaseLocalStorage);
-            var StorageBaseCloudStorageClazz = Vue.extend(StorageBaseAceBase);
-            var StorageBaseDBClass = Vue.extend(StorageBaseAceBase);
-
-            me.localstorage = new StorageBaseLocalClass();
+            var StorageBaseCloudStorageClazz;
+            var StorageBaseDBClass;
+            if (this.$isElectron || window.MODE == 'onprem' || window.MODE == "bpm") {
+                // Electron-specific code
+                StorageBaseDBClass = Vue.extend(StorageBaseAceBase);
+                StorageBaseCloudStorageClazz = Vue.extend(StorageBaseAceBase);
+            } else {
+                // Browser-specific code
+                StorageBaseCloudStorageClazz = Vue.extend(StorageBaseCloudStorage);
+                StorageBaseDBClass = Vue.extend(StorageBaseFireBase);
+            }
             me.storage = new StorageBaseCloudStorageClazz();
+            me.localstorage = new StorageBaseLocalClass();
             me.db = new StorageBaseDBClass();
+
+            if (window.MODE != 'onprem') {
+                var LabBaseMinioClass = Vue.extend(StorageBaseMinio);
+                me.minio = new LabBaseMinioClass();
+                me.standalone = new LabBaseMinioClass();
+                me.clusterminio = new LabBaseMinioClass();
+                me.minio.minioClient = new Minio.Client({
+                    endPoint: `minio.${me.getTenantId()}`,
+                    port: 443,
+                    useSSL: true,
+                    accessKey: "minio",
+                    secretKey: "minio123"
+                })
+                me.standalone.minioClient = new Minio.Client({
+                    endPoint: `minio-std.${me.getTenantId()}`,
+                    port: 443,
+                    useSSL: true,
+                    accessKey: "minio",
+                    secretKey: "minio123"
+                })
+
+                me.clusterminio.minioClient = new Minio.Client({
+                    endPoint: `minio.kuberez.io`,
+                    useSSL: true,
+                    accessKey: "minio",
+                    secretKey: "minio123"
+                })
+            }
+
+
+            // var policy = me.clusterminio.minioClient.newPostPolicy();
+            // policy.setBucket("labs-eventstorming");
+            // policy.setKey("*");
+            // var expires = new Date();
+            // expires.setSeconds(0);
+            // policy.setExpires(expires);
+            // policy.formData['Cache-Control'] = 'public, max-age=0';
+            // policy.policy.conditions.push(['eq', '$Cache-Control', 'public, max-age=0'])
+            //
+            // me.clusterminio.minioClient.presignedPostPolicy(policy, function (err, data) {
+            //     if (err) return console.log(err)
+            //     console.log(data)
+            //     // var req = superagent.post(data.postURL)
+            //     // _.each(data.formData, function (value, key) {
+            //     //     req.field(key, value)
+            //     // })
+            // });
 
         },
         computed: {
             now() {
-                return Date.now();
+                return Date.now()
             },
         },
         methods: {
@@ -251,6 +313,8 @@
                 }
 
             },
+
+
         }
     };
 </script>

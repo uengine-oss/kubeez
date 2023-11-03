@@ -9,10 +9,12 @@ class Github extends Git {
         return "GitHub"
     }
 
-    getCloneCommand(org, repo) {
+    getCloneCommand(org, repo, tag) {
         return `git clone https://github.com/${org}/${repo}.git`
     }
-
+    getGitpodUrl(org, repo, releaseTagPath) {
+        return `https://gitpod.io/#https://github.com/${this.value.org}/${this.value.repo}${this.releaseTagPath}`
+    }
     getHeader() {
         return {
             Authorization: 'token ' + localStorage.getItem('gitToken'),
@@ -671,14 +673,18 @@ class Github extends Git {
             .then(async (res) => {
                 if(res.data.status == "completed"){
                     if(res.data.conclusion == "success"){
-                        resolve(res)
+                        resolve("All tests succeeded")
                     } else {
                         await axios.get(`https://api.github.com/repos/${org}/${repo}/actions/runs/${run_id}/jobs`, { headers: me.getHeader() })
                         .then(async (res) => {
                             await axios.get(`https://api.github.com/repos/${org}/${repo}/actions/jobs/${res.data.jobs[0].id}/logs`, { headers: me.getHeader() })
                             .then((res) => {
                                 let log = res.data.split("COMPILATION ERROR : ")
-                                resolve(log[1])
+                                if(log[1]){
+                                    resolve(log[1])
+                                } else {
+                                    resolve(log[0])
+                                }
                             })
                             .catch(e => {
                                 reject(e)

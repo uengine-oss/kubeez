@@ -4,14 +4,14 @@
                 selectable
                 movable
                 resizable
-                :deletable="!isReadOnly"
+                :deletable="!canvas.isReadOnlyModel"
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
                 :label.sync="name"
                 :width.sync="value.elementView.width"
                 :height.sync="value.elementView.height"
-                :customMoveActionExist="isCustomMoveExist"
+                :customMoveActionExist="canvas.isCustomMoveExist"
                 v-on:customMoveAction="delayedMove"
                 v-on:moveShape="onMoveShape"
                 v-on:selectShape="selectedActivity"
@@ -55,7 +55,7 @@
                 v-if="propertyPanel"
                 v-model="value"
                 :img="imgSrc"
-                :readOnly="isReadOnly"
+                :readOnly="canvas.isReadOnlyModel"
                 @close="closePanel"
                 @setSubSet="setSubSet"
         ></property-panel>
@@ -70,7 +70,7 @@
 </template>
 
 <script>
-    import Element from "../KubernetesModelElement";
+    import Element from "../KubernetesElement";
     import PropertyPanel from './DestinationRulePropertyPanel'
 
     var jsondiffpatch = require('jsondiffpatch').create({
@@ -334,7 +334,7 @@
                         }
                         me.compInfo.y = me.value.elementView.y;
                         
-                        var el = me.modelCanvasComponent.addElement(me.compInfo, me.value);
+                        var el = me.canvas.addElement(me.compInfo, me.value);
                         el.name = "v"+(len+count-i);
                         el.version = "v"+(len+count-i);
                         me.value.subsets.push(el.elementView.id);
