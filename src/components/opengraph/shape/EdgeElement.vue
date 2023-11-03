@@ -19,16 +19,15 @@
     },
     watch: {},
     mounted: function () {
-      var me = this
 
     },
     methods: {
       generateShape: function () {
         var me = this;
         if (me.vertices && me.vertices.length > 1) {
-          return new OG.shape.EdgeShape(me.vertices[0], me.vertices[me.vertices.length - 1], me.label, me.fromLabel, me.toLabel);
+          return new OG.shape.EdgeShape(me.vertices[0], me.vertices[me.vertices.length - 1], me.label);
         } else {
-          return new OG.shape.EdgeShape(null, null, me.label, me.fromLabel, me.toLabel);
+          return new OG.shape.EdgeShape(null, null, me.label);
         }
       }
     }

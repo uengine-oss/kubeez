@@ -20,7 +20,7 @@
                         <v-text-field
                                 label="Service Path"
                                 hint="ex) /foo"
-                                :disabled="canvas.isReadOnlyModel"
+                                :disabled="isReadOnlyModeling"
                                 v-model="path"
                         ></v-text-field>
                     </v-card-text>
@@ -30,7 +30,7 @@
                         <v-text-field
                                 label="Host"
                                 hint="ex) foo.bar.com"
-                                :disabled="canvas.isReadOnlyModel"
+                                :disabled="isReadOnlyModeling"
                                 v-model="host"
                         ></v-text-field>
                     </v-card-text>

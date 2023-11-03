@@ -22,7 +22,7 @@
             ></MonacoEditor>
             <MonacoEditor 
                     v-if="!isJson && !autoFormat"
-                    v-model="temp_text"
+                    v-model="tempText"
                     class="editor"
                     theme="vs-dark"
                     language="plaintext"
@@ -43,10 +43,6 @@
     import vueJsonEditor from 'vue-json-editor';
     import MonacoEditor from 'vue-monaco';
 
-    // import 'codemirror/mode/yaml/yaml'
-    // import 'codemirror/lib/codemirror.css'
-    // import 'codemirror/theme/base16-light.css'
-
     export default {
         name: 'kube-yaml-editor',
         props: {
@@ -64,15 +60,11 @@
             MonacoEditor,
         },
         computed: {
-            // codemirror: function () {
-            //     return this.$refs.myCm.codemirror;
-            // },
         },
         data: function () {
             return {
                 yamlText: this.yamlFilter(json2yaml.stringify(this.value)),
-                // cursor_pos: '',
-                temp_text: '',
+                tempText: '',
                 isJson: false,
                 autoFormat: true,
             }
@@ -80,51 +72,40 @@
         watch: {
             value: {
                 deep: true,
-                handler: function () {
-                    this.yamlText = this.yamlFilter(json2yaml.stringify(this.value));
+                handler(val) {
+                    this.yamlText = this.yamlFilter(json2yaml.stringify(val));
                 }
             },
             yamlText: {
                 deep: true,
-                handler: function () {
-                    var me = this
-                    // try {
-                    //     me.cursor_pos = me.codemirror.getCursor("start")
-                    //     this.$nextTick(function () {
-                    //         me.codemirror.setCursor(me.cursor_pos)
-                    //         me.codemirror.refreshImg()
-                    //     });
-                    // } catch (e) {
-                    // }
-                    var some = yaml.load(me.yamlText);
-                    me.$emit("input", some);
+                handler(val) {
+                    var yamlData = yaml.load(val);
+                    this.$emit("input", yamlData);
                 }
-            }
-
+            },
         },
         methods: {
-            yamlFilter(yaml_text) {
-                var me = this
-
-                let lines = yaml_text.split('\n');
+            yamlFilter(val) {
+                var me = this;
+                let lines = val.split('\n');
                 lines.splice(0, 1);
                 for (let i in lines) {
                     lines[i] = lines[i].substring(2, lines[i].length);
                 }
-                yaml_text = lines.join('\n');
-                yaml_text = yaml_text.replace(/ null/g, ' ');
+                val = lines.join('\n');
+                val = val.replace(/ null/g, ' ');
 
-                me.$EventBus.$emit('yamlText', yaml_text)
-                return yaml_text;
+                me.$EventBus.$emit('yamlText', val);
+                return val;
             },
             formatYaml() {
                 var me = this;
                 if(me.autoFormat) {
-                    var some = yaml.load(me.temp_text);
-                    me.$emit("input", some);
-                    me.temp_text = '';
+                    var yamlData = yaml.load(me.tempText);
+                    me.$emit("input", yamlData);
+                    me.tempText = '';
                 } else {
-                    me.temp_text = me.yamlText;
+                    me.tempText = me.yamlText;
                 }
             }
         }

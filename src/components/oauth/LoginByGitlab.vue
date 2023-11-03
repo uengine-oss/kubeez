@@ -12,8 +12,6 @@
 </template>
 
 <script>
-    import LabBase from "../labs/LabBase";
-    import TenantAware from '../labs/TenantAware';
     import CommonStorageBase from "../CommonStorageBase";
 
     export default {
@@ -26,7 +24,6 @@
                 }
             }
         },
-        // mixins: [LabBase, TenantAware],
         mixins: [CommonStorageBase],
         data: () => ({
             tab: 'main',
@@ -122,7 +119,7 @@
                 var me = this
                 try {
                     let origin = window.GITLAB ? window.GITLAB : window.location.hostname.replace("www.", "");
-                    window.open(`https://gitlab.${origin}/oauth/authorize?client_id=${window.OAUTH_ID}&redirect_uri=https%3A%2F%2F${encodeURIComponent(window.location.host)}%3Foauth%3Dgitlab&response_type=code&scope=api&state=devopssystem`,"_blank");
+                    window.open(`https://gitlab.${origin}/oauth/authorize?client_id=8eb94ad361085009155d495af28e6a822d7b64bb2397807a9e93cf269d28d1c8&redirect_uri=https%3A%2F%2F${encodeURIComponent(window.location.host)}%3Foauth%3Dgitlab&response_type=code&scope=api&state=devopssystem`,"_blank");
                 } catch (e) {
                     if(e.code == 'not_found'){
                         me.loginText = '로그인 실패: 존재하지 않은 계정입니다.'

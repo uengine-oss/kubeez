@@ -2,7 +2,7 @@
     <kubernetes-common-panel
             v-model="value"
             :img="img"
-            :readOnly="canvas.isReadOnlyModel"
+            :readOnly="isReadOnlyModeling"
             :validation-lists="validationLists"
             @openDesDoc="desDocOpen"
             @close="closePanel"
@@ -33,13 +33,13 @@
             <v-text-field
                     label="Key" dense
                     v-model="dataKey"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
             ></v-text-field>
             <v-text-field
                     v-if="!useTextarea"
                     label="Value" dense
                     v-model="dataValue"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
                     hint="base64 encoding"
                     v-on:keyup.enter="addData(dataKey, dataValue)"
             ></v-text-field>
@@ -47,7 +47,7 @@
                     v-else
                     label="Value" dense
                     v-model="dataValue"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
                     hint="base64 encoding"
                     v-on:keyup.enter="addData(dataKey, dataValue)"
             ></v-textarea>
@@ -56,7 +56,7 @@
                         class="mx-5"
                         color="primary"
                         rounded dark
-                        :disabled="canvas.isReadOnlyModel"
+                        :disabled="isReadOnlyModeling"
                         @click="addData(dataKey, dataValue)"
                 >Add Data</v-btn>
             </v-row>

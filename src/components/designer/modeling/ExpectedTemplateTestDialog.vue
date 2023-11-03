@@ -1,15 +1,16 @@
 <template>
     <div>
-        <v-card style="z-index:2;">
-            <div style="display: flex; height:88vh;">
-                <div style="width: 400px; overflow-y: scroll;">
-                    <v-card-title style="margin-bottom: -15px;">
+        <v-card flat style="height: 90vh; z-index:2;">
+            <div style="display: flex;">
+                <div style="width: 400px; height: 850px; overflow-y: scroll;">
+                    <v-card-title style="margin-top: -10px; margin-bottom: -15px;">
                         Expected Template Test
                     </v-card-title>
 
-                    <div>
+                    <div style="height: 330px;">
                         <v-list
                             nav dense
+                            style="width:105%; min-width: 390px; margin:-5px -30px 0px -10px;"
                         >
                             <v-list-group
                                 :value="true"
@@ -123,26 +124,30 @@
                     </div>
                 </div>
                 <v-divider vertical />
-                <v-card-text style="padding:1px;">
-                    <code-viewer
-                        v-if="isDiff"
-                        :type="'diff'"
-                        :isExpectedTemplate="true"
-                        v-model="selectedTemplateFramework"
-                        :create-value="selectedTemplateFile"
-                        :editMode="true"
-                        :readOnly="true"
-                        class="gs-expected-code-viewer1"
-                    ></code-viewer>
-                    <code-viewer
-                        v-else
-                        ref="codeViewer"
-                        :isExpectedTemplate="true"
-                        v-model="selectedTemplateFile"
-                        :editMode="true"
-                        :readOnly="true"
-                        class="gs-expected-code-viewer2"
-                    ></code-viewer>
+                <v-card-text style="margin-top: -15px;">
+                    <div style="height: 850px;">
+                        <v-card flat>
+                            <code-viewer
+                                v-if="isDiff"
+                                :type="'diff'"
+                                :isExpectedTemplate="true"
+                                v-model="selectedTemplateFramework"
+                                :create-value="selectedTemplateFile"
+                                :editMode="true"
+                                :readOnly="true"
+                                style="padding: 0 !important; height: 100%; float: left;"
+                            ></code-viewer>
+                            <code-viewer
+                                v-else
+                                ref="codeViewer"
+                                :isExpectedTemplate="true"
+                                v-model="selectedTemplateFile"
+                                :editMode="true"
+                                :readOnly="true"
+                                style="padding: 0 !important; height: 100%; float: left;"
+                            ></code-viewer>
+                        </v-card>
+                    </div>
                 </v-card-text>
             </div>
         </v-card>

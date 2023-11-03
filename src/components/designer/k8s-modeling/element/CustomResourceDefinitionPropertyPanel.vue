@@ -2,7 +2,7 @@
     <kubernetes-common-panel
             v-model="value"
             :img="img"
-            :readOnly="canvas.isReadOnlyModel"
+            :readOnly="isReadOnlyModeling"
             :validation-lists="validationLists"
             @openDesDoc="desDocOpen"
             @close="closePanel"
@@ -22,12 +22,12 @@
                     label="Grop"
                     v-model="value.object.spec.group"
                     hint="Ex) crd.example.com"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
             ></v-text-field>
             <v-text-field
                     label="Version"
                     v-model="value.object.spec.versions[0].name"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
             ></v-text-field>
             <v-checkbox
                     label="Served"
@@ -40,27 +40,27 @@
             <v-text-field
                     label="Scope"
                     v-model="value.object.spec.scope"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
             ></v-text-field>
             <v-text-field
                     label="Plural"
                     v-model="value.object.spec.names.plural"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
             ></v-text-field>
             <v-text-field
                     label="Singular"
                     v-model="value.object.spec.names.singular"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
             ></v-text-field>
             <v-text-field
                     label="Kind"
                     v-model="value.object.spec.names.kind"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
             ></v-text-field>
             <v-text-field
                     label="ShortNames"
                     v-model="value.object.spec.names.shortNames[0]"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
             ></v-text-field>
         </template>
     </kubernetes-common-panel>

@@ -1,62 +1,49 @@
 <template></template>
 
 <script>
-    import firebase from 'firebase'
     import Element from "./Element";
-    import StorageBase from "./ModelStorageBase";
 
     export default {
-        mixins: [Element, StorageBase],
+        mixins: [Element],
         name: 'model-element',
         props: {},
         data() {
             return {
-                // canvas
+                EndProgressing: false,
+                modelCanvasComponent: null,
                 canvas: null,
-                // 움직임 변화
+                //move
                 movingElement: false,
-                // panel 열림 닫힘.
+                //panel
                 propertyPanel: false,
-                // 우측상단 프로필 변수
+                //multiEdit
                 newEditUserImg: [],
-                // queue complete
-                STATUS_COMPLETE: true,
-                // validate
-                elementValidationResults: [],
-                //url 변수
+
                 fullPath: null,
                 params: null,
                 paramKeys: null,
-                // element sticker image
-                image: null,
-                // component refresh.
+
+                messageRef: {},
                 refreshedImg: '',
 
-                // ??
-                messageRef: {},
-                EndProgressing: false,
-                // remove.
-                modelCanvasComponent: null,
+                image: null,
+                // queue complete
+                STATUS_COMPLETE : true,
+                elementValidationResults: [],
             }
         },
-        created: function () {
+        created() {
             var me = this
             me.fullPath = this.$route.fullPath.split('/')
             me.params = this.$route.params
             me.paramKeys = Object.keys(me.params)
-
-            me.setElementCanvas()
-
-            // me.messageRef = firebase.database().ref(`/${me.$route.params.author}/${me.$route.params.projectName}`);
         },
         beforeDestroy() {
-            // console.log("destory");
-            this.removeAction();
         },
         watch: {
             "value.elementView": {
                 deep: true,
-                handler: function (newVal, oldVal) {
+                handler(newVal, oldVal) {
                     this.refreshImg()
                     var me = this
                     if (this.value.elementView) {
@@ -70,16 +57,16 @@
                     }
                 }
             },
-            "movingElement": function () {
+            "movingElement"() {
                 this.refreshImg()
             },
-            "alertImage": function () {
+            "alertImage"() {
                 this.refreshImg()
             },
-            "newEditUserImg": function () {
+            "newEditUserImg"() {
                 this.refreshImg()
             },
-            "value.rotateStatus": function () {
+            "value.rotateStatus"() {
                 var me = this
                 if (this.value.elementView) {
                     var positionX = this.value.elementView.x / 1000
@@ -97,25 +84,27 @@
             },
 
         },
-        mounted: function () {
+        mounted() {
             var me = this
-            var elementId = me.value.elementView ? me.value.elementView.id : me.value.relationView.id
-
-            // me.$EventBus.$on('es-EndProgressing', function (newVal) {
-            //     me.EndProgressing = true
-            // })
+            var elementId = me.value.elementView ? me.value.elementView.id : me.value.relationView.id;
 
             me.$EventBus.$on(`${elementId}`, function (obj) {
 
-
                 if ( obj.action == 'elementPush' ) {
-                    me.STATUS_COMPLETE = obj.STATUS_COMPLETE
+                    //STATUS_COMPLETE_addElementPush
+                    me.$nextTick(function () {
+                        me.STATUS_COMPLETE = obj.STATUS_COMPLETE
+                    })
                 } else if ( obj.action == 'elementDelete' ) {
                     //STATUS_COMPLETE_elementDelete
-                    me.STATUS_COMPLETE = obj.STATUS_COMPLETE
+                    me.$nextTick(function () {
+                        me.STATUS_COMPLETE = obj.STATUS_COMPLETE
+                    })
                 } else if ( obj.action == 'elementMove' ) {
-                    me.STATUS_COMPLETE = obj.STATUS_COMPLETE
-                    me.movingElement = obj.movingElement
+                    me.STATUS_COMPLETE = true
+                    me.$nextTick(function () {
+                        me.movingElement = false
+                    })
                 } else if ( obj.action == 'valueModify' ) {
                     me.$nextTick(function () {
                         me.STATUS_COMPLETE = obj.STATUS_COMPLETE
@@ -129,9 +118,9 @@
                         me.STATUS_COMPLETE = obj.STATUS_COMPLETE
                     })
                 } else if ( obj.action =='relationMove' ) {
+                    me.STATUS_COMPLETE = true
                     me.$nextTick(function () {
-                        me.STATUS_COMPLETE = obj.STATUS_COMPLETE
-                        me.movingElement = obj.movingElement
+                        me.movingElement = false
                     })
                 } else if (obj.action == 'userPanelOpen' || obj.action == 'userSelectedOn' || obj.action == 'userMovedOn') {
                     if(!me.newEditUserImg) {
@@ -150,32 +139,30 @@
                         })
                     }
                 }
-            })
-
+            });
 
             // Rotate Element
-            me.onRotateElement()
-
+            me.onRotateElement();
         },
         computed: {
-            isCustomMoveExist() {
-                // REMOVE
-                if (this.canvas)
-                    return this.canvas.isCustomMoveExist
-
-                return false
+            isReadOnly() {
+                if (this.modelCanvasComponent) {
+                    return this.modelCanvasComponent.readOnly
+                } else {
+                    return false
+                }
             },
             selectable(){
                 return !this.movingElement
             },
             movable(){
-                return !this.canvas.isReadOnlyModel && !this.movingElement
+                return !this.isReadOnlyModeling && !this.movingElement
             },
             resizable(){
-                return !this.canvas.isReadOnlyModel && !this.movingElement
+                return !this.isReadOnlyModeling && !this.movingElement
             },
             deletable(){
-                return !this.canvas.isReadOnlyModel && !this.movingElement
+                return !this.isReadOnlyModeling && !this.movingElement
             },
             filteredElementValidationResults(){
                 var me = this
@@ -202,69 +189,115 @@
                 return this.newEditUserImg
             },
             storage() {
-                if (this.canvas) {
-                    return this.canvas.storage
+                if (this.modelCanvasComponent) {
+                    return this.modelCanvasComponent.storage
                 } else {
                     return 'localstorage'
                 }
             },
-            isClazzModeling() {
-                if (this.canvas)
-                    return this.canvas.isClazzModeling
+            modelingProjectId() {
+                if (this.modelCanvasComponent) {
+                    return this.modelCanvasComponent.modelingProjectId
+                }
+                return this.params.projectId ? this.params.projectId : null
+            },
+            isInitialLoading() {
+                if (this.modelCanvasComponent)
+                    return this.modelCanvasComponent.isInitialLoading
+
                 return false
+            },
+            isCustomMoveExist() {
+                if( this.canvas ){
+                    return this.canvas.isServerModel && this.canvas.isQueueModel
+                }
+
+                if (this.modelCanvasComponent)
+                    return this.modelCanvasComponent.isCustomMoveExist
+
+                return false
+            },
+            isDisableModeling() {
+                if (this.modelCanvasComponent)
+                    return this.modelCanvasComponent.isDisableModeling
+                return false
+            },
+            isReadOnlyModeling() {
+                if (this.modelCanvasComponent)
+                    return this.modelCanvasComponent.isReadOnlyModeling
+                return false
+            },
+            isClazzModeling() {
+                if (this.modelCanvasComponent)
+                    return this.modelCanvasComponent.isClazzModeling
+                return false
+            },
+            isServerModeling() {
+                if (this.modelCanvasComponent)
+                    return this.modelCanvasComponent.isServerModeling
+                return false
+            },
+            isQueueModeling() {
+                if (this.modelCanvasComponent) {
+                    return this.modelCanvasComponent.isQueueModeling
+                } else {
+                    return false
+                }
+            },
+            isEmbeddedModeling(){
+                if (this.modelCanvasComponent) {
+                    return this.modelCanvasComponent.isEmbeddedModeling
+                } else {
+                    return false
+                }
+            },
+            isVersionMode(){
+                if (this.modelCanvasComponent) {
+                    return this.modelCanvasComponent.isVersionMode
+                } else {
+                    return false
+                }
             },
         },
         methods: {
-            setElementCanvas(){
-                throw new Error('setElementCanvas() must be implement')
-            },
-            removeAction(){},
             exceptionError(message, options){
-                var me = this
-                var msg = message ? message : '[Element] Exception Error.'
-                if(me.canvas){
-                    me.canvas.exceptionError(msg,options)
+                var me = this;
+                var msg = message ? message : '[Element] Exception Error.';
+                if (me.modelCanvasComponent) {
+                    me.modelCanvasComponent.exceptionError(msg,options);
                 }
                 console.error(`[Element] Exception: ${msg}`);
             },
             openPanel() {
-                // var openPanelStatus = false
-                // if(this.canvas.isServerModel && this.canvas.isQueueModel) {
-                //     if(this.EndProgressing || this.value.name == "" || this.value.name.includes('BoundedContext')) {
-                //         this.EndProgressing = true
-                //         openPanelStatus = true
-                //     }
-                // } else {
-                //     openPanelStatus = true
-                // }
-                // if(openPanelStatus) {
-                    if(this.propertyPanel) this.propertyPanel = false
-                    this.propertyPanel = true
-                    this.staySelected = false
-                // }
+                if (this.propertyPanel) {
+                    this.propertyPanel = false;
+                }
+                this.propertyPanel = true;
+                this.staySelected = false;
             },
             closePanel() {
-                if(!this.propertyPanel) this.propertyPanel = true
-                this.propertyPanel = false
+                if (!this.propertyPanel) {
+                    this.propertyPanel = true;
+                }
+                this.propertyPanel = false;
             },
-            deSelectedActivity: function () {
-                var me = this
-
+            deSelectedActivity() {
+                var me = this;
                 if (me.value) {
-                    me.selected = false
-                    me.propertyPanel = false
+                    me.selected = false;
+                    me.propertyPanel = false;
                 }
             },
             refreshImg() {
-                var me = this
-                me.refreshedImg = 'refresh'
+                var me = this;
+                me.refreshedImg = 'refresh';
                 me.$nextTick(function () {
                     if (me.refreshedImg == 'refresh') {
-                        me.refreshedImg = ''
+                        me.refreshedImg = '';
                     } else {
-                        me.refreshedImg = 'refresh'
+                        me.refreshedImg = 'refresh';
                     }
-                })
+                });
             },
             onRotateElement(){
                 if (this.value.elementView) {
@@ -279,6 +312,24 @@
                         $(`#${this.value.elementView.id}`).css('transform', `rotate(0deg)`);
                         this.value.rotateStatus = false
                     }
+                }
+            },
+            /////////// MOVE /////////
+            onMoveElement(newObj,STATUS_COMPLETE){
+                var me = this
+
+                try{
+                    me.value.elementView.x = newObj.x
+                    me.value.elementView.y = newObj.y
+                    me.value.elementView.width = newObj.width
+                    me.value.elementView.height = newObj.height
+
+                    me.$nextTick(function () {
+                        me.movingElement = false
+                        me.STATUS_COMPLETE = STATUS_COMPLETE
+                    })
+                }catch (e) {
+                    alert(`[Error] ModelElement-onMoveElement: ${e}`)
                 }
             },
             delayedMove(dx, dy, dw, dh, du, dlw, dl, dr) {
@@ -347,95 +398,24 @@
                     var afterViewObj = {x: offsetX, y: offsetY, width: offsetW, height: offsetH}
                     var beforeViewObj = {x: originX, y: originY, width: originW, height: originH}
 
-                    // me.delayedMoveAction(beforeViewObj, afterViewObj)
-                    me.canvas.moveElementAction(me.value, beforeViewObj, afterViewObj)
+                    me.delayedMoveAction(beforeViewObj, afterViewObj)
 
                 }catch (e) {
                     alert(`[Error] ModelElement-delayedMove: ${e}`)
                 }
             },
-            delayedRelationMove(vertices) {
-                var me = this
-                try{
-                    var originVertices = JSON.parse(JSON.stringify(me.value.relationView.value))
-                    var newVertices = []
-                    var offsetVertices
-
-                    vertices.forEach(function (ver, index) {
-                        newVertices.push([ver.x, ver.y])
-                    })
-                    offsetVertices = JSON.stringify(newVertices)
-
-                    // me.delayedRelationMoveAction(beforeViewObj, afterViewObj)
-                    me.canvas.moveElementAction(me.value, originVertices, offsetVertices)
-                }catch (e) {
-                    alert(`[Error] ModelElement - delayedRelationMove: ${e}`)
-                }
-            },
-            onRemoveShape(model) {
-                var me = this
-                try {
-                    // if ( me.isCustomMoveExist ) {
-                    //     // 변화 인지
-                    //     me.modelCanvasComponent.modelChanged = true
-                    //     me.removeShapeQueue()
-                    // } else {
-                    //     me.removeShapeLocal()
-                    // }
-                    me.canvas.removeElementAction(me.value)
-                    me.validate()
-                } catch (e) {
-                    alert(`[Error] ModelElement-onRemoveShape: ${e}`)
-                }
-            },
-            getComponent(componentName) {
-                let component = null
-                let parent = this.$parent
-                while (parent && !component) {
-                    if (parent.$options.name === componentName) {
-                        component = parent
-                    }
-                    parent = parent.$parent
-                }
-                return component
-            },
-            removeUndefinedValue(obj) {
-                const newObj = {}; // 빈객체를 만들어놓고
-
-                Object.keys(obj).forEach(key => {
-                    // 키 값이 {오브젝트} 인 경우
-                    if (obj[key] && Object.keys(obj[key]).length) {
-                        newObj[key] = this.removeUndefinedValue(obj[key]); // newObj 안에서 또 재귀함수를 돌리자
-                    }
-
-                    // 키 값이 그외 값인 경우
-                    else if (obj[key]) {
-                        newObj[key] = obj[key]; // 조건을 통과하면 newObj에 똑같은 키와 값을 채워준다
-                    }
-                });
-
-                return newObj;
-            },
             delayedMoveAction(beforeViewObj, afterViewObj){
-                /*
-                    !!!  REMOVE !!!!
-                    changedMethod: moveElementAction
-                */
                 var me = this
                 // Action
-                if ( me.canvas.isCustomMoveExist ) {
+                if ( me.isCustomMoveExist ) {
                     me.movingElement = true
                     // 변화 인지
-                    me.canvas.modelChanged = true
+                    me.modelCanvasComponent.modelChanged = true
                     // move Queue
                     me.delayedMoveQueue(beforeViewObj, afterViewObj)
                 }
             },
             delayedMoveQueue(beforeViewObj , afterViewObj){
-                /*
-                   !!!  REMOVE !!!!
-                   changedMethod: pushMovedQueue
-               */
                 var me = this
                 try{
                     var types = me.value._type.split('.')
@@ -450,37 +430,12 @@
                             after: JSON.stringify(afterViewObj),
                             timeStamp: Date.now(),
                         }
-                    me.pushObject(`db://definitions/${me.canvas.projectId}/queue`, pushObj)
+                    me.pushObject(`db://definitions/${me.modelingProjectId}/queue`, pushObj)
                 }catch (e) {
                     alert(`[Error] ModelElement-DelayedMoveQueue PUSH: ${e}`)
                 }
             },
-            onMoveElement(newObj,STATUS_COMPLETE){
-                /*
-                    !!!  REMOVE !!!!
-                    changedMethod: moveElement
-                */
-                var me = this
-
-                try{
-                    me.value.elementView.x = newObj.x
-                    me.value.elementView.y = newObj.y
-                    me.value.elementView.width = newObj.width
-                    me.value.elementView.height = newObj.height
-
-                    me.$nextTick(function () {
-                        me.movingElement = false
-                        me.STATUS_COMPLETE = STATUS_COMPLETE
-                    })
-                }catch (e) {
-                    alert(`[Error] ModelElement-onMoveElement: ${e}`)
-                }
-            },
             onMoveRelation(newObj,STATUS_COMPLETE){
-                /*
-                    !!!  REMOVE !!!!
-                    changedMethod: moveElement
-                */
                 var me = this
 
                 try{
@@ -494,25 +449,34 @@
                     alert(`[Error] ModelElement-onMoveRelation: ${e}`)
                 }
             },
-            delayedRelationMoveAction(originVertices, offsetVertices){
-                /*
-                  !!!  REMOVE !!!!
-                  changedMethod: canvas.moveElementAction
-              */
+            delayedRelationMove(vertices) {
                 var me = this
-                if ( me.canvas.isCustomMoveExist ) {
+                try{
+                    var originVertices = JSON.parse(JSON.stringify(me.value.relationView.value))
+                    var newVertices = []
+                    var offsetVertices
+
+                    vertices.forEach(function (ver, index) {
+                        newVertices.push([ver.x, ver.y])
+                    })
+                    offsetVertices = JSON.stringify(newVertices)
+
+                    me.delayedRelationMoveAction(originVertices, offsetVertices)
+                }catch (e) {
+                    alert(`[Error] ModelElement - delayedRelationMove: ${e}`)
+                }
+            },
+            delayedRelationMoveAction(originVertices, offsetVertices){
+                var me = this
+                if ( me.isCustomMoveExist ) {
                     me.movingElement = true
                     // 변화 인지
-                    me.canvas.modelChanged = true
+                    me.modelCanvasComponent.modelChanged = true
                     // relation Queue
                     me.delayedRelationMoveQueue(originVertices, offsetVertices)
                 }
             },
             delayedRelationMoveQueue(originVertices , offsetVertices){
-                /*
-                !!!  REMOVE !!!!
-                changedMethod: canvas.pushMovedQueue
-                */
                 var me = this
                 try {
                     var pushObj =
@@ -524,20 +488,26 @@
                             after: offsetVertices,
                             timeStamp: Date.now(),
                         }
-                    me.pushObject(`db://definitions/${me.canvas.projectId}/queue`, pushObj)
+                    me.pushObject(`db://definitions/${me.modelingProjectId}/queue`, pushObj)
                 }catch (e) {
                     alert(`[Error] ModelElement-DelayedRelationMoveQueue: ${e}`)
                 }
             },
+            /////////// REMOVE /////////
+            onRemoveShape() {
+                var me = this
+                try {
+                    me.removeShapeLocal();
+                    me.validate();
+                } catch (e) {
+                    alert(`[Error] ModelElement-onRemoveShape: ${e}`)
+                }
+            },
             removeShapeLocal(){
-                /*
-                !!!  REMOVE !!!!
-                changedMethod: canvas.removeElementAction
-               */
                 var me = this
                 try{
                     var id = me.value.elementView ? me.value.elementView.id : me.value.relationView.id
-                    var location = me.value.elementView ? me.canvas.value.elements : me.canvas.value.relations
+                    var location = me.value.elementView ? me.modelCanvasComponent.value.elements : me.modelCanvasComponent.value.relations
 
                     if (location && id)
                         // location[id] = null
@@ -551,10 +521,6 @@
                 }
             },
             removeShapeQueue(){
-                /*
-                    !!!  REMOVE !!!!
-                    changedMethod: canvas.pushRemovedQueue
-                */
                 var me = this
                 try{
                     var action = me.value.relationView ? 'relationDelete' :  'elementDelete'
@@ -564,12 +530,37 @@
                         timeStamp: Date.now(),
                         item: JSON.stringify(me.value)
                     }
-                    me.pushObject(`db://definitions/${me.canvas.projectId}/queue`, obj)
+                    me.pushObject(`db://definitions/${me.modelingProjectId}/queue`, obj)
                 }catch (e) {
                     alert(`[Error] ModelElement-removeShapeQueue: ${e}`)
                 }
             },
+            getComponent(componentName) {
+                let component = null
+                let parent = this.$parent
+                while (parent && !component) {
+                    if (parent.$options.name === componentName) {
+                        component = parent
+                    }
+                    parent = parent.$parent
+                }
+                return component
+            },
+            removeUndefinedValue(obj) {
+                const newObj = {};
 
+                Object.keys(obj).forEach(key => {
+                    if (obj[key] && Object.keys(obj[key]).length) {
+                        newObj[key] = this.removeUndefinedValue(obj[key]);
+                    }
+
+                    else if (obj[key]) {
+                        newObj[key] = obj[key];
+                    }
+                });
+
+                return newObj;
+            },
         }
     }
 </script>

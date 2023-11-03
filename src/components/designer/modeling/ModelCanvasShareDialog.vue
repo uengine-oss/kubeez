@@ -35,7 +35,7 @@
                         <ModelCanvasShare
                                 v-model="canvas"
                                 :key="refreshKey"
-                                :canvasComponentName="canvasComponentName"
+                                :modelCanvasComponentName="modelCanvasComponentName"
                         ></ModelCanvasShare>
                     </v-card>
                 </v-tab-item>
@@ -72,7 +72,7 @@
                     return false
                 },
             },
-            canvasComponentName: {
+            modelCanvasComponentName: {
                 type: String,
                 default: function () {
                     return null

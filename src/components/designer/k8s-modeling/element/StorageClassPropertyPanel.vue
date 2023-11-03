@@ -2,7 +2,7 @@
     <kubernetes-common-panel
             v-model="value"
             :img="img"
-            :readOnly="canvas.isReadOnlyModel"
+            :readOnly="isReadOnlyModeling"
             :validation-lists="validationLists"
             @openDesDoc="desDocOpen"
             @close="closePanel"
@@ -20,7 +20,7 @@
         <template slot="edit-property">
             <v-text-field
                     label="Provisioner"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
                     v-model="value.object.provisioner">
                 <template v-slot:append-outer>
                     <v-icon small @click="desDocOpen('#provisioner')">
@@ -30,7 +30,7 @@
             </v-text-field>
             <v-text-field
                     label="Parameter Type"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
                     v-model="value.object.parameters.type"
             >
                 <template v-slot:append-outer>
@@ -41,7 +41,7 @@
             </v-text-field>
             <v-select
                     label="Reclaim Policy"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
                     v-model="value.object.reclaimPolicy"
                     :items="policyList"
             >

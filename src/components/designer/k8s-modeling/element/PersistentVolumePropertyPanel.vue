@@ -2,7 +2,7 @@
     <kubernetes-common-panel
             v-model="value"
             :img="img"
-            :readOnly="canvas.isReadOnlyModel"
+            :readOnly="isReadOnlyModeling"
             :validation-lists="validationLists"
             @openDesDoc="desDocOpen"
             @close="closePanel"
@@ -51,12 +51,12 @@
                                     label="Name"
                                     v-model="value.object.metadata.name"
                                     autofocus
-                                    :disabled="canvas.isReadOnlyModel"
+                                    :disabled="isReadOnlyModeling"
                             ></v-text-field>
                             <v-select
                                     label="Access Modes"
                                     v-model="value.object.spec.accessModes"
-                                    :disabled="canvas.isReadOnlyModel"
+                                    :disabled="isReadOnlyModeling"
                                     :items="accessModeList">
                                 <template v-slot:append-outer>
                                     <v-icon small @click="desDocOpen('#access-modes')">mdi-help-circle-outline</v-icon>
@@ -67,7 +67,7 @@
                                 <v-col cols="6" class="py-0">
                                     <v-text-field
                                             v-model="storageVolume"
-                                            :disabled="canvas.isReadOnlyModel"
+                                            :disabled="isReadOnlyModeling"
                                             type="number">
                                     </v-text-field>
                                 </v-col>
@@ -75,14 +75,14 @@
                                     <v-select
                                             :items="units"
                                             v-model="storageUnit"
-                                            :disabled="canvas.isReadOnlyModel"
+                                            :disabled="isReadOnlyModeling"
                                     ></v-select>
                                 </v-col>
                             </v-row>
                             <v-select
                                     label="Reclaim Policy"
                                     v-model="value.object.spec.persistentVolumeReclaimPolicy"
-                                    :disabled="canvas.isReadOnlyModel"
+                                    :disabled="isReadOnlyModeling"
                                     :items="policyList">
                                 <template v-slot:append-outer>
                                     <v-icon small @click="desDocOpen('#reclaim-policy')">mdi-help-circle-outline</v-icon>
@@ -91,7 +91,7 @@
                             <v-select
                                     label="Volume Mode"
                                     v-model="value.object.spec.volumeMode"
-                                    :disabled="canvas.isReadOnlyModel"
+                                    :disabled="isReadOnlyModeling"
                                     :items="volumeModeList">
                                 <template v-slot:append-outer>
                                     <v-icon small @click="desDocOpen('#volume-mode')">mdi-help-circle-outline</v-icon>
@@ -99,7 +99,7 @@
                             </v-select>
                             <kube-attr-field 
                                     v-model="value" 
-                                    :readOnly="canvas.isReadOnlyModel"
+                                    :readOnly="isReadOnlyModeling"
                             ></kube-attr-field>
                         </v-card-text>
                     </v-card>
@@ -107,7 +107,7 @@
                 <v-flex>
                     <kube-yaml-editor
                             v-model="value.object"
-                            :readOnly="canvas.isReadOnlyModel"
+                            :readOnly="isReadOnlyModeling"
                     ></kube-yaml-editor>
                 </v-flex>
             </v-layout>

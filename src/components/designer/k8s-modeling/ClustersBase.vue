@@ -24,15 +24,9 @@
         },
         created() {
         },
-        mounted: function () {
+        mounted() {
             var me = this;
-            // me.clustersList.push({
-            //     me.clusterName = ''
-            //     me.clusterAddress = ''
-            //     me.kuberToken = ''
-            //     me.tokenDialog = false
-            // })
-            me.getData()
+            me.getData();
         },
         watch: {},
         methods: {
@@ -42,41 +36,37 @@
 
                 var tenantId = url.hostname;
                 if (tenantId.includes(".")) {
-                    tenantId = tenantId.substring(tenantId.indexOf(".") + 1)
+                    tenantId = tenantId.substring(tenantId.indexOf(".") + 1);
                 }
 
-                return tenantId;  //www.gklabs.co.kr?  -->
-
+                return tenantId;
             },
             getProtocol() {
-                return window.location.protocol;  //www.gklabs.co.kr?  -->
-
+                return window.location.protocol;
             },
             getData() {
-                var me = this
+                var me = this;
             },
             save() {
-                var me = this
+                var me = this;
             },
             deleteCluster(val) {
-                var me = this
+                var me = this;
             },
             selectCluster(val) {
-                var me = this
+                var me = this;
                 localStorage.setItem('clusterName', val.name);
-                localStorage.setItem('apiServer', val.apiServer);
-                localStorage.setItem('clusterAddress', val.clusterAddress);
+                localStorage.setItem('clusterAddress', val.apiServer);
                 localStorage.setItem('kuberToken', val.token);
                 me.$emit('input', val);
                 me.$emit('close');
             },
             closeToken() {
-                var me = this
-                me.clusterName = ''
-                me.clusterAddress = ''
-                me.apiServer = ''
-                me.kuberToken = ''
-                me.tokenDialog = false
+                var me = this;
+                me.clusterName = '';
+                me.clusterAddress = '';
+                me.kuberToken = '';
+                me.tokenDialog = false;
             },
         },
     }

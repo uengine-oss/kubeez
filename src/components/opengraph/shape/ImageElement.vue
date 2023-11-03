@@ -1,38 +1,31 @@
 <template>
-    <div>
-        <slot>
-        </slot>
-    </div>
+  <div>
+    <slot>
+    </slot>
+  </div>
 </template>
 
 <script>
-    import OpengraphElement from './OpengraphElement'
+  import OpengraphElement from './OpengraphElement'
+  export default {
+    mixins: [OpengraphElement],
+    name: 'image-element',
+    props: {},
+    computed: {},
+    data: function () {
+      return {}
+    },
+    watch: {},
+    mounted: function () {
 
-    export default {
-        mixins: [OpengraphElement],
-        name: 'image-element',
-        props: {
-            image: String
-        },
-        computed: {},
-        data: function () {
-            return {}
-        },
-        watch: {
-            "image": function (newVal) {
-                // console.log(newVal)
-            }
-        },
-        mounted: function () {
-
-        },
-        methods: {
-            generateShape: function () {
-                var me = this;
-                return new OG.shape.ImageShape(me.image, me.label);
-            },
-        }
+    },
+    methods: {
+      generateShape: function () {
+        var me = this;
+        return new OG.shape.ImageShape(me.image, me.label);
+      }
     }
+  }
 </script>
 
 

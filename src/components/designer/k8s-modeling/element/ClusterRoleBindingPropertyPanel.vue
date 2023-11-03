@@ -2,7 +2,7 @@
     <kubernetes-common-panel
             v-model="value"
             :img="img"
-            :readOnly="canvas.isReadOnlyModel"
+            :readOnly="isReadOnlyModeling"
             :validation-lists="validationLists"
             @openDesDoc="desDocOpen"
             @close="closePanel"
@@ -22,12 +22,12 @@
                     label="Name"
                     v-model="value.object.metadata.name"
                     autofocus
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
             ></v-text-field>
             <v-select
                     label="Subjects Kind"
                     v-model="value.object.subjects[0].kind"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
                     :items="kindList">
                 <template v-slot:append-outer>
                     <v-icon small @click="desDocOpen('#referring-to-subjects')">mdi-help-circle-outline</v-icon>
@@ -36,12 +36,12 @@
             <v-text-field
                     label="Subjects Name"
                     v-model="value.object.subjects[0].name"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
             ></v-text-field>
             <v-text-field
                     label="Role Name"
                     v-model="value.object.roleRef.name"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
             ></v-text-field>
         </template>
     </kubernetes-common-panel>

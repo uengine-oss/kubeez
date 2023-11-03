@@ -3,15 +3,15 @@
         <geometry-element
                 selectable
                 movable
-                :connectable="!canvas.isReadOnlyModel"
-                :deletable="!canvas.isReadOnlyModel"
+                :connectable="!isReadOnly"
+                :deletable="!isReadOnly"
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
                 :width.sync="value.elementView.width"
                 :height.sync="value.elementView.height"
                 :angle.sync="value.elementView.angle"
-                :customMoveActionExist="canvas.isCustomMoveExist"
+                :customMoveActionExist="isCustomMoveExist"
                 v-on:customMoveAction="delayedMove"
                 v-on:moveShape="onMoveShape"
                 v-on:selectShape="selectedActivity"
@@ -61,7 +61,7 @@
 </template>
 
 <script>
-    import Element from "../KubernetesElement";
+    import Element from "../KubernetesModelElement";
 
     export default {
         mixins: [Element],
@@ -124,7 +124,7 @@
         mounted() {
             var me = this;
             
-            var parentElement = me.canvas.value.elements[me.value.parentId];
+            var parentElement = me.modelCanvasComponent.value.elements[me.value.parentId];
             if (parentElement) {
                 if (!parentElement.subsets.includes(me.value.elementView.id)) {
                     me.onRemoveShape(me.value);

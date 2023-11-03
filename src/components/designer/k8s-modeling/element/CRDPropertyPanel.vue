@@ -2,7 +2,7 @@
     <kubernetes-common-panel
             v-model="value"
             :img="img"
-            :readOnly="canvas.isReadOnlyModel"
+            :readOnly="isReadOnlyModeling"
             :validation-lists="validationLists"
             @openDesDoc="desDocOpen"
             @close="closePanel"
@@ -23,7 +23,7 @@
 
 
 <script>
-    import KubeCommonPanel from "../KubeCommonPanel.vue";
+    import KubeCommonPanel from "../KubeCommonPanel";
     import KubernetesPanel from "../KubernetesPanel";
     
     export default {

@@ -45,7 +45,7 @@
                 type: Object,
                 default: null
             },
-            canvasComponentName:{
+            modelCanvasComponentName:{
                 type: String,
                 default: null
             },
@@ -97,9 +97,8 @@
             var me = this
 
             try {
-                me.modelCanvasComponent = me.getComponent(me.canvasComponentName)
-                me.canvas = me.getComponent(me.canvasComponentName)
-                me.canvas.$refs['modeler-image-generator'].save(null, me.canvas).then(async function (resolve) {
+                me.modelCanvasComponent = me.getComponent(me.modelCanvasComponentName)
+                me.modelCanvasComponent.$refs['modeler-image-generator'].save(null, me.canvas).then(async function (resolve) {
                     me.image = resolve
                 })
             } catch (e) {

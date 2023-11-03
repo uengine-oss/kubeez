@@ -3,8 +3,8 @@
         <edge-element
                 v-if="isView"
                 selectable
-                :connectable="!canvas.isReadOnlyModel"
-                :deletable="!canvas.isReadOnlyModel"
+                :connectable="!isReadOnly"
+                :deletable="!isReadOnly"
                 :vertices.sync="vertices"
                 :from.sync="value.from"
                 :to.sync="value.to"
@@ -14,7 +14,7 @@
                 v-on:selectShape="selectedActivity"
                 v-on:deSelectShape="deSelectedActivity"
                 v-on:removeShape="onRemoveShape(value)"
-                :customMoveActionExist="canvas.isCustomMoveExist"
+                :customMoveActionExist="isCustomMoveExist"
                 v-on:customRelationMoveAction="delayedRelationMove"
         ></edge-element>
 
@@ -22,15 +22,18 @@
                 v-if="propertyPanel"
                 v-model="value"
                 @close="closePanel"
-                :readOnly="canvas.isReadOnlyModel"
+                :readOnly="isReadOnly"
                 :titleName="'Ingress To Service'"
         ></relation-panel>
     </div>
 </template>
 
 <script>
-    import Relation from '../RelationAbstract'
+    import Relation from '../KubeRelationAbstract'
     import IngressToServicePanel from "./IngressToServicePanel";
+
+    var pluralize = require('pluralize');
+    var changeCase = require('change-case');
 
     export default {
         mixins: [Relation],
@@ -47,15 +50,8 @@
             }
             if(!me.value.name) {
                 if(me.value.targetElement.object.metadata.name != '') {
-                    var name = (me.value.targetElement.object.metadata.name).toLowerCase()
-                    var lastChar = name.charAt(name.length - 1)
-                    if (lastChar == 's') {
-                        name += 'es'
-                    } else if (lastChar == 'y') {
-                        name = name.slice(0, -1) + 'ies'
-                    } else {
-                        name += 's'
-                    }
+                    var name = me.value.targetElement.object.metadata.name;
+                    name = pluralize(changeCase.camelCase(name));
                     me.value.targetElement.path = "/" + name;
                     me.value.name = me.value.targetElement.host + me.value.targetElement.path;
                 }
@@ -63,11 +59,11 @@
         },
         computed: {
             className() {
-                return 'IngressToService'
+                return 'IngressToService';
             },
             style_() {
-                var style = {}
-                return style
+                var style = {};
+                return style;
             },
             createNew(elementId, from, to, vertices) {
                 return {
@@ -94,13 +90,13 @@
             },
             isOpen() {
                 if (this.value.sourceElement._type == 'Ingress') {
-                    return true
+                    return true;
                 }
-                return false
+                return false;
             },
             name() {
                 try {
-                    return this.value.targetElement.host + this.value.targetElement.path
+                    return this.value.targetElement.host + this.value.targetElement.path;
                 } catch(e) {
                     return ''
                 }

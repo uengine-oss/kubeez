@@ -4,15 +4,15 @@
                 selectable
                 movable
                 resizable
-                :connectable="!canvas.isReadOnlyModel"
-                :deletable="!canvas.isReadOnlyModel"
+                :connectable="!isReadOnly"
+                :deletable="!isReadOnly"
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
                 :width.sync="value.elementView.width"
                 :height.sync="value.elementView.height"
                 :angle.sync="value.elementView.angle"
-                :customMoveActionExist="canvas.isCustomMoveExist"
+                :customMoveActionExist="isCustomMoveExist"
                 v-on:customMoveAction="delayedMove"
                 v-on:moveShape="onMoveShape"
                 v-on:selectShape="selectedActivity"
@@ -57,19 +57,21 @@
                         :text="'QuotaSpecBinding'">
                 </text-element>
             </sub-elements>
+            
             <k8s-sub-controller
                     v-for="connectableType in filterConnectionTypes"
+                    :key="connectableType.component"
                     :element="value"
                     :image="connectableType.src"
-                    :type="connectableType.component">
-            </k8s-sub-controller>
+                    :type="connectableType.component"
+            ></k8s-sub-controller>
         </geometry-element>
 
         <property-panel
                 v-if="propertyPanel"
                 v-model="value"
                 :img="imgSrc"
-                :readOnly="canvas.isReadOnlyModel"
+                :readOnly="isReadOnly"
                 @close="closePanel"
         >
         </property-panel>
@@ -84,7 +86,7 @@
 </template>
 
 <script>
-    import Element from "../KubernetesElement";
+    import Element from "../KubernetesModelElement";
     import PropertyPanel from './QuotaSpecBindingPropertyPanel'
 
     export default {

@@ -25,13 +25,11 @@
         created() {
             var me = this
             me.modelCanvasComponent = me.getComponent('kubernetes-model-canvas')
-            me.canvas = me.getComponent('kubernetes-model-canvas')
         },
         computed: {},
         data: function () {
             return {
-                modelCanvasComponent: null,
-                canvas: null
+                modelCanvasComponent: null
             }
         },
         watch: {},
@@ -56,10 +54,10 @@
                     component: componentName
                 }
 
-                if (me.canvas) {
+                if (me.modelCanvasComponent) {
                     //make element
-                    var targetValue = me.canvas.addElement(targetInfo);
-                    me.canvas.canvas.removeShape(targetElement);
+                    var targetValue = me.modelCanvasComponent.addElement(targetInfo);
+                    me.modelCanvasComponent.canvas.removeShape(targetElement);
 
                     //make relation
                     me.customConnectShape(edgeElement, sourceElement, targetValue);
@@ -91,11 +89,11 @@
                     me.$nextTick(() => {
                         if (toValue._type === "DestinationRule") {
                             var elId = toValue.subsets[0];
-                            var elValue = me.canvas.value.elements[elId];
+                            var elValue = me.modelCanvasComponent.value.elements[elId];
                             componentInfo.targetElement = elValue;
                         }
 
-                        me.canvas.addElement(componentInfo, null, true);
+                        me.modelCanvasComponent.addElement(componentInfo, null, true);
                     })
                 }
             },

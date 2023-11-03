@@ -18,8 +18,7 @@
                 var me = this
                 var cluster = {
                     "name": me.clusterName,
-                    "clusterAddress": me.clusterAddress,
-                    "apiServer":me.apiServer,
+                    "apiServer": me.clusterAddress,
                     "token": me.kuberToken,
                     "connection": false,
                 }
@@ -39,7 +38,6 @@
                 if (localStorage.getItem('clusterName') == val.name) {
                     localStorage.removeItem('clusterName')
                     localStorage.removeItem('clusterAddress')
-                    localStorage.removeItem('apiServer')
                     localStorage.removeItem('kuberToken')
                     me.$emit('input', '')
                 }

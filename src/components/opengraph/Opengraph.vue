@@ -16,7 +16,7 @@
 </template>
 
 <script>
-    var _ = require('lodash');
+
     export default {
         name: 'opengraph',
         props: {
@@ -26,18 +26,12 @@
                 },
                 type: Boolean
             },
-            sliderLocationScale: {
-                default: function () {
-                    return 1;
-                },
-                type: Number
-            },
             /**
              * 캔버스 가로 (px)
              */
             width: {
                 default: function () {
-                    return 1000000;
+                    return 4000;
                 },
                 type: Number
             },
@@ -46,7 +40,7 @@
              */
             height: {
                 default: function () {
-                    return 1000000;
+                    return 4000;
                 },
                 type: Number
             },
@@ -185,7 +179,7 @@
              */
             stickGuide: {
                 default: function () {
-                    return true;
+                    return false;
                 },
                 type: Boolean
             },
@@ -803,15 +797,11 @@
                 container: null,
                 timerMap: {
                     renderingTime: {}
-                },
+                }
             }
         },
+
         watch: {
-            "canvas._CONFIG.SCALE": {
-                handler: _.debounce(function (newVal) {
-                    this.$emit('update:sliderLocationScale', newVal)
-                }, 1000)
-            },
             '$props': {
                 handler: function (newVal, oldVal) {
                     this.props = JSON.parse(JSON.stringify(newVal))
@@ -841,14 +831,11 @@
                 deep: true
             }
         },
+
         computed: {
             opengraphRole: function () {
                 return 'canvas';
-            },
-            // scale: function () {
-            //     console.log(this.canvas._CONFIG.SCALE)
-            //     return this.canvas._CONFIG.SCALE
-            // }
+            }
         },
 
         mounted: function () {
@@ -856,8 +843,6 @@
             this.bindEvents();
 
             var me = this;
-
-
             window.Vue.OGBus.$on('renderingTime', function (a, b) {
                 if (!me.timerMap.renderingTime[a]) {
                     me.timerMap.renderingTime[a] = 0;
@@ -967,11 +952,10 @@
                             left: 20,
                             width: 200,
                             height: 300,
-                            sliderLocationScale: this.sliderLocationScale,
                             appendTo: "body",
                             position: {my: "bottom", at: "bottom", of: canvas._CONTAINER}
                         });
-                        $("#" + this.sliderId).css("position", "absolute")
+                        $("#" + this.sliderId).css("position","absolute")
                     }
                 }
 
@@ -1024,7 +1008,7 @@
                     }
                     me.$emit('userAction');
                     me.$nextTick(function () {
-                        me.canvas.setCanvasSize([this.width, this.height]);
+                        me.canvas.setCanvasSize([4000, 4000]);
 
                         //TODO 네비게이터의 이미지가 $nextTick 이전에 스냅샷을 따왔기 때문에, 이미 화면이 틀어져있음.
                         //이를 위해서는 오픈그래프의 메소드를 오버라이드 해야한다. => updateSlider => 캔버스 사이즈 강제 고정으로.
@@ -1056,7 +1040,6 @@
                  * @param {Function} callbackFunc 콜백함수(event, shapeElement, afterText, beforeText)
                  */
                 me.canvas.onLabelChanged(function (event, shapeElement, afterText, beforeText) {
-                    console.log('label Chenage -----------------')
                     me.$emit('labelChanged', me.getElementById(shapeElement.id) || shapeElement, afterText, beforeText);
                 });
 
@@ -1104,6 +1087,7 @@
                  * @param {Function} callbackFunc 콜백함수(event, shapeElement, offset)
                  */
                 me.canvas.onMoveShape(function (event, shapeElement, offset) {
+                    console.log("moveShape")
                     me.$emit('moveShape', me.getElementById(shapeElement.id) || shapeElement, offset);
                 });
 
@@ -1251,7 +1235,6 @@
                         this.canvas.removeShape(element, true);
                     }
                 }
-
                 // console.log("*******************" + id)
                 // var obj = {
                 //     state: "delete"

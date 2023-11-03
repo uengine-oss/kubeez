@@ -3,9 +3,9 @@
         <edge-element
                 v-if="isView"
                 selectable
-                :connectable="!canvas.isReadOnlyModel"
-                :deletable="!canvas.isReadOnlyModel"
-                :movable="!canvas.isReadOnlyModel"
+                :connectable="!isReadOnly"
+                :deletable="!isReadOnly"
+                :movable="!isReadOnly"
                 :vertices.sync="vertices"
                 :id.sync="value.relationView.id"
                 :from.sync="value.from"
@@ -16,14 +16,14 @@
                 v-on:deSelectShape="deSelectedActivity"
                 v-on:dblclick="openPanel"
                 v-on:removeShape="onRemoveShape(value)"
-                :customMoveActionExist="canvas.isCustomMoveExist"
+                :customMoveActionExist="isCustomMoveExist"
                 v-on:customRelationMoveAction="delayedRelationMove"
         ></edge-element>
     </div>
 </template>
 
 <script>
-    import Relation from '../RelationAbstract'
+    import Relation from '../KubeRelationAbstract'
 
     export default {
         mixins: [Relation],

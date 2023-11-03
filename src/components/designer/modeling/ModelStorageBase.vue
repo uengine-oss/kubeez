@@ -9,9 +9,7 @@
         mixins: [CommonStorageBase],
         created() {},
         computed:{
-
+            
         }
     }
-
-
 </script>

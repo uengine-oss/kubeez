@@ -35,15 +35,6 @@
                                     <v-icon style="margin-right: 2%;" :color="validationLevelIcon[validationLists[0].level].color">{{ validationLevelIcon[validationLists[0].level].icon }}</v-icon>
                                     <v-list-item-title>{{representativeValidation}}</v-list-item-title>
                                 </template>
-
-                                <!-- <v-list-item
-                                        v-for="item in validationLists"
-                                        :key="item.code"
-                                        style="margin-left: 5%;"
-                                >
-                                    <v-icon style="margin-right: 2%;" :color="validationLevelIcon[item.level].color">{{validationLevelIcon[item.level].icon}}</v-icon>
-                                    <v-list-item-title>{{item.msg}}</v-list-item-title>
-                                </v-list-item> -->
                             </v-list-group>
                         </div>
                     </slot>

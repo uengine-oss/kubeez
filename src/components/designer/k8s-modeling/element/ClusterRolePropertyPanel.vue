@@ -2,7 +2,7 @@
     <kubernetes-common-panel
             v-model="value"
             :img="img"
-            :readOnly="canvas.isReadOnlyModel"
+            :readOnly="isReadOnlyModeling"
             :validation-lists="validationLists"
             @openDesDoc="desDocOpen"
             @close="closePanel"
@@ -20,13 +20,13 @@
         <template slot="edit-property">
             <v-text-field
                     label="Resource"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
                     v-model="resource"
                     hint="ex) pods, services"
             ></v-text-field>
             <v-text-field
                     label="Verb"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
                     v-model="verb"
                     hint="ex) get, list, watch"
             ></v-text-field>

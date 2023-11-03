@@ -2,7 +2,7 @@
     <kubernetes-common-panel
             v-model="value"
             :img="img"
-            :readOnly="canvas.isReadOnlyModel"
+            :readOnly="isReadOnlyModeling"
             @openDesDoc="desDocOpen"
             @close="closePanel"
     >
@@ -50,39 +50,39 @@
                                     label="Name"
                                     v-model="value.object.metadata.name"
                                     autofocus
-                                    :disabled="canvas.isReadOnlyModel"
+                                    :disabled="isReadOnlyModeling"
                             ></v-text-field>
                             <v-label>Replicas</v-label>
                             <v-row>
                                 <v-col cols="6" class="py-0">
                                     <kube-number-field
                                             :label="'Min'"
-                                            :readOnly="canvas.isReadOnlyModel"
+                                            :readOnly="isReadOnlyModeling"
                                             v-model="value.object.spec.minReplicas"
                                     ></kube-number-field>
                                 </v-col>
                                 <v-col class="py-0">
                                     <kube-number-field
                                             :label="'Max'"
-                                            :readOnly="canvas.isReadOnlyModel"
+                                            :readOnly="isReadOnlyModeling"
                                             v-model="value.object.spec.maxReplicas"
                                     ></kube-number-field>
                                 </v-col>
                             </v-row>
                             <v-select
                                     label="Resource Type"
-                                    :disabled="canvas.isReadOnlyModel"
+                                    :disabled="isReadOnlyModeling"
                                     v-model="value.object.spec.metrics[0].resource.name"
                                     :items="resourceTypes">
                             </v-select>
                             <kube-number-field
                                     :label="'AverageUtilization'"
-                                    :readOnly="canvas.isReadOnlyModel"
+                                    :readOnly="isReadOnlyModeling"
                                     v-model="value.object.spec.metrics[0].resource.target.averageUtilization"
                             ></kube-number-field>
                             <kube-attr-field 
                                     v-model="value" 
-                                    :readOnly="canvas.isReadOnlyModel"
+                                    :readOnly="isReadOnlyModeling"
                             ></kube-attr-field>
                         </v-card-text>
                     </v-card>
@@ -90,7 +90,7 @@
                 <v-flex>
                     <kube-yaml-editor
                             v-model="value.object"
-                            :readOnly="canvas.isReadOnlyModel"
+                            :readOnly="isReadOnlyModeling"
                     ></kube-yaml-editor>
                 </v-flex>
             </v-layout>

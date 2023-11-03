@@ -4,15 +4,15 @@
                 selectable
                 movable
                 resizable
-                :connectable="!canvas.isReadOnlyModel"
-                :deletable="!canvas.isReadOnlyModel"
+                :connectable="!isReadOnly"
+                :deletable="!isReadOnly"
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
                 :width.sync="value.elementView.width"
                 :height.sync="value.elementView.height"
                 :angle.sync="value.elementView.angle"
-                :customMoveActionExist="canvas.isCustomMoveExist"
+                :customMoveActionExist="isCustomMoveExist"
                 v-on:customMoveAction="delayedMove"
                 v-on:moveShape="onMoveShape"
                 v-on:selectShape="selectedActivity"
@@ -79,7 +79,7 @@
                 v-model="value"
                 :img="imgSrc"
                 :validationLists="filteredElementValidationResults"
-                :readOnly="canvas.isReadOnlyModel"
+                :readOnly="isReadOnly"
                 @close="closePanel"
         >
         </property-panel>
@@ -94,7 +94,7 @@
 </template>
 
 <script>
-    import Element from "../KubernetesElement";
+    import Element from "../KubernetesModelElement";
     import PropertyPanel from './DaemonSetPropertyPanel'
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
@@ -412,7 +412,7 @@
                     }
                 }
 
-                me.canvas.changedTemplateCode = true
+                me.modelCanvasComponent.changedTemplateCode = true
             },
         }
     }

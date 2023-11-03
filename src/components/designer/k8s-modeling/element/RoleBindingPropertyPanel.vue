@@ -2,7 +2,7 @@
     <kubernetes-common-panel
             v-model="value"
             :img="img"
-            :readOnly="canvas.isReadOnlyModel"
+            :readOnly="isReadOnlyModeling"
             :validation-lists="validationLists"
             @openDesDoc="desDocOpen"
             @close="closePanel"
@@ -20,7 +20,7 @@
         <template slot="edit-property">
             <v-select
                     label="Subjects Kind"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
                     v-model="value.object.subjects[0].kind"
                     :items="kindList">
                 <template v-slot:append-outer>
@@ -29,18 +29,18 @@
             </v-select>
             <v-text-field
                     label="Subjects Name"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
                     v-model="value.object.subjects[0].name"
             ></v-text-field>
             <v-select
                     label="Role Kind"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
                     v-model="value.object.roleRef.kind"
                     :items="roleList"
             ></v-select>
             <v-text-field
                     label="Role Name"
-                    :disabled="canvas.isReadOnlyModel"
+                    :disabled="isReadOnlyModeling"
                     v-model="value.object.roleRef.name"
             ></v-text-field>
         </template>

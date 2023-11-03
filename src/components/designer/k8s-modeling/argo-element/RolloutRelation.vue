@@ -3,9 +3,9 @@
         <edge-element
                 v-if="isView"
                 selectable
-                :connectable="!canvas.isReadOnlyModel"
-                :deletable="!canvas.isReadOnlyModel"
-                :moveable="!canvas.isReadOnlyModel"
+                :connectable="!isReadOnly"
+                :deletable="!isReadOnly"
+                :moveable="!isReadOnly"
                 :vertices.sync="vertices"
                 :from.sync="value.from"
                 :to.sync="value.to"
@@ -15,7 +15,7 @@
                 v-on:selectShape="selectedActivity"
                 v-on:deSelectShape="deSelectedActivity"
                 v-on:removeShape="onRemoveShape(value)"
-                :customMoveActionExist="canvas.isCustomMoveExist"
+                :customMoveActionExist="isCustomMoveExist"
                 v-on:customRelationMoveAction="delayedRelationMove"
         ></edge-element>
 
@@ -23,14 +23,14 @@
                 v-if="propertyPanel"
                 v-model="value"
                 :titleName="'Rollout'"
-                :readOnly="canvas.isReadOnlyModel"
+                :readOnly="isReadOnly"
                 @close="closePanel"
         ></relation-panel>
     </div>
 </template>
 
 <script>
-    import Relation from '../RelationAbstract'
+    import Relation from '../KubeRelationAbstract'
     import Panel from './RolloutRelationPanel'
 
     export default {
