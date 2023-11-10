@@ -80,8 +80,7 @@ Vue.config.productionTip = false;
 // TrackJS.track('Testing TrackJS!');
 
 window.$Mustache = Mustache;
-// window.API_HOST = "http://localhost:8080";
-window.API_HOST = "http://api.kuberez.io";
+window.API_HOST = process.env.VUE_APP_API_HOST
 window.vueFilePath = process.env.VUE_APP_FILE_PATH;
 
 

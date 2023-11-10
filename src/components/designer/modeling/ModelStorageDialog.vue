@@ -4,11 +4,8 @@
                 <v-card-title class="headline">{{condition.title}}</v-card-title>
                 <v-card-text>
                     <div v-if="condition.action == 'fork' && condition.isForkModel"
-                            style="font-size: 15px;"
-                    >
-                        <span class="mdi mdi-alert-outline" 
-                                style="color: #FFA726; font-weight: 700; font-size:20px;"
-                        ></span> You've already FORKED this model.<br>
+                         style="font-size: 15px;">
+                        <span class="mdi mdi-alert-outline" style="color: #FFA726; font-weight: 700; font-size:20px;"></span> You've already FORKED this model.<br>
                         Click the arrow to access the model
                         <v-btn v-if="condition.action == 'fork' && condition.isForkModel"
                                color="primary"
@@ -105,21 +102,24 @@
             condition: {
                 type: Object,
                 default: function () {
-                    return null;
+                    return null
                 }
             },
             showDialog: {
                 type: Boolean,
                 default: function () {
-                    return false;
+                    return false
                 }
             },
             isClazzModeling:{
                 type: Boolean,
                 default: function () {
-                    return false;
+                    return false
                 }
             },
+
+        },
+        created() {
         },
         data() {
             return {
@@ -127,9 +127,9 @@
             }
         },
         watch: {
-            "condition.loading": {
+            "condition.loading":{
                 deep: true,
-                handler() {
+                handler: function (newVal, oldVal) {
                     this.key ++;
                 }
             },
@@ -137,33 +137,39 @@
         computed: {
             submitText() {
                 if (this.condition.action == 'fork') {
-                    return 'FORK';
+                    return 'FORK'
                 }
-                return this.condition.isReplay ? 'CREATE' : 'SAVE';
-            },
+
+                return this.condition.isReplay ? 'CREATE' : 'SAVE'
+            }
         },
         methods: {
             async submit() {
-                this.condition.loading = true;
+                this.condition.loading = true
                  if (this.condition.action == 'save') {
-                     this.$emit('save', this.condition.type);
+                     this.$emit('save', this.condition.type)
                 } else if (this.condition.action == 'fork') {
-                    localStorage.setItem("forkedModelInfo", JSON.stringify(this.condition.forkedModelInfo));
-                    this.$emit('fork');
+                    localStorage.setItem("forkedModelInfo", JSON.stringify(this.condition.forkedModelInfo))
+                    this.$emit('fork')
                 } else if (this.condition.action == 'backup') {
-                    this.$emit('backup');
+                    this.$emit('backup')
                 }
             },
             close() {
-                this.$emit('close');
+                this.$emit('close')
             },
             changedModel(){
-                var me = this;
-                this.$emit('close');
-                me.$router.push({path: `/storming/${me.condition.isForkModel}`});
-                setTimeout(() => {
-                    window.location.reload(true);
-                }, 100);
+                var me = this
+                this.$emit('close')
+
+                if(me.isClazzModeling){
+                    me.$emit('updateClassModelingId',me.condition.isForkModel)
+                } else{
+                    me.$router.push({path: `/storming/${me.condition.isForkModel}`});
+                    setTimeout(function () {
+                        window.location.reload(true)
+                    }, 100)
+                }
             },
 
         }

@@ -1,7 +1,8 @@
 <template></template>
 
 <script>
-    // import StorageBase from "./ModelStorageBase";
+    import StorageBase from "./ModelStorageBase";
+    import getParent from '../../../utils/getParent'
     var jsondiffpatch = require('jsondiffpatch').create({
         objectHash: function (obj, index) {
             return '$$index:' + index;
@@ -10,7 +11,7 @@
 
     export default {
         name: 'model-panel',
-        // mixins: [StorageBase],
+        mixins: [StorageBase],
         model: {
             prop: '_value',
             event: '_value-change'
@@ -33,6 +34,12 @@
                 type: String,
                 default: ''
             },
+            canvasComponentName: {
+                type: String,
+                default: function () {
+                    return 'event-storming-model-canvas'
+                },
+            },
         },
         data: function () {
             return {
@@ -52,16 +59,6 @@
             var me = this
             try{
                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Check Model.
-                // component 호출시 작동시 예외처리.
-                // console.log('image', me.image)
-                me.modelCanvasComponent = me.$parent ? me.$parent.getComponent('event-storming-model-canvas') : me.getComponent('event-storming-model-canvas')
-                me.value = JSON.parse(JSON.stringify(me._value))
-
-                // console.log('ModelPanel - Created')
-                // me.copyValue = JSON.parse(JSON.stringify(me.value))
-                // me.elementId = me.value.elementView ? me.value.elementView.id : me.value.relationView.id
-
-
                 me.params = this.$route.params
                 me.paramKeys = Object.keys(me.params)
                 me.fullPath = this.$route.fullPath.split('/')
@@ -72,6 +69,16 @@
                 me.user.email = localStorage.getItem('email')
                 me.user.picture = localStorage.getItem('picture')
                 me.user.accessToken = localStorage.getItem('accessToken')
+
+                me.setElementCanvas();
+                me.value = JSON.parse(JSON.stringify(me._value))
+
+                // console.log('ModelPanel - Created')
+                // me.copyValue = JSON.parse(JSON.stringify(me.value))
+                // me.elementId = me.value.elementView ? me.value.elementView.id : me.value.relationView.id
+
+
+
             }catch (e) {
                 console.log(e)
             }
@@ -81,18 +88,18 @@
             this.executeBeforeDestroy()
         },
         watch:{
-            "isReadOnly": _.debounce(
-                function (newVal, oldVal) {
-                    // edit Mode false -> true 일시 동기화.
-                    // 500ms 이유: 값 세팅이 300ms.
-                    if(!newVal && oldVal){
-                        var diff = jsondiffpatch.diff(this.value, this._value)
-                        if(diff){
-                            jsondiffpatch.patch(this.value, diff)
-                        }
-                    }
-                }, 500
-            ),
+            // "isReadOnly": _.debounce(
+            //     function (newVal, oldVal) {
+            //         // edit Mode false -> true 일시 동기화.
+            //         // 500ms 이유: 값 세팅이 300ms.
+            //         if(!newVal && oldVal){
+            //             var diff = jsondiffpatch.diff(this.value, this._value)
+            //             if(diff){
+            //                 jsondiffpatch.patch(this.value, diff)
+            //             }
+            //         }
+            //     }, 500
+            // ),
             // "isReadOnlyModeling": _.debounce(
             //     function (newVal, oldVal) {
             //         // edit Mode false -> true 일시 동기화.
@@ -107,84 +114,30 @@
             // ),
         },
         computed: {
-            // !remove
-            isReadOnly() {
-                //get props
-                return this.readOnly
-
-                if (this.modelCanvasComponent) {
-                    return this.modelCanvasComponent.readOnly
-                }
-            },
             fixedDefalutStroage() {
                 return 'db'
             },
-            isInitialLoading() {
-                if (this.modelCanvasComponent)
-                    return this.modelCanvasComponent.isInitialLoading
-
-                return false
-            },
-            modelingProjectId(){
-                if (this.modelCanvasComponent) {
-                    return this.modelCanvasComponent.modelingProjectId
-                }
-                return this.params.projectId ? this.params.projectId : null
-            },
             isCustomMoveExist() {
-                if (this.modelCanvasComponent)
-                    return this.modelCanvasComponent.isCustomMoveExist
+                if (this.canvas)
+                    return this.canvas.isCustomMoveExist
 
-                return false
-            },
-            isDisableModeling() {
-                if (this.modelCanvasComponent)
-                    return this.modelCanvasComponent.isDisableModeling
-                return false
-            },
-            isReadOnlyModeling() {
-                if (this.modelCanvasComponent)
-                    return this.modelCanvasComponent.isReadOnlyModeling
                 return false
             },
             isClazzModeling() {
-                if (this.modelCanvasComponent)
-                    return this.modelCanvasComponent.isClazzModeling
+                if (this.canvas)
+                    return this.canvas.isClazzModeling
                 return false
-            },
-            isServerModeling() {
-                if (this.modelCanvasComponent)
-                    return this.modelCanvasComponent.isServerModeling
-                return false
-            },
-            isQueueModeling() {
-                if (this.modelCanvasComponent) {
-                    return this.modelCanvasComponent.isQueueModeling
-                } else {
-                    return false
-                }
-            },
-            isEmbeddedModeling(){
-                if (this.modelCanvasComponent) {
-                    return this.modelCanvasComponent.isEmbeddedModeling
-                } else {
-                    return false
-                }
-            },
-            isVersionMode(){
-                if (this.modelCanvasComponent) {
-                    return this.modelCanvasComponent.isVersionMode
-                } else {
-                    return false
-                }
             },
         },
         methods: {
+            setElementCanvas(){
+                throw new Error('setElementCanvas() must be implement')
+            },
             exceptionError(message, options){
                 var me = this
                 var msg = message ? message : '[Panel] Exception Error.'
-                if(me.modelCanvasComponent){
-                    me.modelCanvasComponent.exceptionError(msg,options)
+                if(me.canvas){
+                    me.canvas.exceptionError(msg,options)
                 }
                 console.error(`Panel Exception: ${msg}`);
             },
@@ -193,13 +146,13 @@
             },
             panelOpenAction(editUser){
                 var me = this
-                if ( me.isServerModeling && me.isQueueModeling && !me.isReadOnlyModeling && !me.isClazzModeling ) {
+                if ( me.canvas.isServerModel && me.canvas.isQueueModel && !me.canvas.isReadOnlyModel && !me.isClazzModeling ) {
                     me.panelOpenQueue(editUser);
                 }
             },
             panelCloseAction(editUser){
                 var me = this
-                if ( me.isServerModeling && me.isQueueModeling && !me.isReadOnlyModeling && !me.isClazzModeling ) {
+                if ( me.canvas.isServerModel && me.canvas.isQueueModel && !me.canvas.isReadOnlyModel && !me.isClazzModeling ) {
                     me.panelCloseQueue(editUser);
                 }
             },
@@ -213,7 +166,7 @@
                     timeStamp: Date.now(),
                     editElement: me.value.elementView.id
                 }
-                me.pushObject(`db://definitions/${me.modelingProjectId}/queue`, obj);
+                me.pushObject(`db://definitions/${me.canvas.projectId}/queue`, obj);
             },
             panelCloseQueue(editUser) {
                 var me = this
@@ -225,7 +178,7 @@
                     timeStamp: Date.now(),
                     editElement: me.value.elementView.id
                 }
-                me.pushObject(`db://definitions/${me.modelingProjectId}/queue`, obj)
+                me.pushObject(`db://definitions/${me.canvas.projectId}/queue`, obj)
             },
             getComponent(componentName) {
                 let component = null
@@ -257,7 +210,7 @@
                     var diff = jsondiffpatch.diff(me._value, me.value)
                     if (diff) {
                         if (!me.readOnly) {
-                            me.modelCanvasComponent.changedByMe = true
+                            me.canvas.changedByMe = true
                             Object.keys(me.value).forEach(function (itemKey) {
                                 if( me.isCustomMoveExist ){
                                     if(!(itemKey == 'elementView' || itemKey == 'relationView')){

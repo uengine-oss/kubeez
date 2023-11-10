@@ -1,23 +1,21 @@
 <template>
     <div>
         <v-switch
-                v-model="isJson"
-                class="justify-end" 
-                dense
+                v-model="isJson" class="justify-end" dense
                 style="padding:0; margin:0; height:30px; padding-right:15px;"
                 :label="isJson ? 'Json' : 'Yaml'"
         ></v-switch>
         <v-card :disabled="readOnly">
             <codemirror
+                    style="width: 100%; height: 100%;"
                     v-if="!isJson"
-                    v-model="yamlText"
                     ref="myCm"
                     :options="{
                         theme: 'darcula',
                         lineNumbers: true,
                         lineWrapping: true,
-                    }"
-                    style="width: 100%; height: 100%;"
+            }"
+                    v-model="yamlText"
             ></codemirror>
             <vue-json-editor
                     v-else
@@ -30,8 +28,12 @@
 
 
 <script>
+    import yaml from "js-yaml";
+    import json2yaml from 'json2yaml'
     import vueJsonEditor from 'vue-json-editor';
-    import { codemirror } from "vue-codemirror";
+
+    import {codemirror} from "vue-codemirror";
+
 
     export default {
         name: 'local-yaml-editor',
@@ -56,21 +58,43 @@
         data: function () {
             return {
                 yamlText: "",
+                cursor_pos: '',
+                temp_text: '',
                 isJson: false,
             }
         },
         watch: {
             value: {
                 deep: true,
-                handler(newVal) {
-                    this.yamlText = newVal
+                handler: function () {
+                    this.yamlText = this.value
+                    // this.$emit('input', this.)
                 }
             },
             yamlText: {
-                handler(newVal) {
+                 handler: function (newVal) {
+                    // this.yamlText = this.value
                     this.$emit('input', newVal)
                 }
-            },
+            }
+            // yamlText: {
+            //     deep: true,
+            //     handler: function () {
+            //         var me = this
+            //         try {
+            //             me.temp_text = me.yamlText
+            //             me.cursor_pos = me.codemirror.getCursor("start")
+            //             this.$nextTick(function () {
+            //                 me.codemirror.setCursor(me.cursor_pos)
+            //                 me.codemirror.refresh()
+            //             });
+            //         } catch (e) {
+            //         }
+            //         var some = yaml.load(this.yamlText);
+            //         this.$emit("input", some);
+            //     }
+            // }
+
         },
         methods: {}
     }

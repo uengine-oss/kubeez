@@ -1,31 +1,25 @@
 <template>
-    <div ref="splitPane" 
-            class="split-pane" 
-            :class="direction" 
-            :style="{ flexDirection: direction }"
-    >
-        <div style="min-width:0px;" 
-                class="code-preview-reaction-type pane pane-one" 
-                :style="lengthType + ':' + paneLengthValue"
-        >
+    <div ref="splitPane" class="split-pane" :class="direction" :style="{ flexDirection: direction }">
+        <div style="min-width:0px;" class="pane pane-one " :style="lengthType + ':' + paneLengthValue">
             <slot name="one"></slot>
         </div>
 
-        <div v-if="paneLengthPercent < 99"
-                :class="inBoundSeparatePanel ? 'in-bound-pane-trigger' : 'pane-trigger'"
-                :style="lengthType + ':' + triggerLengthValue"
-                @mousedown="handleMouseDown"
+        <div
+            :class="inBoundSeparatePanel ? 'in-bound-pane-trigger' : 'pane-trigger'"
+            :style="lengthType + ':' + triggerLengthValue"
+            @mousedown="handleMouseDown"
+            v-if="paneLengthPercent < 99"
         >
+
             <v-tooltip v-if="!inBoundSeparatePanel" right>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn v-on="on"
-                            v-bind="attrs"
+                    <v-btn  class="close-separate-panel-btn"
+                            v-on="on"
                             outlined
                             x-small
                             icon
-                            class="close-separate-panel-btn"
                             @click="closeSeparate()"
-                            style="z-index: 3; margin-left: -6px; top: 40%; position: absolute; border: none; background-color:white"
+                            style="z-index: 3; margin-left: -6px; top: 50%; border: none; background-color:white"
                     >
                         <v-icon style="font-size: 22px;">mdi-play</v-icon>
                     </v-btn>
@@ -34,10 +28,7 @@
             </v-tooltip>
         </div>
 
-        <div v-if="paneLengthPercent < 99" 
-                class="pane pane-two" 
-                style="min-width:0px;"
-        >
+        <div v-if="paneLengthPercent < 99" class="pane pane-two" style="min-width:0px;">
             <slot name="two"></slot>
         </div>
     </div>
@@ -52,78 +43,90 @@
                 type: String,
                 default: 'row'
             },
+
             min: {
                 type: Number,
                 default: 0
             },
+
             max: {
                 type: Number,
                 default: 100
             },
+
             paneLengthPercent: {
                 type: Number,
                 default: 50
             },
+
             triggerLength: {
                 type: Number,
                 default: 5
-            },
+            }
         },
         data() {
             return {
-                triggerLeftOffset: 0,
+                triggerLeftOffset: 0, //        ( )
             }
         },
         computed: {
             lengthType() {
-                return this.direction === 'row' ? 'width' : 'height';
+                return this.direction === 'row' ? 'width' : 'height'
             },
+
             paneLengthValue() {
-                return `calc(${this.paneLengthPercent}% - ${this.triggerLength / 2 + 'px'})`;
+                return `calc(${this.paneLengthPercent}% - ${this.triggerLength / 2 + 'px'})`
             },
+
             triggerLengthValue() {
-                return this.triggerLength + 'px';
+                return this.triggerLength + 'px'
             }
         },
-        mounted() {
+        mounted: function () {
         },
+
         methods: {
-            closeSeparate() {
-                this.$emit('close');
+            closeSeparate(){
+                this.$emit('close')
             },
+            //
             handleMouseDown(e) {
-                document.addEventListener('mousemove', this.handleMouseMove);
-                document.addEventListener('mouseup', this.handleMouseUp);
+                document.addEventListener('mousemove', this.handleMouseMove)
+                document.addEventListener('mouseup', this.handleMouseUp)
 
                 if (this.direction === 'row') {
-                    this.triggerLeftOffset = e.pageX - e.srcElement.getBoundingClientRect().left;
+                    this.triggerLeftOffset = e.pageX - e.srcElement.getBoundingClientRect().left
                 } else {
-                    this.triggerLeftOffset = e.pageY - e.srcElement.getBoundingClientRect().top;
+                    this.triggerLeftOffset = e.pageY - e.srcElement.getBoundingClientRect().top
                 }
             },
+
+            //
             handleMouseMove(e) {
-                const clientRect = this.$refs.splitPane.getBoundingClientRect();
-                let paneLengthPercent = 0;
+                const clientRect = this.$refs.splitPane.getBoundingClientRect()
+                let paneLengthPercent = 0
 
                 if (this.direction === 'row') {
-                    const offset = e.pageX - clientRect.left - this.triggerLeftOffset + this.triggerLength / 2;
-                    paneLengthPercent = (offset / clientRect.width) * 100;
+                    const offset = e.pageX - clientRect.left - this.triggerLeftOffset + this.triggerLength / 2
+                    paneLengthPercent = (offset / clientRect.width) * 100
                 } else {
-                    const offset = e.pageY - clientRect.top - this.triggerLeftOffset + this.triggerLength / 2;
-                    paneLengthPercent = (offset / clientRect.height) * 100;
+                    const offset = e.pageY - clientRect.top - this.triggerLeftOffset + this.triggerLength / 2
+                    paneLengthPercent = (offset / clientRect.height) * 100
                 }
 
                 if (paneLengthPercent < this.min) {
-                    paneLengthPercent = this.min;
+                    paneLengthPercent = this.min
                 }
                 if (paneLengthPercent > this.max) {
-                    paneLengthPercent = this.max;
+                    paneLengthPercent = this.max
                 }
 
-                this.$emit('update:paneLengthPercent', paneLengthPercent);
+                this.$emit('update:paneLengthPercent', paneLengthPercent)
             },
+
+            //
             handleMouseUp() {
-                document.removeEventListener('mousemove', this.handleMouseMove);
+                document.removeEventListener('mousemove', this.handleMouseMove)
             }
         }
     }
@@ -132,19 +135,13 @@
 <style scoped lang="scss">
     .split-pane {
         background: white;
-        height: 100%;
         display: flex;
         &.row {
-            .pane {
-                height: 100%;
-            }
             .pane-trigger {
-                margin-bottom:-10%;
                 cursor: col-resize;
             }
             .in-bound-pane-trigger {
                 margin-top: 0px;
-                margin-bottom:-10%;
                 cursor: col-resize;
             }
         }
@@ -162,7 +159,7 @@
             }
         }
         .pane-one {
-            margin-left: 10px
+            // margin-left: 10px
             /*background: palevioletred;*/
         }
         .pane-trigger {
@@ -191,9 +188,8 @@
         }
     }
 </style>
-
 <style>
-    .code-preview-reaction-type {
+    /* .code-preview-reaction-type {
         height:92vh !important;
         transform: 0.5;
     }
@@ -221,5 +217,5 @@
         .code-preview-reaction-type {
             height:80vh !important;
         }
-    }
+    } */
 </style>

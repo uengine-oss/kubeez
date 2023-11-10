@@ -5,42 +5,45 @@
     import StorageBase from "./designer/modeling/StorageBase";
 
     export default {
-        mixins: [StorageBase],
         name: 'common-storage-base',
+        mixins: [StorageBase],
+        created() {
+        },
         mounted() {
-            var me = this;
+            var me = this
             me.$EventBus.$on('login', async function (newVal) {
-                me.loginUser(newVal);
-            });
+                me.loginUser(newVal)
+            })
         },
         computed: {
             isForeign() {
                 if (window.countryCode == 'ko') {
-                    return false;
+                    return false
                 }
-                return true;
+                return true
             },
         },
         methods: {
             async setUserInfo() {
-                var me = this;
-                var user = null;
-                if (localStorage.getItem("accessToken")) {
+                var me = this
+                var user = null
+                if (localStorage.getItem("accessToken"))
                     user = await me.getUserInfo();
-                }
-                me._setUserInfo(user);
+                me._setUserInfo(user)
+                
             },
             async loginUser() {
-                var me = this;
-                await me.setUserInfo();
+                var me = this
+                await me.setUserInfo()
                 if (me.isLogin) {
-                    if (me.userInfo.email && !this.$isElectron) {
-                        me.getUserPurchaseLists();
-                    }
+                    if (me.userInfo.email && !this.$isElectron)
+                        me.getUserPurchaseLists()
                 } else if (!me.isLogin && !me.isGuestLogin) {
-                    me.initUserInfo();
+                    me.initUserInfo()
                 }
             },
-        },
+        }
     }
+
+
 </script>

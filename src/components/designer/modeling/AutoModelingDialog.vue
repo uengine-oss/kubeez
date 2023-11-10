@@ -228,12 +228,12 @@
 <script src="./speechRecognition.js"></script>
 <script>
     import { VueTypedJs } from 'vue-typed-js'
-    import UMLDialoger from './generators/UMLDialoger'
-    import CJMDialoger from './generators/CJMDialoger'
-    import ESDialoger from './generators/ESDialoger'
-    import BMDialoger from './generators/BMDialoger'
-    import UIWizardDialoger from './generators/UIWizardDialoger'
-    import PowerPointGenerator from "./generators/PowerPointGenerator";
+    // import UMLDialoger from './generators/UMLDialoger'
+    // import CJMDialoger from './generators/CJMDialoger'
+    // import ESDialoger from './generators/ESDialoger'
+    // import BMDialoger from './generators/BMDialoger'
+    // import UIWizardDialoger from './generators/UIWizardDialoger'
+    // import PowerPointGenerator from "./generators/PowerPointGenerator";
     import StorageBase from "../../CommonStorageBase";
     import ModelStorageDialog from "./ModelStorageDialog";
     import getParent from '../../../utils/getParent'
@@ -272,11 +272,11 @@
         mixins: [StorageBase],
         components: {
             VueTypedJs,
-            ESDialoger,
-            UMLDialoger,
-            CJMDialoger,
-            BMDialoger,
-            UIWizardDialoger,
+            // ESDialoger,
+            // UMLDialoger,
+            // CJMDialoger,
+            // BMDialoger,
+            // UIWizardDialoger,
             ModelStorageDialog
         },
         computed: {

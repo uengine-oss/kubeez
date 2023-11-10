@@ -1,17 +1,17 @@
 <template>
     <div>
         <group-element
-                :selectable="!isReadOnly"
-                :movable="!isReadOnly"
-                :resizable="!isReadOnly"
-                :deletable="!isReadOnly"
+                :selectable="!canvas.isReadOnlyModel"
+                :movable="!canvas.isReadOnlyModel"
+                :resizable="!canvas.isReadOnlyModel"
+                :deletable="!canvas.isReadOnlyModel"
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
                 :label.sync="name"
                 :width.sync="value.elementView.width"
                 :height.sync="value.elementView.height"
-                :customMoveActionExist="isCustomMoveExist"
+                :customMoveActionExist="canvas.isCustomMoveExist"
                 v-on:customMoveAction="delayedMove"
                 v-on:moveShape="onMoveShape"
                 v-on:selectShape="selectedActivity"
@@ -58,7 +58,7 @@
                 v-model="value"
                 :img="imgSrc"
                 :validationLists="filteredElementValidationResults"
-                :readOnly="isReadOnly"
+                :readOnly="canvas.isReadOnlyModel"
                 @close="closePanel"
         ></property-panel>
 
@@ -74,7 +74,7 @@
 
 <script>
     import PropertyPanel from './NamespacePropertyPanel'
-    import Element from "../KubernetesModelElement";
+    import Element from "../KubernetesElement";
     import GroupElement from "../../../opengraph/shape/GroupElement";
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
@@ -201,13 +201,14 @@
             },
             deleteInNameSpace(boundedName) {
                 var me = this
- 
-                me.modelCanvasComponent.value.elements.forEach(function (item, idx) {
+                var designer = this.getComponent('kubernetes-model-canvas')
+
+                designer.value.definition.forEach(function (item, idx) {
                     if (item != null) {
                         if (item.boundedContext && item.boundedContext.name == boundedName) {
                             // console.log("boundedItem Id : ", item.elementView.id)
                             me.$EventBus.$off(`${item.elementView.id}`);
-                            me.modelCanvasComponent.value.elements[idx] = null;
+                            designer.value.definition[idx] = null;
                         }
                     }
                 })
@@ -234,7 +235,7 @@
                     }
                 }
 
-                me.modelCanvasComponent.changedTemplateCode = true
+                me.canvas.changedTemplateCode = true
             },
         }
     }

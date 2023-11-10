@@ -128,7 +128,7 @@
 
 <script>
     import CodeViewer from "../CodeViewer";
-    import SIGenerator from './generators/SIGenerator';
+    // import SIGenerator from './generators/SIGenerator';
 
     export default {
         name: 'git-action-dialog',
@@ -187,8 +187,8 @@
             generate(){
                 var me = this
                 me.startGitAction = true
-                me.generator = new SIGenerator(this);
-                me.generator.generate();
+                // me.generator = new SIGenerator(this);
+                // me.generator.generate();
             },
             regenerate(){
                 for(var i = 0; i < this.updateList.length; i++){

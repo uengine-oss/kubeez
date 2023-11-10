@@ -217,7 +217,7 @@
     // import 'codemirror/theme/darcula.css'
     // import 'codemirror/theme/idea.css'
     // import 'codemirror/addon'
-    import AIGenerator from './modeling/generators/AIGenerator'
+    // import AIGenerator from './modeling/generators/AIGenerator'
     import DiffMatchPatch from "diff-match-patch";
     import MonacoEditor from 'vue-monaco';
     import VueMarkdown from 'vue-markdown';
@@ -576,8 +576,8 @@
                         prompt = me.oldPrompt
                     }
                 }
-                me.generator = new AIGenerator(this, {prompt: prompt});
-                me.generator.generate();
+                // me.generator = new AIGenerator(this, {prompt: prompt});
+                // me.generator.generate();
             },
             onReceived(result){
                 this.explainedResult = result;

@@ -4,15 +4,15 @@
                 selectable
                 movable
                 resizable
-                :connectable="!isReadOnly"
-                :deletable="!isReadOnly"
+                :connectable="!canvas.isReadOnlyModel"
+                :deletable="!canvas.isReadOnlyModel"
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
                 :width.sync="value.elementView.width"
                 :height.sync="value.elementView.height"
                 :angle.sync="value.elementView.angle"
-                :customMoveActionExist="isCustomMoveExist"
+                :customMoveActionExist="canvas.isCustomMoveExist"
                 v-on:customMoveAction="delayedMove"
                 v-on:moveShape="onMoveShape"
                 v-on:selectShape="selectedActivity"
@@ -68,11 +68,11 @@
 
             <k8s-sub-controller
                     v-for="connectableType in filterConnectionTypes"
-                    :key="connectableType.component"
                     :element="value"
                     :image="connectableType.src"
-                    :type="connectableType.component"
-            ></k8s-sub-controller>
+                    :type="connectableType.component">
+            </k8s-sub-controller>
+
         </geometry-element>
 
         <property-panel
@@ -80,7 +80,7 @@
                 v-model="value"
                 :img="imgSrc"
                 :validationLists="filteredElementValidationResults"
-                :readOnly="isReadOnly"
+                :readOnly="canvas.isReadOnlyModel"
                 @close="closePanel"
         >
         </property-panel>
@@ -95,7 +95,7 @@
 </template>
 
 <script>
-    import Element from "../KubernetesModelElement";
+    import Element from "../KubernetesElement";
     import PropertyPanel from './ClusterRoleBindingPropertyPanel'
     import ImageElement from "../../../opengraph/shape/ImageElement";
 
@@ -252,7 +252,7 @@
                     }
                 }
 
-                me.modelCanvasComponent.changedTemplateCode = true
+                me.canvas.changedTemplateCode = true
             },
         }
     }

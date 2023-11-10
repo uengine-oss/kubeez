@@ -154,7 +154,7 @@ class Github extends Git {
     }
     getOrgList() {
         return new Promise(async function (resolve, reject) {
-            const result = await axios.get(`https://api.github.com/user/orgs`, { headers: me.gitHeaders })
+            const result = await axios.get(`https://api.github.com/user/orgs`, { headers: me.getHeader() })
             .then(async (res) => {
                 let result = {
                     gitlabGroupIdList : [],
@@ -427,7 +427,7 @@ class Github extends Git {
                                     }
                                     gitToppingList[gitRepoUrl][elePath].requestUrl = ele.url
     
-                                    var gitSha = await axios.get(ele.url, { headers: me.githubHeaders })
+                                    var gitSha = await axios.get(ele.url, { headers: me.getHeader() })
                                     if(!gitTemplateContents[elePath]) gitTemplateContents[elePath] = null
                                     gitTemplateContents[elePath] = Base64.decode(gitSha.data.content);
                                 }
@@ -451,7 +451,7 @@ class Github extends Git {
                                     resolve(result);
                                 }
     
-                                var gitSha = await axios.get(ele.url, { headers: me.githubHeaders });
+                                var gitSha = await axios.get(ele.url, { headers: me.getHeader() });
                                 if(!gitTemplateContents[ele.path]) gitTemplateContents[ele.path] = null
                                 gitTemplateContents[ele.path] = Base64.decode(gitSha.data.content);
                                 if(ele.path.includes("helper.js")){
@@ -473,7 +473,7 @@ class Github extends Git {
                                     }
                                     templateFrameWorkList[gitRepoUrl][ele.path].requestUrl = ele.url
     
-                                    var gitSha = await axios.get(ele.url, { headers: me.githubHeaders });
+                                    var gitSha = await axios.get(ele.url, { headers: me.getHeader() });
                                     if(!gitTemplateContents[ele.path]) gitTemplateContents[ele.path] = null
                                     gitTemplateContents[ele.path] = Base64.decode(gitSha.data.content);
                                 }
@@ -679,7 +679,7 @@ class Github extends Git {
                         .then(async (res) => {
                             await axios.get(`https://api.github.com/repos/${org}/${repo}/actions/jobs/${res.data.jobs[0].id}/logs`, { headers: me.getHeader() })
                             .then((res) => {
-                                let log = res.data.split("COMPILATION ERROR : ")
+                                let log = res.data.split("COMPILATION ERROR :")
                                 if(log[1]){
                                     resolve(log[1])
                                 } else {

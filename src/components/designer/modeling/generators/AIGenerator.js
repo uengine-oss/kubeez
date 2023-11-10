@@ -1,18 +1,20 @@
+const StorageBase = require('../../../CommonStorageBase.vue').default;
 
-class AIGenerator{
-
+class AIGenerator {
     constructor(client, options){
         this.client = client;
         this.finish_reason = null;
         this.modelJson = null;
         this.stopSignaled = false;
         this.gptResponseId = null;
-        this.openaiToken = "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";
+        this.openaiToken = null
+        this.model = "gpt-3.5-turbo-16k" 
 
         if(options){
             this.preferredLanguage = options.preferredLanguage;
             this.previousMessages = options.previousMessages;
             this.prompt = options.prompt;
+            this.model = options.model || this.model;
         } 
 
         if(!this.previousMessages)
@@ -36,9 +38,26 @@ class AIGenerator{
         this.stopSignaled = true;
     }
 
-    generate(){
+    getToken() {
+        var me = this
+        return new Promise(async function (resolve, reject) {
+            if (me.client) {
+                const storage = new Vue(StorageBase)
+                await storage.getString(`db://tokens/openai`)
+                .then((token) => {
+                    resolve(atob(token))
+                })
+                .catch(e => {
+                    reject(e)
+                })
+            }
+        })
+    }
+
+    async generate(){
         this.state = 'running'
         let me = this;
+        me.openaiToken = await me.getToken();
         let responseCnt = 0;
         
         me.gptResponseId = null;
@@ -141,7 +160,7 @@ class AIGenerator{
 
         
         const data = JSON.stringify({
-            model: "gpt-3.5-turbo",
+            model: this.model,
             messages: messages,
             temperature: 1,
             frequency_penalty: 0,
@@ -169,6 +188,7 @@ class AIGenerator{
             })
         }
         // console.log(me.previousMessages)
+        
         return me.previousMessages;
     }
 

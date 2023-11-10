@@ -3,18 +3,13 @@
         <v-row>
             <v-col cols="6" md="4">
                 <v-card
-                        class="mx-auto"
-                        max-width="400"
-                        max-height="400"
-                        outlined
+                        class="mx-auto" max-width="400" max-height="400" outlined
                         :class="value.name == 'default' ? 'selected' : ''"
-                        @click='selectCluster({
-                            "name": "default",
-                            "apiServer": "",
-                            "token": "",
-                            "connection": true
-                        })'
-                >
+                        @click='selectCluster({ "name": "default",
+                        "cluserAddress": "",
+                    "apiServer": "",
+                    "token": "",
+                    "connection": true})'>
                     <v-card-title>
                         default
                     </v-card-title>
@@ -31,25 +26,17 @@
                             connected
                         </v-chip>
 
-                        <v-icon v-if="value.name == 'default'"
-                                large 
-                                color="green"
-                                style="position:absolute; right:5px; bottom:5px;"
-                        >
-                            check
+                        <v-icon v-if="value.name == 'default'" large color="green"
+                                style="position:absolute; right:5px; bottom:5px;">check
                         </v-icon>
                     </v-row>
                 </v-card>
             </v-col>
             <v-col v-for="(item, index) in clustersLists" :key="index" cols="6" md="4">
                 <v-card
-                        class="mx-auto" 
-                        max-width="400" 
-                        max-height="400" 
-                        outlined
+                        class="mx-auto" max-width="400" max-height="400" outlined
                         :class="item.name == value.name ? 'selected' : ''"
-                        @click="selectCluster(item)"
-                >
+                        @click="selectCluster(item)">
                     <v-card-title>
                         {{ item.name }}
                         <v-spacer></v-spacer>
@@ -106,6 +93,12 @@
                             ></v-text-field>
                             <v-text-field
                                     v-model="clusterAddress"
+                                    label="Cluster Address"
+                                    required
+                                    hint="kubectl clsuter-info >> Kubernetes control plane url"
+                            ></v-text-field>
+                            <v-text-field
+                                    v-model="apiServer"
                                     label="API Server"
                                     required
                                     hint="Ex) https://api.k8s.bzdvops.com"
@@ -163,20 +156,20 @@
         computed: {
             dialogBtnColor() {
                 if (this.connectable) {
-                    return 'green';
+                    return 'green'
                 } else {
-                    return 'red';
+                    return 'red'
                 }
             },
             clustersLists() {
-                var me = this;
-                var filterClusterLists = [];
-                filterClusterLists = me.clustersList;
+                var me = this
+                var filterClusterLists = []
+                filterClusterLists = me.clustersList
                 filterClusterLists.forEach(async function (cluster) {
-                    cluster.connection = await me.connectionTest(cluster.apiServer, cluster.token);
-                });
+                    cluster.connection = await me.connectionTest(cluster.apiServer, cluster.token)
+                })
 
-                return filterClusterLists;
+                return filterClusterLists
             }
         },
         methods: {
@@ -187,24 +180,27 @@
                     if (apiServer && token) {
                         me.$http.get(`${me.getProtocol()}//api.${me.getTenantId()}/apis/apps/v1?serverUrl=${apiServer}&token=${token}`)
                             .then(function (result) {
-                                me.waitConnetionTest = false;
-                                resolve(true);
+                                // item.connection = true
+                                me.waitConnetionTest = false
+                                resolve(true)
                             }).catch(function (e) {
-                                me.waitConnetionTest = false;
-                                resolve(false);
+                                // item.connection = false
+                                // return false
+                                me.waitConnetionTest = false
+                                resolve(false)
                             }
                         )
                     } else {
-                        me.waitConnetionTest = false;
-                        alert('apiServer 와 token 값을 확인해주세요.');
-                        resolve(false);
+                        me.waitConnetionTest = false
+                        alert('apiServer 와 token 값을 확인해주세요.')
+                        resolve(false)
                     }
-                });
+                })
             },
             async dialogConnectionTest() {
-                var me = this;
-                me.waitConnetionTest = true;
-                me.connectable = await me.connectionTest(me.clusterAddress, me.kuberToken);
+                var me = this
+                me.waitConnetionTest = true
+                me.connectable = await me.connectionTest(me.clusterAddress, me.kuberToken)
             },
         }
     }

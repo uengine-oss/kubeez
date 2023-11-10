@@ -1,5 +1,5 @@
 <template xmlns:v-on="http://www.w3.org/1999/xhtml">
-    <div class="page" :class="{ 'embedded' : embedded }">
+    <div class="page">
         <separate-panel-components
                 :min="mainSeparatePanel.min"
                 :max="mainSeparatePanel.max"
@@ -10,32 +10,38 @@
         >
             <template v-slot:one>
                 <div style="width: 100%; height: 100%;">
-                    <div class="canvas-panel">
+                    <div class="canvas-panel" style="left: 0">
+                        <v-overlay v-if="showOverlay">
+                            <v-col align="center">
+                                <div>{{ showOverlay }}</div>
+                                <v-progress-circular indeterminate size="64">
+                                    <v-btn text @click="closeOverlay()"></v-btn>
+                                </v-progress-circular>
+                            </v-col>
+                        </v-overlay>
+
                         <v-layout right>
-                            <opengraph ref="opengraph" 
-                                    focus-canvas-on-select 
-                                    wheelScalable 
-                                    :labelEditable="true"
-                                    :dragPageMovable="dragPageMovable"
-                                    :enableContextmenu="false"
+                            <opengraph ref="opengraph"
+                                    :width=100000 :height=100000
+                                    :sliderLocationScale=sliderLocationScale
+                                    focus-canvas-on-select wheelScalable :labelEditable="true"
+                                    :dragPageMovable="dragPageMovable" :enableContextmenu="false"
+                                    :automaticGuidance="automaticGuidance"
                                     :enableRootContextmenu="false"
-                                    :enableHotkeyCtrlC="false"
-                                    :enableHotkeyCtrlV="false"
-                                    :enableHotkeyDelete="false"
-                                    :enableHotkeyCtrlZ="false"
-                                    :enableHotkeyCtrlD="false"
-                                    :enableHotkeyCtrlG="false"
-                                    :slider="true"
-                                    :movable="!readOnly"
-                                    :resizable="true"
+                                    :enableHotkeyCtrlC="false" :enableHotkeyCtrlV="false"
+                                    :enableHotkeyDelete="false" :enableHotkeyCtrlZ="false" :enableHotkeyCtrlD="false"
+                                    :enableHotkeyCtrlG="false" :slider="true"
+                                    :movable="!isReadOnlyModel"
+                                    :resizable="!isReadOnlyModel"
                                     :selectable="true"
-                                    :connectable="!readOnly"
+                                    :connectable="!isReadOnlyModel"
+                                    v-if="value"
                                     :autoSliderUpdate="true"
                                     :imageBase="imageBase"
-                                    v-if="value" 
-                                    v-on:canvasReady="bindEvents"
+                                    v-on:update:sliderLocationScale="sliderLocationScale = $event"
                                     v-on:connectShape="onConnectShape"
-                            >
+                                    v-on:canvasReady="bindEvents"   
+                        >
                                 <!-- elements -->
                                 <div v-if="value.elements && typeof value.elements == 'object'">
                                     <div v-for="elementId in Object.keys(value.elements)" :key="elementId">
@@ -487,7 +493,7 @@
                                                     </v-list-item>
                                                 </v-list>
                                             </v-menu>
-                                            <v-menu v-if="isMineProject && isServerModeling && !readOnly "
+                                            <v-menu  v-if="isOwnModel && isServerModel && !isReadOnlyModel && !parents"
                                                     class="pa-2"
                                                     offset-y
                                                     open-on-hover
@@ -581,636 +587,637 @@
                                 </div>
                             </div>
                         </v-layout>
-                    </div>
 
-                    <modal name="codeModal" :height='"auto"' :width="'80%'" scrollable>
-                        <v-card flat>
-                            <v-card-title class="d-flex">
-                                <span class="headline">Code Preview</span>
-                                <v-btn x-small
-                                        icon
-                                        @click="codePreviewLeftReSize()"
-                                        class="code-preview-left-re-size-btn ml-2"
-                                >
-                                    <v-icon>mdi-menu</v-icon>
-                                </v-btn>
-                                <v-select
-                                        v-model="template"
-                                        :items="templateTypes"
-                                        label="Select Template"
-                                        hide-details
-                                        class="ml-auto"
-                                        style="max-width: 300px;"
-                                ></v-select>
-                            </v-card-title>
-                            <v-divider></v-divider>
-                            <v-card-text style="width: auto; height: auto; margin-bottom:-40px;">
-                                <v-row class="mb-6" no-gutters>
-                                    <v-col id="scroll-target"
-                                            style="border-right: 1px solid black; max-height: 550px; display: flex !important;"
-                                            class="overflow-auto code-preview-left-re-size"
+                        <modal name="codeModal" :height='"auto"' :width="'80%'" scrollable>
+                            <v-card flat>
+                                <v-card-title class="d-flex">
+                                    <span class="headline">Code Preview</span>
+                                    <v-btn x-small
+                                            icon
+                                            @click="codePreviewLeftReSize()"
+                                            class="code-preview-left-re-size-btn ml-2"
                                     >
-                                        <v-treeview
-                                                :items.sync='treeList'
-                                                :active.sync="openCode"
-                                                activatable
-                                                item-key="key"
-                                                return-object
-                                                open-all
-                                                :transition="treeOpen"
-                                                open-on-click
-                                                dense
-                                                style="text-overflow: clip !important; width:600px;"
-                                        >
-                                            <template v-slot:prepend="{ item, open }">
-                                                <v-icon v-if="!item.file">
-                                                    {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
-                                                </v-icon>
-                                                <v-icon v-else>
-                                                    {{ icon[item.file] }}
-                                                </v-icon>
-                                            </template>
-                                        </v-treeview>
-                                    </v-col>
-                                    <v-col>
-                                        <kubernetes-code-viewer
-                                                v-if="diffCheck"
-                                                :diff-value="existYaml"
-                                                v-model="openCode"
-                                                :type="'diff'"
-                                                :create-value="existYaml"
-                                                @update="updatePathTmp"
-                                                style="padding: 0 !important;"
-                                        ></kubernetes-code-viewer>
-                                        <kubernetes-code-viewer
-                                                v-else-if="codeView"
-                                                v-model="openCode"
-                                                style="padding: 0 !important;"
-                                        ></kubernetes-code-viewer>
-                                    </v-col>
-                                </v-row>
-                            </v-card-text>
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn text
-                                        color="primary" 
-                                        @click="endDiffCheck()"
-                                >
-                                    확인
-                                </v-btn>
-                            </v-card-actions>
-                        </v-card>
-                    </modal>
-
-                    <v-snackbar v-model="snackbar.show"
-                            :color="snackbar.color" 
-                            :multi-line="snackbar.mode === 'multi-line'"
-                            :timeout="snackbar.timeout"
-                            :vertical="snackbar.mode === 'vertical'"
-                    >
-                        <template v-slot:action="{ attrs }">
-                            <div>{{ snackbar.text }}</div>
-                            <v-btn dark
-                                    v-bind="attrs"
-                                    class="mx-2"
-                                    @click="snackbar.show = false"
-                            >
-                                Close
-                            </v-btn>
-                        </template>
-                    </v-snackbar>
-
-                    <v-dialog v-model="generateZipDialog" max-width="290">
-                        <v-card>
-                            <v-card-title class="headline">Generate Zip Archive</v-card-title>
-                            <v-card-text>
-                                <v-select
-                                        :items="templateTypes"
-                                        v-model="template"
-                                        label="Select Template"
-                                        hide-details
-                                        class="pa-0"
-                                ></v-select>
-                            </v-card-text>
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <div v-if="!isDownloading">
-                                    <v-btn text @click="generateZipDialog = false">Cancel</v-btn>
-                                    <v-btn color="primary" text @click="generateZip()">Download</v-btn>
-                                </div>
-                                <v-progress-circular
-                                        v-else
-                                        indeterminate
-                                        color="primary"
-                                ></v-progress-circular>
-                            </v-card-actions>
-                        </v-card>
-                    </v-dialog>
-
-                    <v-dialog v-model="deployDialog" max-width="350">
-                        <v-card>
-                            <v-card-title class="headline">Deploy</v-card-title>
-                            <v-card-text>
-                                <v-text-field
-                                        label="cluster"
-                                        v-model="clusterInfo.name"
-                                ></v-text-field>
-                                <v-text-field
-                                        label="API Server"
-                                        v-model="clusterInfo.apiServer"
-                                ></v-text-field>
-                                <v-text-field
-                                        label="Namespace"
-                                        v-model="clusterInfo.namespace"
-                                ></v-text-field>
-                                <div class="subtitle">Namespace 미 입력시 default로 설정됩니다.</div>
-                            </v-card-text>
-
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn color="red darken-1" text @click="deployDialog = false">Cancel</v-btn>
-                                <v-btn color="green darken-1" text @click="deployReady()">Deploy</v-btn>
-                            </v-card-actions>
-                        </v-card>
-                    </v-dialog>
-
-                    <v-dialog v-model="clusterDialog"
-                            persistent
-                            fullscreen
-                            hide-overlay 
-                            transition="dialog-bottom-transition"
-                    >
-                        <v-card>
-                            <v-toolbar dark color="primary">
-                                <v-toolbar-title>Manage Clusters</v-toolbar-title>
-                                <v-spacer></v-spacer>
-                                <v-toolbar-items>
-                                    <v-btn icon dark @click="clusterDialog = false">
-                                        <v-icon>mdi-close</v-icon>
+                                        <v-icon>mdi-menu</v-icon>
                                     </v-btn>
-                                </v-toolbar-items>
-                            </v-toolbar>
-                            <v-list three-line subheader>
-                                <v-list-item>
-                                    <v-list-item-content>
-                                        <clusters @close="clusterDialog = false" v-model="clusterInfo"/>
-                                    </v-list-item-content>
-                                </v-list-item>
-                            </v-list>
-                        </v-card>
-                    </v-dialog>
-
-                    <v-dialog v-model="commandDialog" max-width="700">
-                        <v-card>
-                            <v-card-title>
-                                <v-tabs v-model="commandTab" class="mx-auto">
-                                    <v-tab v-for="tab in commandTabs" :key="tab">{{ tab }}</v-tab>
-                                </v-tabs>
-                            </v-card-title>
-                            <v-card-text class="px-5 py-2">
-                                <div v-for="(obj, idx) in commandList" :key="idx">
-                                    <v-text-field
-                                            v-if="commandTabs[commandTab].includes(obj.label)"
-                                            :value="obj.command"
-                                            :label="obj.label"
-                                            readonly outlined
-                                            append-icon="mdi-content-copy"
-                                            :id="'copyCommand'+idx"
-                                            @click:append="commandCopy(obj.command, idx)"
-                                            style="max-height: 65px;"
-                                    ></v-text-field>
-                                    <div v-if="commandTabs[commandTab].includes(obj.label)"
-                                            style="margin-bottom: 10px; padding-left: 490px;"
-                                    >
-                                        <v-btn @click="runCommand(obj.command)"
-                                                color="primary"
-                                                text
+                                    <v-select
+                                            v-model="template"
+                                            :items="templateTypes"
+                                            label="Select Template"
+                                            hide-details
+                                            class="ml-auto"
+                                            style="max-width: 300px;"
+                                    ></v-select>
+                                </v-card-title>
+                                <v-divider></v-divider>
+                                <v-card-text style="width: auto; height: auto; margin-bottom:-40px;">
+                                    <v-row class="mb-6" no-gutters>
+                                        <v-col id="scroll-target"
+                                                style="border-right: 1px solid black; max-height: 550px; display: flex !important;"
+                                                class="overflow-auto code-preview-left-re-size"
                                         >
-                                            Run in terminal
-                                        </v-btn>
-                                    </div>
-                                </div>
-                            </v-card-text>
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn @click="commandDialog = false"
-                                        color="primary"
-                                        text
+                                            <v-treeview
+                                                    :items.sync='treeList'
+                                                    :active.sync="openCode"
+                                                    activatable
+                                                    item-key="key"
+                                                    return-object
+                                                    open-all
+                                                    :transition="treeOpen"
+                                                    open-on-click
+                                                    dense
+                                                    style="text-overflow: clip !important; width:600px;"
+                                            >
+                                                <template v-slot:prepend="{ item, open }">
+                                                    <v-icon v-if="!item.file">
+                                                        {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
+                                                    </v-icon>
+                                                    <v-icon v-else>
+                                                        {{ icon[item.file] }}
+                                                    </v-icon>
+                                                </template>
+                                            </v-treeview>
+                                        </v-col>
+                                        <v-col>
+                                            <code-viewer
+                                                    v-if="diffCheck"
+                                                    :diff-value="existYaml"
+                                                    v-model="openCode"
+                                                    :type="'diff'"
+                                                    :create-value="existYaml"
+                                                    @update="updatePathTmp"
+                                                    style="padding: 0 !important;"
+                                            ></code-viewer>
+                                            <code-viewer
+                                                    v-else-if="codeView"
+                                                    v-model="openCode"
+                                                    style="padding: 0 !important;"
+                                            ></code-viewer>
+                                        </v-col>
+                                    </v-row>
+                                </v-card-text>
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn text
+                                            color="primary" 
+                                            @click="endDiffCheck()"
+                                    >
+                                        확인
+                                    </v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </modal>
+
+                        <v-snackbar v-model="snackbar.show"
+                                :color="snackbar.color" 
+                                :multi-line="snackbar.mode === 'multi-line'"
+                                :timeout="snackbar.timeout"
+                                :vertical="snackbar.mode === 'vertical'"
+                        >
+                            <template v-slot:action="{ attrs }">
+                                <div>{{ snackbar.text }}</div>
+                                <v-btn dark
+                                        v-bind="attrs"
+                                        class="mx-2"
+                                        @click="snackbar.show = false"
                                 >
                                     Close
                                 </v-btn>
-                            </v-card-actions>
-                        </v-card>
-                    </v-dialog>
-
-                    <modal name="yamlModal" :height='"auto"' :width="'80%'" style="overflow: scroll">
-                        <v-card flat>
-                            <v-card-title style="position: sticky">
-                                <v-col :col="8">
-                                    <span class="headline">From Local YAML</span>
-                                </v-col>
-                            </v-card-title>
-                            <v-divider></v-divider>
-                            <v-card-text style="width: auto; height: auto;">
-                                <local-yaml-editor
-                                        v-model="localYamlText"
-                                        style="width: 100%; height: 100%"
-                                ></local-yaml-editor>
-                            </v-card-text>
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <!-- <text-reader :label="'Upload File'"
-                                            :fileName.sync="fileName"
-                                            :plainText.sync="localYamlText"
-                                            :importType="'yaml'"
-                                            @load="loadYaml($event)"
-                                            class="v-btn v-btn--contained v-size--default"
-                                            style="color:#1976d2; background:none; border-radius:none;"
-                                ></text-reader> -->
-                                <v-btn text color="primary" @click.prevent="drawFromYaml">
-                                    <div v-if="reverseYaml">
-                                        <v-progress-circular
-                                                indeterminate
-                                                color="primary"
-                                        ></v-progress-circular>
-                                    </div>
-                                    <div v-else>Reverse</div>
-                                </v-btn>
-                            </v-card-actions>
-                        </v-card>
-                    </modal>
-
-                    <!-- search (cmd+p) -->
-                    <v-dialog
-                            class="v-dialog v-dialog--active"
-                            v-model="isSearch"
-                            hide-overlay
-                            max-width="50%"
-                    >
-                        <div style="color: gray; font-size: small; margin-left: 5px;"> cmd + p / ctrl + p</div>
-                        <v-autocomplete
-                                class="v-input-prepend-outer-prepend-icon"
-                                rounded
-                                v-model="searchKeyword"
-                                :items="mergeElementTypes"
-                                prepend-icon="mdi-magnify"
-                                :filter="customFilter"
-                                item-text="label"
-                                return-object
-                                auto-select-first
-                                autofocus
-                                style="font-size: xx-large;"
-                                @keydown="searchKeyDown"
-                        >
-                            <template v-slot:item="data">
-                                <template>
-                                    <v-list-item-avatar>
-                                        <img :src="data.item.src">
-                                    </v-list-item-avatar>
-                                    <v-list-item-content>
-                                        <v-list-item-title>
-                                            {{ data.item.label }}
-                                        </v-list-item-title>
-                                    </v-list-item-content>
-                                </template>
                             </template>
-                        </v-autocomplete>
-                    </v-dialog>
+                        </v-snackbar>
 
-                    <!-- user defined crd dialog -->
-                    <v-dialog v-model="definedDialog" max-width="500">
-                        <v-card>
-                            <v-card-title class="headline">Add CRD</v-card-title>
-                            <v-card-text style="overflow: hidden;">
-                                <v-text-field
-                                        label="kind"
-                                        v-model="definedCrd.kind"
-                                        autofocus
-                                        :rules="[value => !!value || 'Required.']"
-                                ></v-text-field>
-                                <v-text-field
-                                        label="Icon"
-                                        v-model="definedCrd.icon"
-                                        hint="EX) https://raw.githubusercontent.com/kubernetes/community/master/icons/png/resources/unlabeled/pod-128.png"
-                                        :rules="[value => !!value || 'Required.']"
-                                ></v-text-field>
-                                <v-text-field
-                                        label="Color"
-                                        v-model="definedCrd.color"
-                                        :rules="[value => !!value || 'Required.']"
-                                ></v-text-field>
-                                <span>CRD Yaml</span>
-                                <MonacoEditor
-                                        v-model="definedCrd.yaml"
-                                        class="editor"
-                                        theme="vs-dark"
-                                        language="yaml"
-                                ></MonacoEditor>
-                            </v-card-text>
+                        <v-dialog v-model="generateZipDialog" max-width="290">
+                            <v-card>
+                                <v-card-title class="headline">Generate Zip Archive</v-card-title>
+                                <v-card-text>
+                                    <v-select
+                                            :items="templateTypes"
+                                            v-model="template"
+                                            label="Select Template"
+                                            hide-details
+                                            class="pa-0"
+                                    ></v-select>
+                                </v-card-text>
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <div v-if="!isDownloading">
+                                        <v-btn text @click="generateZipDialog = false">Cancel</v-btn>
+                                        <v-btn color="primary" text @click="generateZip()">Download</v-btn>
+                                    </div>
+                                    <v-progress-circular
+                                            v-else
+                                            indeterminate
+                                            color="primary"
+                                    ></v-progress-circular>
+                                </v-card-actions>
+                            </v-card>
+                        </v-dialog>
 
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn color="green darken-1" text @click="addDefinedCrd(definedCrd)">ADD CRD</v-btn>
-                                <v-btn color="red darken-1" text @click="definedDialog = false">Cancel</v-btn>
-                            </v-card-actions>
-                        </v-card>
-                    </v-dialog>
+                        <v-dialog v-model="deployDialog" max-width="350">
+                            <v-card>
+                                <v-card-title class="headline">Deploy</v-card-title>
+                                <v-card-text>
+                                    <v-text-field
+                                            label="cluster"
+                                            v-model="clusterInfo.name"
+                                    ></v-text-field>
+                                    <v-text-field
+                                            label="API Server"
+                                            v-model="clusterInfo.apiServer"
+                                    ></v-text-field>
+                                    <v-text-field
+                                            label="Namespace"
+                                            v-model="clusterInfo.namespace"
+                                    ></v-text-field>
+                                    <div class="subtitle">Namespace 미 입력시 default로 설정됩니다.</div>
+                                </v-card-text>
 
-                    <!-- GitOps dialog -->
-                    <v-dialog v-model="settingGitInfoDialog">
-                        <v-card>
-                            <v-card-title>GitOps Configure</v-card-title>
-                            <v-card-text>
-                                <v-stepper v-model="step">
-                                    <v-stepper-header v-if="checkGitLogin">
-                                        <div v-for="(n,idx) in gitSteps" :key="`${idx}-step`">
-                                            <v-stepper-step
-                                                    :complete="step > idx"
-                                                    :step="idx + 1"
-                                            >
-                                                {{ n }}
-                                            </v-stepper-step>
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn color="red darken-1" text @click="deployDialog = false">Cancel</v-btn>
+                                    <v-btn color="green darken-1" text @click="deployReady()">Deploy</v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </v-dialog>
 
-                                            <v-divider
-                                                    v-if="idx !== step"
-                                                    :key="n"
-                                            ></v-divider>
-                                        </div>
-                                    </v-stepper-header>
-                                    <!-- Google -->
-                                    <v-stepper-header v-else>
-                                        <div v-for="(n, idx) in googleSteps" :key="`${idx}-step`">
-                                            <v-stepper-step
-                                                    :complete="step > idx"
-                                                    :step="idx + 1"
-                                            >
-                                                {{ n }}
-                                            </v-stepper-step>
-                                            <v-divider
-                                                    v-if="idx < googleSteps.length-1"
-                                                    :key="idx"
-                                            ></v-divider>
-                                        </div>
-                                    </v-stepper-header>
-                                    <!-- GitHub Login -->
-                                    <v-stepper-items v-if="checkGitLogin">
-                                        <v-stepper-content step="1">
-                                            <v-select
-                                                    width="100%"
-                                                    v-model="argoServerInfo"
-                                                    :items="argoServerLists"
-                                                    :item-text="checkName"
-                                                    item-value="namespace"
-                                                    return-object
-                                                    label="Argo Server"
-                                                    hint="namespace/deployment"
-                                                    persistent-hint
-                                            ></v-select>
-                                            <v-select
-                                                    width="100%"
-                                                    v-model="argoCdInfo"
-                                                    :items="argoCdLists"
-                                                    :item-text="checkName"
-                                                    item-value="namespace"
-                                                    return-object
-                                                    label="Argo Server"
-                                                    hint="namespace/deployment"
-                                                    persistent-hint
-                                            ></v-select>
-                                            <v-spacer></v-spacer>
-                                            <v-btn
+                        <v-dialog v-model="clusterDialog"
+                                persistent
+                                fullscreen
+                                hide-overlay 
+                                transition="dialog-bottom-transition"
+                        >
+                            <v-card>
+                                <v-toolbar dark color="primary">
+                                    <v-toolbar-title>Manage Clusters</v-toolbar-title>
+                                    <v-spacer></v-spacer>
+                                    <v-toolbar-items>
+                                        <v-btn icon dark @click="clusterDialog = false">
+                                            <v-icon>mdi-close</v-icon>
+                                        </v-btn>
+                                    </v-toolbar-items>
+                                </v-toolbar>
+                                <v-list three-line subheader>
+                                    <v-list-item>
+                                        <v-list-item-content>
+                                            <clusters @close="clusterDialog = false" v-model="clusterInfo"/>
+                                        </v-list-item-content>
+                                    </v-list-item>
+                                </v-list>
+                            </v-card>
+                        </v-dialog>
+
+                        <v-dialog v-model="commandDialog" max-width="700">
+                            <v-card>
+                                <v-card-title>
+                                    <v-tabs v-model="commandTab" class="mx-auto">
+                                        <v-tab v-for="tab in commandTabs" :key="tab">{{ tab }}</v-tab>
+                                    </v-tabs>
+                                </v-card-title>
+                                <v-card-text class="px-5 py-2">
+                                    <div v-for="(obj, idx) in commandList" :key="idx">
+                                        <v-text-field
+                                                v-if="commandTabs[commandTab].includes(obj.label)"
+                                                :value="obj.command"
+                                                :label="obj.label"
+                                                readonly outlined
+                                                append-icon="mdi-content-copy"
+                                                :id="'copyCommand'+idx"
+                                                @click:append="commandCopy(obj.command, idx)"
+                                                style="max-height: 65px;"
+                                        ></v-text-field>
+                                        <div v-if="commandTabs[commandTab].includes(obj.label)"
+                                                style="margin-bottom: 10px; padding-left: 490px;"
+                                        >
+                                            <v-btn @click="runCommand(obj.command)"
                                                     color="primary"
-                                                    @click="step = step + 1"
+                                                    text
                                             >
-                                                Continue
+                                                Run in terminal
                                             </v-btn>
-                                        </v-stepper-content>
-                                        <v-stepper-content step="2">
-                                            <v-radio-group
-                                                    v-model="repositoryType"
-                                                    row
-                                            >
-                                                <v-radio
-                                                        label="url"
-                                                        value="url"
-                                                ></v-radio>
-                                                <v-radio
-                                                        label="select"
-                                                        value="select"
-                                                ></v-radio>
-                                            </v-radio-group>
-                                            <v-select
-                                                    v-if="repositoryType == 'select'"
-                                                    :items="repositoryList"
-                                                    v-model="gitInfo.url"
-                                                    item-text="name"
-                                                    item-value="url"
-                                                    label="Select Repository"
-                                            ></v-select>
-                                            <v-text-field
-                                                    v-else
-                                                    v-model="gitInfo.url"
-                                                    label="Repository URL"
-                                            ></v-text-field>
-                                            <v-spacer></v-spacer>
-                                            <v-btn color="primary"
-                                                    @click="step = step + 1"
-                                            >
-                                                Continue
-                                            </v-btn>
-                                        </v-stepper-content>
-                                        <v-stepper-content step="3">
-                                            <v-text-field
-                                                    v-model="gitInfo.path"
-                                                    label="YAML Path"
-                                            ></v-text-field>
-                                            <v-spacer></v-spacer>
-                                            <v-btn
+                                        </div>
+                                    </div>
+                                </v-card-text>
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn @click="commandDialog = false"
+                                            color="primary"
+                                            text
+                                    >
+                                        Close
+                                    </v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </v-dialog>
+
+                        <modal name="yamlModal" :height='"auto"' :width="'80%'" style="overflow: scroll">
+                            <v-card flat>
+                                <v-card-title style="position: sticky">
+                                    <v-col :col="8">
+                                        <span class="headline">From Local YAML</span>
+                                    </v-col>
+                                </v-card-title>
+                                <v-divider></v-divider>
+                                <v-card-text style="width: auto; height: auto;">
+                                    <local-yaml-editor
+                                            v-model="localYamlText"
+                                            style="width: 100%; height: 100%"
+                                    ></local-yaml-editor>
+                                </v-card-text>
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <!-- <text-reader :label="'Upload File'"
+                                                :fileName.sync="fileName"
+                                                :plainText.sync="localYamlText"
+                                                :importType="'yaml'"
+                                                @load="loadYaml($event)"
+                                                class="v-btn v-btn--contained v-size--default"
+                                                style="color:#1976d2; background:none; border-radius:none;"
+                                    ></text-reader> -->
+                                    <v-btn text color="primary" @click.prevent="drawFromYaml">
+                                        <div v-if="reverseYaml">
+                                            <v-progress-circular
+                                                    indeterminate
                                                     color="primary"
-                                                    @click="getNamespaceList()"
-                                            >
-                                                Continue
-                                            </v-btn>
-                                        </v-stepper-content>
-                                        <v-stepper-content step="4">
-                                            <v-select
-                                                    :items="namespaceList"
-                                                    v-model="gitInfo.namespace"
-                                                    label="Select Repository"
-                                            ></v-select>
-                                            <v-spacer></v-spacer>
-                                            <v-btn color="green darken-1" 
-                                                    text 
-                                                    @click="setGitRepository()"
-                                            >
-                                                Save
-                                            </v-btn>
-                                        </v-stepper-content>
-                                    </v-stepper-items>
-                                    <!-- Google Login -->
-                                    <v-stepper-items v-else>
-                                        <v-stepper-content step="1">
-                                            <v-select
-                                                    width="100%"
-                                                    v-model="argoServerInfo"
-                                                    :items="argoServerLists"
-                                                    :item-text="checkName"
-                                                    item-value="namespace"
-                                                    return-object
-                                                    label="Argo Server"
-                                                    hint="namespace/deployment"
-                                                    persistent-hint
-                                            ></v-select>
-                                            <v-select
-                                                    width="100%"
-                                                    v-model="argoCdInfo"
-                                                    :items="argoCdLists"
-                                                    :item-text="checkName"
-                                                    item-value="namespace"
-                                                    return-object
-                                                    label="Argo Server"
-                                                    hint="namespace/deployment"
-                                                    persistent-hint
-                                            ></v-select>
-                                        </v-stepper-content>
-                                        <v-stepper-content step="2">
-                                            <v-radio-group
-                                                    v-model="gitInfo.type"
-                                                    row
-                                            >
-                                                <v-radio
-                                                        label="Github"
-                                                        value="github"
-                                                ></v-radio>
-                                                <v-radio
-                                                        disabled
-                                                        label="Gitlab"
-                                                        value="gitlab"
-                                                ></v-radio>
-                                            </v-radio-group>
-                                            <v-text-field
-                                                    v-model="gitInfo.username"
-                                                    label="Git Username"
-                                            ></v-text-field>
-                                            <v-text-field
-                                                    v-model="gitInfo.token"
-                                                    label="Git AccessToken"
-                                            ></v-text-field>
-                                            <div class="body-1">
-                                                Github 유저명과, GitAccessToken을 입력하여줍니다.
-                                                자세한 발급 방법은 <a
-                                                    href="https://github.com/TheOpenCloudEngine/msaschool/wiki/Github-Personal-Access-Token-%EB%B0%9C%ED%96%89-%EB%B0%A9%EB%B2%95"
-                                                    target="_blank">이곳</a>을 참조하세요.
+                                            ></v-progress-circular>
+                                        </div>
+                                        <div v-else>Reverse</div>
+                                    </v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </modal>
+
+                        <!-- search (cmd+p) -->
+                        <v-dialog
+                                class="v-dialog v-dialog--active"
+                                v-model="isSearch"
+                                hide-overlay
+                                max-width="50%"
+                        >
+                            <div style="color: gray; font-size: small; margin-left: 5px;"> cmd + p / ctrl + p</div>
+                            <v-autocomplete
+                                    class="v-input-prepend-outer-prepend-icon"
+                                    rounded
+                                    v-model="searchKeyword"
+                                    :items="mergeElementTypes"
+                                    prepend-icon="mdi-magnify"
+                                    :filter="customFilter"
+                                    item-text="label"
+                                    return-object
+                                    auto-select-first
+                                    autofocus
+                                    style="font-size: xx-large;"
+                                    @keydown="searchKeyDown"
+                            >
+                                <template v-slot:item="data">
+                                    <template>
+                                        <v-list-item-avatar>
+                                            <img :src="data.item.src">
+                                        </v-list-item-avatar>
+                                        <v-list-item-content>
+                                            <v-list-item-title>
+                                                {{ data.item.label }}
+                                            </v-list-item-title>
+                                        </v-list-item-content>
+                                    </template>
+                                </template>
+                            </v-autocomplete>
+                        </v-dialog>
+
+                        <!-- user defined crd dialog -->
+                        <v-dialog v-model="definedDialog" max-width="500">
+                            <v-card>
+                                <v-card-title class="headline">Add CRD</v-card-title>
+                                <v-card-text style="overflow: hidden;">
+                                    <v-text-field
+                                            label="kind"
+                                            v-model="definedCrd.kind"
+                                            autofocus
+                                            :rules="[value => !!value || 'Required.']"
+                                    ></v-text-field>
+                                    <v-text-field
+                                            label="Icon"
+                                            v-model="definedCrd.icon"
+                                            hint="EX) https://raw.githubusercontent.com/kubernetes/community/master/icons/png/resources/unlabeled/pod-128.png"
+                                            :rules="[value => !!value || 'Required.']"
+                                    ></v-text-field>
+                                    <v-text-field
+                                            label="Color"
+                                            v-model="definedCrd.color"
+                                            :rules="[value => !!value || 'Required.']"
+                                    ></v-text-field>
+                                    <span>CRD Yaml</span>
+                                    <MonacoEditor
+                                            v-model="definedCrd.yaml"
+                                            class="editor"
+                                            theme="vs-dark"
+                                            language="yaml"
+                                    ></MonacoEditor>
+                                </v-card-text>
+
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn color="green darken-1" text @click="addDefinedCrd(definedCrd)">ADD CRD</v-btn>
+                                    <v-btn color="red darken-1" text @click="definedDialog = false">Cancel</v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </v-dialog>
+
+                        <!-- GitOps dialog -->
+                        <v-dialog v-model="settingGitInfoDialog">
+                            <v-card>
+                                <v-card-title>GitOps Configure</v-card-title>
+                                <v-card-text>
+                                    <v-stepper v-model="step">
+                                        <v-stepper-header v-if="checkGitLogin">
+                                            <div v-for="(n,idx) in gitSteps" :key="`${idx}-step`">
+                                                <v-stepper-step
+                                                        :complete="step > idx"
+                                                        :step="idx + 1"
+                                                >
+                                                    {{ n }}
+                                                </v-stepper-step>
+
+                                                <v-divider
+                                                        v-if="idx !== step"
+                                                        :key="n"
+                                                ></v-divider>
                                             </div>
-                                            <div style="margin-top: 15px;">
+                                        </v-stepper-header>
+                                        <!-- Google -->
+                                        <v-stepper-header v-else>
+                                            <div v-for="(n, idx) in googleSteps" :key="`${idx}-step`">
+                                                <v-stepper-step
+                                                        :complete="step > idx"
+                                                        :step="idx + 1"
+                                                >
+                                                    {{ n }}
+                                                </v-stepper-step>
+                                                <v-divider
+                                                        v-if="idx < googleSteps.length-1"
+                                                        :key="idx"
+                                                ></v-divider>
+                                            </div>
+                                        </v-stepper-header>
+                                        <!-- GitHub Login -->
+                                        <v-stepper-items v-if="checkGitLogin">
+                                            <v-stepper-content step="1">
+                                                <v-select
+                                                        width="100%"
+                                                        v-model="argoServerInfo"
+                                                        :items="argoServerLists"
+                                                        :item-text="checkName"
+                                                        item-value="namespace"
+                                                        return-object
+                                                        label="Argo Server"
+                                                        hint="namespace/deployment"
+                                                        persistent-hint
+                                                ></v-select>
+                                                <v-select
+                                                        width="100%"
+                                                        v-model="argoCdInfo"
+                                                        :items="argoCdLists"
+                                                        :item-text="checkName"
+                                                        item-value="namespace"
+                                                        return-object
+                                                        label="Argo Server"
+                                                        hint="namespace/deployment"
+                                                        persistent-hint
+                                                ></v-select>
                                                 <v-spacer></v-spacer>
                                                 <v-btn
                                                         color="primary"
-                                                        @click="getGitRepoList()"
+                                                        @click="step = step + 1"
                                                 >
                                                     Continue
                                                 </v-btn>
-                                            </div>
-                                        </v-stepper-content>
-                                        <v-stepper-content step="3">
-                                            <v-radio-group
-                                                    v-model="repositoryType"
-                                                    row
-                                            >
-                                                <v-radio
-                                                        label="url"
-                                                        value="url"
-                                                ></v-radio>
-                                                <v-radio
-                                                        label="select"
-                                                        value="select"
-                                                ></v-radio>
-                                            </v-radio-group>
-                                            <v-select
-                                                    v-if="repositoryType == 'select'"
-                                                    :items="repositoryList"
-                                                    v-model="gitInfo.url"
-                                                    item-text="name"
-                                                    item-value="url"
-                                                    label="Select Repository"
-                                            ></v-select>
-                                            <v-text-field
-                                                    v-else
-                                                    v-model="gitInfo.url"
-                                                    label="Repository URL"
-                                            ></v-text-field>
-                                            <v-spacer></v-spacer>
-                                            <v-btn
-                                                    color="primary"
-                                                    @click="step = step + 1"
-                                            >
-                                                Continue
-                                            </v-btn>
-                                        </v-stepper-content>
-                                        <v-stepper-content step="4">
-                                            <v-text-field
-                                                    v-model="gitInfo.path"
-                                                    label="YAML Path"
-                                            ></v-text-field>
-                                            <v-spacer></v-spacer>
-                                            <v-btn
-                                                    color="primary"
-                                                    @click="getNamespaceList()"
-                                            >
-                                                Continue
-                                            </v-btn>
-                                        </v-stepper-content>
-                                        <v-stepper-content step="5">
-                                            <v-select
-                                                    :items="namespaceList"
-                                                    v-model="gitInfo.namespace"
-                                                    label="Select Repository"
-                                            ></v-select>
-                                            <v-spacer></v-spacer>
-                                            <v-btn color="green darken-1"
-                                                    text 
-                                                    @click="setGitRepository()"
-                                            >
-                                                Save
-                                            </v-btn>
-                                        </v-stepper-content>
-                                    </v-stepper-items>
-                                </v-stepper>
-                            </v-card-text>
-                        </v-card>
-                    </v-dialog>
+                                            </v-stepper-content>
+                                            <v-stepper-content step="2">
+                                                <v-radio-group
+                                                        v-model="repositoryType"
+                                                        row
+                                                >
+                                                    <v-radio
+                                                            label="url"
+                                                            value="url"
+                                                    ></v-radio>
+                                                    <v-radio
+                                                            label="select"
+                                                            value="select"
+                                                    ></v-radio>
+                                                </v-radio-group>
+                                                <v-select
+                                                        v-if="repositoryType == 'select'"
+                                                        :items="repositoryList"
+                                                        v-model="gitInfo.url"
+                                                        item-text="name"
+                                                        item-value="url"
+                                                        label="Select Repository"
+                                                ></v-select>
+                                                <v-text-field
+                                                        v-else
+                                                        v-model="gitInfo.url"
+                                                        label="Repository URL"
+                                                ></v-text-field>
+                                                <v-spacer></v-spacer>
+                                                <v-btn color="primary"
+                                                        @click="step = step + 1"
+                                                >
+                                                    Continue
+                                                </v-btn>
+                                            </v-stepper-content>
+                                            <v-stepper-content step="3">
+                                                <v-text-field
+                                                        v-model="gitInfo.path"
+                                                        label="YAML Path"
+                                                ></v-text-field>
+                                                <v-spacer></v-spacer>
+                                                <v-btn
+                                                        color="primary"
+                                                        @click="getNamespaceList()"
+                                                >
+                                                    Continue
+                                                </v-btn>
+                                            </v-stepper-content>
+                                            <v-stepper-content step="4">
+                                                <v-select
+                                                        :items="namespaceList"
+                                                        v-model="gitInfo.namespace"
+                                                        label="Select Repository"
+                                                ></v-select>
+                                                <v-spacer></v-spacer>
+                                                <v-btn color="green darken-1" 
+                                                        text 
+                                                        @click="setGitRepository()"
+                                                >
+                                                    Save
+                                                </v-btn>
+                                            </v-stepper-content>
+                                        </v-stepper-items>
+                                        <!-- Google Login -->
+                                        <v-stepper-items v-else>
+                                            <v-stepper-content step="1">
+                                                <v-select
+                                                        width="100%"
+                                                        v-model="argoServerInfo"
+                                                        :items="argoServerLists"
+                                                        :item-text="checkName"
+                                                        item-value="namespace"
+                                                        return-object
+                                                        label="Argo Server"
+                                                        hint="namespace/deployment"
+                                                        persistent-hint
+                                                ></v-select>
+                                                <v-select
+                                                        width="100%"
+                                                        v-model="argoCdInfo"
+                                                        :items="argoCdLists"
+                                                        :item-text="checkName"
+                                                        item-value="namespace"
+                                                        return-object
+                                                        label="Argo Server"
+                                                        hint="namespace/deployment"
+                                                        persistent-hint
+                                                ></v-select>
+                                            </v-stepper-content>
+                                            <v-stepper-content step="2">
+                                                <v-radio-group
+                                                        v-model="gitInfo.type"
+                                                        row
+                                                >
+                                                    <v-radio
+                                                            label="Github"
+                                                            value="github"
+                                                    ></v-radio>
+                                                    <v-radio
+                                                            disabled
+                                                            label="Gitlab"
+                                                            value="gitlab"
+                                                    ></v-radio>
+                                                </v-radio-group>
+                                                <v-text-field
+                                                        v-model="gitInfo.username"
+                                                        label="Git Username"
+                                                ></v-text-field>
+                                                <v-text-field
+                                                        v-model="gitInfo.token"
+                                                        label="Git AccessToken"
+                                                ></v-text-field>
+                                                <div class="body-1">
+                                                    Github 유저명과, GitAccessToken을 입력하여줍니다.
+                                                    자세한 발급 방법은 <a
+                                                        href="https://github.com/TheOpenCloudEngine/msaschool/wiki/Github-Personal-Access-Token-%EB%B0%9C%ED%96%89-%EB%B0%A9%EB%B2%95"
+                                                        target="_blank">이곳</a>을 참조하세요.
+                                                </div>
+                                                <div style="margin-top: 15px;">
+                                                    <v-spacer></v-spacer>
+                                                    <v-btn
+                                                            color="primary"
+                                                            @click="getGitRepoList()"
+                                                    >
+                                                        Continue
+                                                    </v-btn>
+                                                </div>
+                                            </v-stepper-content>
+                                            <v-stepper-content step="3">
+                                                <v-radio-group
+                                                        v-model="repositoryType"
+                                                        row
+                                                >
+                                                    <v-radio
+                                                            label="url"
+                                                            value="url"
+                                                    ></v-radio>
+                                                    <v-radio
+                                                            label="select"
+                                                            value="select"
+                                                    ></v-radio>
+                                                </v-radio-group>
+                                                <v-select
+                                                        v-if="repositoryType == 'select'"
+                                                        :items="repositoryList"
+                                                        v-model="gitInfo.url"
+                                                        item-text="name"
+                                                        item-value="url"
+                                                        label="Select Repository"
+                                                ></v-select>
+                                                <v-text-field
+                                                        v-else
+                                                        v-model="gitInfo.url"
+                                                        label="Repository URL"
+                                                ></v-text-field>
+                                                <v-spacer></v-spacer>
+                                                <v-btn
+                                                        color="primary"
+                                                        @click="step = step + 1"
+                                                >
+                                                    Continue
+                                                </v-btn>
+                                            </v-stepper-content>
+                                            <v-stepper-content step="4">
+                                                <v-text-field
+                                                        v-model="gitInfo.path"
+                                                        label="YAML Path"
+                                                ></v-text-field>
+                                                <v-spacer></v-spacer>
+                                                <v-btn
+                                                        color="primary"
+                                                        @click="getNamespaceList()"
+                                                >
+                                                    Continue
+                                                </v-btn>
+                                            </v-stepper-content>
+                                            <v-stepper-content step="5">
+                                                <v-select
+                                                        :items="namespaceList"
+                                                        v-model="gitInfo.namespace"
+                                                        label="Select Repository"
+                                                ></v-select>
+                                                <v-spacer></v-spacer>
+                                                <v-btn color="green darken-1"
+                                                        text 
+                                                        @click="setGitRepository()"
+                                                >
+                                                    Save
+                                                </v-btn>
+                                            </v-stepper-content>
+                                        </v-stepper-items>
+                                    </v-stepper>
+                                </v-card-text>
+                            </v-card>
+                        </v-dialog>
 
-                    <!-- save dialog -->
-                    <model-storage-dialog
-                            :condition="storageCondition"
-                            :showDialog="showStorageDialog"
-                            @save="saveModel"
-                            @fork="forkModel"
-                            @backup="backupModel"
-                            @close="storageDialogCancel"
-                    ></model-storage-dialog>
+                        <!-- save dialog -->
+                        <model-storage-dialog
+                                :condition="storageCondition"
+                                :showDialog="showStorageDialog"
+                                @save="saveModel"
+                                @fork="forkModel"
+                                @backup="backupModel"
+                                @close="storageDialogCancel"
+                        ></model-storage-dialog>
 
-                    <!-- modeler image generateor -->
-                    <modeler-image-generator ref="modeler-image-generator"></modeler-image-generator>
+                        <!-- modeler image generateor -->
+                        <modeler-image-generator ref="modeler-image-generator"></modeler-image-generator>
+                    </div>
                 </div>
             </template>
 
             <template v-slot:two>
                 <kube-code-generator
                         v-model="value"
-                        :isMineProject="isMineProject"
-                        :isServerModeling="isServerModeling"
+                        :isOwnModel="isOwnModel"
+                        :isServerModel="isServerModel"
                         :projectInformation="information"
                         :projectName="projectName"
                         :modelInitLoad="initLoad"
-                        :modelingProjectId="modelingProjectId"
+                        :modelingProjectId="projectId"
                         :asyncCodeForValue="false"
                         :callCodeForValue="changedTemplateCode"
                         :oldTreeHashLists.sync="oldTreeHashLists"
                         :newTreeHashLists.sync="newTreeHashLists"
-                        :isVersionMode="isVersionMode"
+                        :projectVersion="projectVersion"
+                        @changedByMe="settingChangedByMe"
+                        @editModelData="editModelData"
                         canvas-name="kubernetes-model-canvas"
-                        :defaultTemplate="template"
                 ></kube-code-generator>
             </template>
         </separate-panel-components>
@@ -1816,14 +1823,6 @@
         },
         created() {
             var me = this;
-
-            if (localStorage.getItem("gitAccessToken")) {
-                me.gitAccessToken = localStorage.getItem("gitAccessToken");
-                me.githubHeaders = {
-                    Authorization: "token " + me.gitAccessToken,
-                    Accept: "application/vnd.github+json",
-                };
-            }
 
             try {
                 Vue.use(KubeModeling);

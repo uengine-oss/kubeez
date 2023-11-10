@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-btn block small @click="signInGitlab()">
+        <v-btn block small @click="signInGitlab">
             <img id="git-hover"
                 width="30px"
                 alt="Github sign-in"
@@ -57,76 +57,73 @@
         watch: {
             "userImage": {
                 handler(newVal) {
-                    console.log(newVal)
-                    var me = this
-                    localStorage.setItem("picture", me.userIcon(newVal))
+                    // console.log(newVal)
+                    var me = this;
+                    localStorage.setItem("picture", me.userIcon(newVal));
                 }
             }
         },
         async created() {
-            var me = this
-
+            var me = this;
 
             if (window.location.href.includes("login-page")) {
 
                 var clazz = await this.getClassInfo();
 
                 if (clazz.connectionKey) {
-                    me.isConnectionkey = true
+                    me.isConnectionkey = true;
                 }
 
                 if (localStorage.getItem('authorized') == null) {
                     if (clazz.connectionKey) {
-                        me.guest = true
-                        me.$emit('type', 'guest')
+                        me.guest = true;
+                        me.$emit('type', 'guest');
                     } else {
-                        me.standard = true
-                        me.$emit('type', 'standard')
+                        me.standard = true;
+                        me.$emit('type', 'standard');
                     }
                 } else {
                     if (clazz.connectionKey) {
-                        me.onlyConnectionKey = true
-                        me.$emit('type', 'connectionKey')
+                        me.onlyConnectionKey = true;
+                        me.$emit('type', 'connectionKey');
                     }
                 }
 
             } else {
-                me.standard = true
-                me.$emit('type', 'standard')
+                me.standard = true;
+                me.$emit('type', 'standard');
             }
 
             if (localStorage.getItem('authorized')) {
-                me.authorized = true
+                me.authorized = true;
             } else {
-                me.authorized = false
+                me.authorized = false;
             }
-
-            // me.tenantLogo = await me.getImageURL("storage://labs-msaez.io/logo.png");
 
         },
         methods: {
-            signUpPage(){
-                var me = this
-                me.loginText = ''
-                me.tab = 'signUp'
+            signUpPage() {
+                var me = this;
+                me.loginText = '';
+                me.tab = 'signUp';
             },
-            back(){
-                var me = this
-                me.loginText = ''
-                me.tab = 'main'
+            back() {
+                var me = this;
+                me.loginText = '';
+                me.tab = 'main';
             },
             async signInGitlab() {
                 var me = this
                 try {
                     let origin = window.GITLAB ? window.GITLAB : window.location.hostname.replace("www.", "");
-                    window.open(`https://gitlab.${origin}/oauth/authorize?client_id=8eb94ad361085009155d495af28e6a822d7b64bb2397807a9e93cf269d28d1c8&redirect_uri=https%3A%2F%2F${encodeURIComponent(window.location.host)}%3Foauth%3Dgitlab&response_type=code&scope=api&state=devopssystem`,"_blank");
+                    window.open(`https://gitlab.${origin}/oauth/authorize?client_id=${window.OAUTH_ID}&redirect_uri=https%3A%2F%2F${encodeURIComponent(window.location.host)}%3Foauth%3Dgitlab&response_type=code&scope=api&state=devopssystem`, "_blank");
                 } catch (e) {
                     if(e.code == 'not_found'){
-                        me.loginText = '로그인 실패: 존재하지 않은 계정입니다.'
+                        me.loginText = '로그인 실패: 존재하지 않은 계정입니다.';
                     }else{
-                        me.loginText = '로그인 실패: 로그인 정보를 확인해주세요.'
+                        me.loginText = '로그인 실패: 로그인 정보를 확인해주세요.';
                     }
-                    console.log(e)
+                    console.log(e);
                 }
             },
             getComponent(componentName) {

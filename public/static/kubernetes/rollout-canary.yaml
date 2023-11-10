@@ -1,0 +1,90 @@
+--- 
+apiVersion: "argoproj.io/v1alpha1"
+kind: "Rollout"
+metadata: 
+  name: "rollout-canary"
+  annotations: 
+    msaez.io/x: "418"
+    msaez.io/y: "167"
+    msaez.io/VirtualService_vsvc-canary: "[[521,188],[687,188]]"
+    msaez.io/DestinationRuleSubset_canary: "[[521,188],[580,188],[580,508],[640,508]]"
+    msaez.io/DestinationRuleSubset_stable: "[[521,188],[632,188],[632,376],[740,472]]"
+spec: 
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector: 
+    matchLabels: 
+      app: ""
+  template: 
+    metadata: 
+      labels: 
+        app: ""
+    spec: 
+      containers: 
+        - 
+          name: ""
+          image: ""
+  strategy: 
+    canary: 
+      trafficRouting: 
+        istio: 
+          destinationRule: 
+            name: "drule-canary"
+            stableSubsetName: "stable"
+            canarySubsetName: "canary"
+          virtualService: 
+            name: "vsvc-canary"
+            routes: 
+              - ""
+      steps: 
+        - 
+          setWeight: 5
+        - 
+          pause: 
+            duration: "10s"
+--- 
+apiVersion: "networking.istio.io/v1alpha3"
+kind: "VirtualService"
+metadata: 
+  name: "vsvc-canary"
+  annotations: 
+    msaez.io/x: "737"
+    msaez.io/y: "188"
+    msaez.io/DestinationRuleSubset_canary: "[[736,238],[736,348],[680,348],[680,468]]"
+    msaez.io/DestinationRuleSubset_stable: "[[736,238],[736,348],[780,348],[780,468]]"
+spec: 
+  hosts: 
+    - "*"
+  http: 
+    - 
+      name: ""
+      route: 
+        - 
+          destination: 
+            host: "*"
+            subset: "canary"
+          weight: 90
+        - 
+          destination: 
+            host: "*"
+            subset: "stable"
+          weight: 10
+--- 
+apiVersion: "networking.istio.io/v1alpha3"
+kind: "DestinationRule"
+metadata: 
+  name: "drule-canary"
+  annotations: 
+    msaez.io/x: "780"
+    msaez.io/y: "508"
+spec: 
+  host: "*"
+  subsets: 
+    - 
+      name: "canary"
+      labels: 
+        version: "v1"
+    - 
+      name: "stable"
+      labels: 
+        version: "v2"

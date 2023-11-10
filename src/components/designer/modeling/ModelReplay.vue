@@ -10,7 +10,6 @@
             return '$$index:' + index;
         },
     });
-    var jp = require('jsonpath');
 
     export default {
         name: 'model-replay',

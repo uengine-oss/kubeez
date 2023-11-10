@@ -87,21 +87,23 @@
                                         @openIDE="openProjectIDE($event)"
                                         @settingDone="ShowCreateRepoTab = false"
                                         @closeGitMenu="closeGitMenu"
+                                        @update:git-users="val => gitUsers = val"
                                         :information="projectInformation"
                                         :isOnPrem="isOnPrem"
                                         :projectId="modelingProjectId"
                                         :projectName="projectName"
                                         :git-users="gitUsers"
                                         :isListSettingDone="isGeneratorDone"
-                                        :isMineProject="isMineProject"
+                                        :isOwnModel="isOwnModel"
                                         :changedPathListsForGit="changedPathListsForGit"
                                         :generateCodeLists="filteredPrettierCodeLists"
                                         :ShowCreateRepoTab="ShowCreateRepoTab"
-                                        :isServerModeling="isServerModeling"
-                                        :isVersionMode="isVersionMode"
+                                        :isServerModel="isServerModel"
+                                        :projectVersion="projectVersion"
                                         :githubTokenError="githubTokenError"
                                         :isOneBCModel="isOneBCModel"
                                         :onlyOneBcId="onlyOneBcId"
+                                        :isSIgpt="isSIgpt"
                                 />
                             </div>
                         </v-menu>
@@ -284,19 +286,20 @@
                     </v-tooltip>
                 </v-row>
             </v-card-title>
-            
+            <!-- 상단 메뉴 끝 -->
             <v-divider></v-divider>
-
-            <v-card-text style="height: 100%;">
+            <!-- 트리뷰 + code-viewer -->
+            <v-card-text style="padding-bottom: 0px;">
                 <separate-panel-components
                         :min="separatePanelInfo.min"
                         :max="separatePanelInfo.max"
                         :triggerLength="2"
                         :paneLengthPercent.sync="separatePanelInfo.current"
                         :inBoundSeparatePanel="true"
+                        class="fill-height"
                 >
                     <template v-slot:one>
-                        <div style="height: 100%; margin-top: 7px;">
+                        <div>
                             <!-- TREE  -->
                             <v-col id="scroll-target"
                                     class="code-preview-left-re-size"
@@ -305,9 +308,7 @@
                             >
                                 <div class="event-storming-treeview-height"
                                         style="min-width: 0px;
-                                            margin-right: 0px;
                                             width: 100%;
-                                            margin-left: -15px;
                                             overflow-y: auto;
                                             padding-right: 15px;"
                                 >
@@ -372,7 +373,7 @@
                                                             {{ icon[item.file] }}
                                                         </v-icon>
                                                     </template>
-                                                    <!-- <template v-slot:prepend="{ item, open }">
+                                                    <template v-slot:prepend="{ item, open }">
                                                         <v-icon v-if="isChangedCode(item)"
                                                                 color="#00B0FF"
                                                                 x-small
@@ -479,7 +480,7 @@
                                                                         position: absolute;"
                                                             />
                                                         </div>
-                                                    </template> -->
+                                                    </template>
                                                 </v-treeview>
                                             </v-list-group>
                                         </v-list>
@@ -492,8 +493,12 @@
                         <div>
                             <v-row>
                                 <v-col>
-                                    <v-dialog persistent no-click-animation v-if="editTemplateMode" v-model="editTemplateMode">
-                                        <div v-if="editTemplateMode" :key="editModeCodeViewerRenderKey">
+                                    <v-dialog v-if="editTemplateMode" 
+                                            v-model="editTemplateMode"
+                                            persistent
+                                            no-click-animation 
+                                    >
+                                        <div :key="editModeCodeViewerRenderKey">
                                             <v-card flat style="height: 90vh; z-index:2;">
                                                 <div style="display: flex;">
                                                     <div style="width: 400px; height: 850px; overflow-y: scroll;">
@@ -549,7 +554,7 @@
                                                                 </template>
                                                             </v-treeview>
 
-                                                            <div v-if="editTemplateMode" style="width: 100%; position: relative; margin-top: 10px; margin-bottom: 10px;">
+                                                            <div style="width: 100%; position: relative; margin-top: 10px; margin-bottom: 10px;">
                                                                 <v-divider />
                                                             </div>
                                                         </div>
@@ -680,11 +685,12 @@
                                                         </v-list>
 
                                                         <div style="height: 330px;">
-                                                            <div v-if="editTemplateMode" style=" width: 100%; position: relative; margin-top: -10px;">
+                                                            <div style=" width: 100%; position: relative; margin-top: -10px;">
                                                                 <v-divider />
                                                             </div>
-                                                            <v-list v-if="editTemplateMode" :key="editTemplateListRenderKey"
-                                                                    nav dense
+                                                            <v-list :key="editTemplateListRenderKey"
+                                                                    nav
+                                                                    dense
                                                                     style="width:105%; min-width: 390px; margin:-5px -30px 0px -10px;"
                                                             >
                                                                 <v-list-group :class="editTemplateMode ? 'gs-edited-template-files-v-list-group' : ''" :value="true">
@@ -729,6 +735,7 @@
                                                                                             <gitAPIMenu
                                                                                                     v-model="value.scm"
                                                                                                     v-if="templatePushDialog"
+                                                                                                    @update:git-users="val => gitUsers = val"
                                                                                                     @closeMenu="templatePushDialog = false"
                                                                                                     @successToPush="changePlatform"
                                                                                                     @closeGitMenu="closeGitMenu"
@@ -742,11 +749,11 @@
                                                                                                     :projectName="projectName"
                                                                                                     :git-users="gitUsers"
                                                                                                     :isListSettingDone="isGeneratorDone"
-                                                                                                    :isMineProject="isMineProject"
+                                                                                                    :isOwnModel="isOwnModel"
                                                                                                     :changedPathListsForGit="changedPathListsForGit"
                                                                                                     :generateCodeLists="filteredPrettierCodeLists"
                                                                                                     :ShowCreateRepoTab="ShowCreateRepoTab"
-                                                                                                    :isServerModeling="isServerModeling"
+                                                                                                    :isServerModel="isServerModel"
                                                                                                     @pushSuccessed="pushSuccessed"
                                                                                             />
                                                                                         </div>
@@ -809,7 +816,7 @@
                                                                     </div>
                                                                 </v-list-group>
                                                             </v-list>
-                                                            <div v-if="editTemplateMode" style="width: 100%; margin-top: -10px;">
+                                                            <div style="width: 100%; margin-top: -10px;">
                                                                 <v-divider />
                                                             </div>
                                                         </div>
@@ -988,13 +995,13 @@
                                     <v-dialog no-click-animation v-model="openExpectedTemplateTestDialog">
                                         <!-- :actualTreeList="treeLists"  -->
                                         <ExpectedTemplateTestDialog 
-                                            :actualCodeList="codeLists" 
-                                            :templateFrameWorkList="templateFrameWorkList"
-                                            :existOnlyExpected="existOnlyExpected"
-                                            :existOnlyActual="existOnlyActual"
-                                            :diffList="diffList"
-                                            :templateMetaData="templateMetaData"
-                                            :modelingProjectId="modelingProjectId"
+                                                :actualCodeList="codeLists" 
+                                                :templateFrameWorkList="templateFrameWorkList"
+                                                :existOnlyExpected="existOnlyExpected"
+                                                :existOnlyActual="existOnlyActual"
+                                                :diffList="diffList"
+                                                :templateMetaData="templateMetaData"
+                                                :modelingProjectId="modelingProjectId"
                                         />
                                     </v-dialog>
                                     <!-- <div v-if="changedModifying">
@@ -1038,19 +1045,23 @@
                                                 @update="updatePathTmp"
                                         ></code-viewer>
                                     </div> -->
-                                    <!-- <kubernetes-code-viewer
-                                            v-if="isDiffMode"
-                                            :diff-value="existYaml"
-                                            v-model="filteredOpenCode"
-                                            :type="'diff'"
-                                            :create-value="existYaml"
-                                            @update="updatePathTmp"
-                                            style="padding: 0 !important;"
-                                    ></kubernetes-code-viewer> -->
-                                    <kubernetes-code-viewer
-                                            v-model="filteredOpenCode"
-                                            style="padding: 0 !important;"
-                                    ></kubernetes-code-viewer>
+                                    <div style="height: 100%;">
+                                        <code-viewer
+                                                v-if="isDiffMode"
+                                                :diff-value="existYaml"
+                                                v-model="filteredOpenCode"
+                                                :type="'diff'"
+                                                :create-value="existYaml"
+                                                @update="updatePathTmp"
+                                                style="padding: 0 !important;"
+                                        ></code-viewer>
+                                        <code-viewer
+                                                v-else
+                                                v-model="filteredOpenCode"
+                                                :readOnly="true"
+                                                style="padding: 0 !important;"
+                                        ></code-viewer>
+                                    </div>
                                 </v-col>
                             </v-row>
                         </div>
@@ -1288,23 +1299,27 @@
         },
         props: {
             value: Object,
-            isMineProject: Boolean,
+            isOwnModel: Boolean,
             projectName: String,
             projectInformation :Object,
             selectedElements: Array,
             modelInitLoad: Boolean,
-            modelingProjectId: String,
-            isServerModeling: Boolean,
+            projectId: String,
+            isServerModel: Boolean,
             asyncCodeForValue: Boolean,
             callCodeForValue: Boolean,
             newTreeHashLists: Object,
             oldTreeHashLists: Object,
             isVersionMode: Boolean,
             canvasName: String,
-            defaultTemplate: String,
         },
         data() {
             return {
+                gitActionDialogRenderKey: 0,
+                isSIgpt: false,
+                testFile: null,
+                openAiMessageList: [],
+                openGitActionDialog: false,
                 isLoadingExpectedTemplate: true,
                 startCheckDiff: false,
                 templateMetaData: null,
@@ -1399,7 +1414,7 @@
 
                 // Template
                 newTreeList: null,
-                // defaultTemplate: 'Separate File',
+                defaultTemplate: null,
                 templateTypeList: [ 'Separate File', 'Single File', 'Separate File per kind', 'Helm' ],
                 showTemplateTypeList: false,
                 
@@ -1886,27 +1901,14 @@
                 return false
             },
             editableTemplate(){
-                // return this.isMineProject
                 return true
             },
             filteredTreeLists(){
                 var me = this
-                // me.showTemplatePath = false;
                 return me.newTreeList;
-
-                if (!me.isClosedSeparatePanel && me.isGeneratorDone) {
-                    try {
-                        return me.newTreeList;
-                    } catch (e) {
-                        console.log(`ERROR] Filtered TreeLists:: ${e}`)
-                        return [];
-                    }
-                }
-                return [];
             },
             filteredCodeLists() {
                 var me = this;
-                var codeList = me.setAutoGenerateCodetoList ? me.setAutoGenerateCodetoList : me.codeLists;
                 // var copyCodeLists = JSON.parse(JSON.stringify(codeList));
 
                 // try{
@@ -1917,7 +1919,7 @@
                 //     me.setAutoGenerateCodetoList = null;
                 //     return copyCodeLists
                 // }
-                return codeList;
+                return me.codeLists;
             },
             filteredPrettierCodeLists() {
                 var me = this;
@@ -1926,9 +1928,7 @@
                 try{
                     if (copyCodeLists && copyCodeLists.length > 0) {
                         copyCodeLists.forEach(codeObj => {
-                            if (codeObj && codeObj.fullPath.includes('.java')) {
-                                codeObj.code = me.codeAlign(codeObj.code);
-                            }
+                            codeObj.code = me.yamlFilter(codeObj.code);
                         })
                     }
                     return copyCodeLists;
@@ -1951,8 +1951,8 @@
             // });
             
             this.openCodeGenerator();
-            this.settingGithub();
-            this.initHandleBars(window.$HandleBars);
+            // this.settingGithub();
+            // this.initHandleBars(window.$HandleBars);
             this.callGenerate();
 
         },
@@ -1961,6 +1961,8 @@
         },
         mounted() { 
             var me = this;
+
+            me.defaultTemplate = me.value.templateType ? me.value.templateType : 'Separate File';
 
             if (localStorage.getItem("editTemplateList") && me.firstSetEditTemplateList) {
                 var CircularJSON = require('circular-json');
@@ -3836,24 +3838,18 @@
             asyncHandleBars(){
 
                 let obj = {}
+                let me = this
                 return new Promise(async function (resolve, reject) {
-                    if(localStorage.getItem('gitAccessToken') || localStorage.getItem('gitToken')){
-                        var gitAccessToken = localStorage.getItem('gitAccessToken') ? localStorage.getItem('gitAccessToken') : localStorage.getItem('gitToken')
-                        var githubHeaders = {
-                            Authorization: 'token ' + gitAccessToken,
-                            Accept: 'application/vnd.github+json'
+                    let result = await me.gitAPI.getFile("topping-isVanillaK8s", "msa-ez", "for-model/kubernetes/docs/common/Pod.md")
+                    .then(function (obj) {
+                        resolve(obj.data)
+                    })
+                    .catch(e => {
+                        if(e.response.status === 401){
+                            me.alertReLogin()
                         }
-                        var result = await axios.get(`https://api.github.com/repos/msa-ez/topping-isVanillaK8s/contents/for-model/kubernetes/docs/common/Pod.md`, { headers: githubHeaders })
-                        .catch(function (error) {
-                            if(error.response.status === 401){
-                                me.alertReLogin()
-                            }
-                            alert(error)
-                        })
-                        obj['include'] = decodeURIComponent(escape(atob(result.data.content)));
-                        resolve(obj);
-                    }
-                    // let result = await axios.get("https://raw.githubusercontent.com/msa-ez/topping-isVanillaK8s/main/isVanillaK8s/for-model/kubernetes/docs/common/Pod.md")
+                        alert(e)                        
+                    })
                 })
             },
             async initHandleBars(handleBars){
@@ -6042,7 +6038,7 @@
 
                 return new Promise(await function (resolve, reject) {
                     me.newTreeList = [];
-                    var copyValue = JSON.parse(JSON.stringify(me.value));
+                    var value = JSON.parse(JSON.stringify(me.value));
 
                     if (me.defaultTemplate.length > 0) {
                         var template = me.defaultTemplate;
@@ -6053,8 +6049,8 @@
                     if (template == 'Separate File') {
                         var codeValue = {};
 
-                        Object.keys(copyValue.elements).forEach((key) => {
-                            var item = copyValue.elements[key];
+                        Object.keys(value.elements).forEach((key) => {
+                            var item = value.elements[key];
                             if (item && item._type != "DestinationRuleSubset" && 
                                     item._type != "WorkflowDag" && 
                                     item._type != "WorkflowStep"
@@ -6063,17 +6059,21 @@
                                     'key': item.elementView.id,
                                     'name': item.object.metadata.name + '.yaml',
                                     'code': me.yamlFilter(json2yaml.stringify(item.object)),
+                                    'fullPath': item.object.metadata.name + '.yaml',
                                     'file': me.fileType('.yaml')
                                 };
                                 me.newTreeList.push(codeValue);
+                                me.codeLists = me.newTreeList;
+
                                 resolve();
                             }
                         });
+                        
                     } else if (template == 'Single File') {
                         var yaml = '';
 
-                        Object.keys(copyValue.elements).forEach((key) => {
-                            var item = copyValue.elements[key]
+                        Object.keys(value.elements).forEach((key) => {
+                            var item = value.elements[key]
                             if (item && item._type != "DestinationRuleSubset" &&
                                     item._type != "WorkflowDag" &&
                                     item._type != "WorkflowStep"
@@ -6086,13 +6086,18 @@
                             'key': 'local',
                             'name': 'local.yaml',
                             'code': yaml,
+                            'fullPath': 'local.yaml',
                             'file': me.fileType('.yaml')
                         };
 
                         me.newTreeList.push(codeValue);
+                        me.codeLists = me.newTreeList;
+
                         resolve();
                     } else if (template == 'Separate File per kind') {
                         me.setYamlPerKind(me.newTreeList);
+                        me.codeLists = me.newTreeList;
+
                         resolve();
                     } else if (template == 'Helm') {
                         me.setHelmChart();
@@ -6100,9 +6105,10 @@
                     }
                     
                     me.isGeneratorDone = true;
+
                 });
             },
-            setYamlPerKind(treeList) {
+            setYamlPerKind(treeList, codeList) {
                 var me = this;
                 var copyValue = JSON.parse(JSON.stringify(me.value));
 
@@ -6117,6 +6123,7 @@
                             'key': item.elementView.id,
                             'name': name + '.yaml',
                             'code': '--- \n' + me.yamlFilter(json2yaml.stringify(item.object)),
+                            'fullPath': name + '.yaml',
                             'file': me.fileType('.yaml')
                         };
 
@@ -6128,22 +6135,32 @@
                         });
 
                         if (index == -1) {
+                            if (me.defaultTemplate == 'Helm') {
+                                codeValue['fullPath'] = `${me.projectName}/templates/${codeValue.name}`
+                                codeList.push(codeValue);
+                            }
+
                             treeList.push(codeValue);
                         }
                     }
                 });
             },
-            setHelmChart() {
+            async setHelmChart() {
                 var me = this;
+                var list = [];
                 var templates = [];
+                
                 var notes = {
                     'key': 'notes',
                     'name': 'NOTES.txt',
                     'code': '',
-                    'file': 'txt'
+                    'file': 'txt',
+                    'fullPath': `${me.projectName}/NOTES.txt`,
                 };
+                list.push(notes);
                 templates.push(notes);
-                me.setYamlPerKind(templates);
+
+                await me.setYamlPerKind(templates, list);
 
                 me.chartJson = {
                     "apiVersion": "v1",
@@ -6159,21 +6176,33 @@
                             'key': 'chart',
                             'name': 'Chart.yaml',
                             'code': me.yamlFilter(json2yaml.stringify(me.chartJson)),
-                            'file': me.fileType('.yaml')
+                            'file': me.fileType('.yaml'),
+                            'fullPath': `${me.projectName}/templates/Chart.yaml`,
                         },
                         {
                             'name': 'templates',
-                            'children': templates
+                            'children': templates,
+                            'fullPath': `${me.projectName}/templates`,
                         },
                         {
                             'key': 'values',
                             'name': 'values.yaml',
                             'code': me.valuesYaml,
-                            'file': me.fileType('.yaml')
+                            'file': me.fileType('.yaml'),
+                            'fullPath': `${me.projectName}/values.yaml`,
                         }
                     ]
                 };
+
+                folder.children.forEach((codeValue) => {
+                    if (codeValue.hasOwnProperty('file')) {
+                        list.push(codeValue);
+                    }
+                });
+
                 me.newTreeList.push(folder);
+
+                me.codeLists = list;
             },
             yamlFilter(yamlText) {
                 let lines = yamlText.split('\n');

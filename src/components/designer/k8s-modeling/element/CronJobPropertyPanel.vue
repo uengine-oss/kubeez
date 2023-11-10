@@ -2,7 +2,7 @@
     <kubernetes-common-panel
             v-model="value"
             :img="img"
-            :readOnly="isReadOnlyModeling"
+            :readOnly="canvas.isReadOnlyModel"
             :validation-lists="validationLists"
             @openDesDoc="desDocOpen"
             @close="closePanel"
@@ -20,19 +20,19 @@
         <template slot="edit-property">
             <v-text-field
                     label="Image"
-                    :disabled="isReadOnlyModeling"
+                    :disabled="canvas.isReadOnlyModel"
                     v-model="value.object.spec.jobTemplate.spec.template.spec.containers[0].image"
             ></v-text-field>
             <v-select
                     label="restartPolicy"
-                    :disabled="isReadOnlyModeling"
+                    :disabled="canvas.isReadOnlyModel"
                     v-model="value.object.spec.jobTemplate.spec.template.spec.restartPolicy"
                     :items="restartPolicyList"
             ></v-select>
             <v-label>Schedule</v-label>
             <v-cron-field
                     v-model="value.object.spec.schedule"
-                    :readOnly="isReadOnlyModeling"
+                    :readOnly="canvas.isReadOnlyModel"
             ></v-cron-field>
         </template>
     </kubernetes-common-panel>

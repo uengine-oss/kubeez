@@ -37,8 +37,7 @@
         },
         created: function () {
             var me = this;
-            me.modelCanvasComponent = me.getComponent('kubernetes-model-canvas')
-            if(!me.modelCanvasComponent.embedded) {
+            if(!me.canvas.embedded) {
                 me.panelInit()
             }
         },
@@ -46,6 +45,11 @@
             this.executeBeforeDestroy()
         },
         methods: {
+            setElementCanvas(){
+                var me = this
+                me.modelCanvasComponent = me.getComponent('kubernetes-model-canvas')
+                me.canvas = me.getComponent('kubernetes-model-canvas')
+            },
             closePanel() {
                 this.$emit('close')
             },
@@ -55,7 +59,7 @@
                 try {
                     var me = this
                 
-                    if ( !me.modelCanvasComponent.embedded ) {
+                    if ( !me.canvas.embedded ) {
                         me.panelOpenAction()
                     }
                 } catch (e) {
@@ -73,7 +77,7 @@
                     var diff = jsondiffpatch.diff(me._value, me.value)
                     if (diff) {
                         if (!me.readOnly) {
-                            me.modelCanvasComponent.changedByMe = true;
+                            me.canvas.changedByMe = true;
 
                             // all sync
                             Object.keys(me.value).forEach(function (itemKey) {

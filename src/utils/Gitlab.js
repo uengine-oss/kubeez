@@ -120,6 +120,19 @@ class Gitlab extends Git {
             })
         })
     }
+    getBranch(org, repo, forkedTag) {
+        let me = this;
+        return new Promise(async function (resolve, reject) {
+            // const result = await axios.get(`https://gitlab.${me.getOrigin()}/api/v4/projects/${info.id}/repository/branches/${forkedTag}`, { headers: me.getHeader() })
+            const result = await me.getTree(org, repo)
+            .then((res) => {
+                resolve(res)
+            })
+            .catch((e) => {
+                reject(e)
+            })   
+        })
+    }
     getFile(repo, org, filePath, repoId) {
         let me = this;
         return new Promise(async function (resolve, reject) {
@@ -393,42 +406,44 @@ class Gitlab extends Git {
                 }
             })
 
-            options.generateCodeLists.forEach(function (elData) {
-                if(!gitlabFilePathList.find(element => element == elData.fullPath)) {
-                    var code
-                    if(elData.code){
-                        code = elData.code
+            if (options.generateCodeLists && options.generateCodeLists.length > 0) {
+                options.generateCodeLists.forEach(function (elData) {
+                    if(!gitlabFilePathList.find(element => element == elData.fullPath)) {
+                        var code
+                        if(elData.code){
+                            code = elData.code
+                        }
+    
+                        if(!code){
+                            code = 'undefined'
+                        }
+                        var action = {
+                            action: "create",
+                            file_path: elData.fullPath,
+                            content: code,
+                            force: true
+                        }
+                        pushTree.push(action)
+                    } 
+                    // else if(!me.isNewProject && ((options.copyChangedPathLists && options.copyChangedPathLists.find(element => element.replace("for-model/","") == elData.fullPath)) || me.pushType != "Push")){
+                    else {
+                        var code
+                        if(elData.code){
+                            code = elData.code
+                        }
+    
+                        if(!code){
+                            code = 'undefined'
+                        }
+                        var action = {
+                            action: "update",
+                            file_path: elData.fullPath,
+                            content: code
+                        }
+                        pushTree.push(action)
                     }
-
-                    if(!code){
-                        code = 'undefined'
-                    }
-                    var action = {
-                        action: "create",
-                        file_path: elData.fullPath,
-                        content: code,
-                        force: true
-                    }
-                    pushTree.push(action)
-                } 
-                // else if(!me.isNewProject && ((options.copyChangedPathLists && options.copyChangedPathLists.find(element => element.replace("for-model/","") == elData.fullPath)) || me.pushType != "Push")){
-                else {
-                    var code
-                    if(elData.code){
-                        code = elData.code
-                    }
-
-                    if(!code){
-                        code = 'undefined'
-                    }
-                    var action = {
-                        action: "update",
-                        file_path: elData.fullPath,
-                        content: code
-                    }
-                    pushTree.push(action)
-                }
-            })
+                })
+            }
             // console.log(me.gitLabCommitAction)
 
             var setCommitActionList

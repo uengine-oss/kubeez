@@ -12,16 +12,25 @@
     computed: {
       opengraphRole: function () {
         return 'sub-elements';
-      }
+      },
+
+
+    },
+    created(){
+
     },
     data: function () {
       return {}
     },
-    watch: {},
-    mounted: function () {
+    watch: {
 
     },
-    methods: {}
+    mounted: function () {
+
+
+    },
+    methods: {
+    }
   }
 </script>
 

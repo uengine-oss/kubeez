@@ -4,15 +4,15 @@
                 selectable
                 movable
                 resizable
-                :connectable="!isReadOnly"
-                :deletable="!isReadOnly"
+                :connectable="!canvas.isReadOnlyModel"
+                :deletable="!canvas.isReadOnlyModel"
                 :id.sync="value.elementView.id"
                 :x.sync="value.elementView.x"
                 :y.sync="value.elementView.y"
                 :label.sync="name"
                 :width.sync="value.elementView.width"
                 :height.sync="value.elementView.height"
-                :customMoveActionExist="isCustomMoveExist"
+                :customMoveActionExist="canvas.isCustomMoveExist"
                 v-on:customMoveAction="delayedMove"
                 v-on:moveShape="onMoveShape"
                 v-on:selectShape="selectedActivity"
@@ -53,7 +53,7 @@
                 v-if="propertyPanel"
                 v-model="value"
                 :img="imgSrc"
-                :readOnly="isReadOnly"
+                :readOnly="canvas.isReadOnlyModel"
                 @close="closePanel"
                 @setSteps="setSteps"
                 @setTasks="setTasks"
@@ -69,7 +69,7 @@
 </template>
 
 <script>
-    import Element from "../KubernetesModelElement";
+    import Element from "../KubernetesElement";
     import PropertyPanel from './WorkflowPanel'
 
     var jsondiffpatch = require('jsondiffpatch').create({
@@ -265,7 +265,7 @@
                         }
                         me.stepComp.y = me.value.elementView.y;
                         
-                        var el = me.modelCanvasComponent.addElement(me.stepComp, me.value);
+                        var el = me.canvas.addElement(me.stepComp, me.value);
                         el.name = "Step"+(len+count-i);
                         el.object.name = "Step"+(len+count-i);
                         me.value.steps.push(el.elementView.id);
@@ -287,7 +287,7 @@
                         }
                         me.taskComp.y = me.value.elementView.y;
                         
-                        var el = me.modelCanvasComponent.addElement(me.taskComp, me.value);
+                        var el = me.canvas.addElement(me.taskComp, me.value);
                         el.name = "Task"+(len+count-i);
                         el.object.name = "Task"+(len+count-i);
                         me.value.tasks.push(el.elementView.id);

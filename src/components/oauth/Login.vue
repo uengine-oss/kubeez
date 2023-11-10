@@ -259,6 +259,7 @@
             LoginInformation1: String,
             LoginInformation2: String
         },
+        // mixins: [LabBase, TenantAware],
         mixins: [CommonStorageBase],
         data: () => ({
             tenantLogo: null,
@@ -341,7 +342,7 @@
                 me.authorized = false
             }
 
-            me.tenantLogo = await me.getImageURL("storage://labs-msaez.io/logo.png");
+            // me.tenantLogo = await me.getImageURL("storage://labs-msaez.io/logo.png");
 
         },
         methods: {

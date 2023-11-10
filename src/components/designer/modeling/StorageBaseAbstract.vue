@@ -1,8 +1,9 @@
 <template>
+
 </template>
 
 <script>
-    import TenantAware from "./TenantAware";
+    import TenantAware from "../../labs/TenantAware";
 
     export default {
         name: "storage-base-abstract",
@@ -23,30 +24,30 @@
                     consultingTime: 0,
                     authorized: null,
                 },
-                userImage: null,
+                userImage: null
             }
         },
         computed: {
             myId() {
-                if (this.userInfo.email) {
-                    return this.userInfo.email;
-                }
+                if (this.userInfo.email)
+                    return this.userInfo.email
                 return localStorage.getItem("email");
             },
             isLogin() {
+                // if (this.getRef('auth').currentUser) {
                 if (this.accessToken) {
-                    return true;
+                    return true
                 }
-                return false;
+                return false
             },
             isGuestLogin() {
                 if (!this.accessToken && this.userInfo.name) {
-                    return true;
+                    return true
                 }
-                return false;
+                return false
             },
             myHashCode() {
-                return this.hashCode(this.courseId + '/classes/' + this.classId + '/labs/' + this.labId + '/' + this.myId);
+                return this.hashCode(this.courseId + '/classes/' + this.classId + '/labs/' + this.labId + '/' + this.myId)
             },
             isAdmin() {
                 if (this.isLogin) {
@@ -186,7 +187,9 @@
             getRef(auth) {
                 return this._getRef(auth)
             },
-
+            async refreshFirebaseIdToken() {
+                return await this._refreshFirebaseIdToken()
+            },
             async getUserInfo() {
                 return await this._getUserInfo()
             },
